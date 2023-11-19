@@ -1,7 +1,7 @@
 # Godot WebRTC Match Maker
 
 [![Godot - 4.x](https://img.shields.io/badge/Godot-4.x-53a4e0?style=for-the-badge&logo=godotengine&logoColor=53a4e0)](https://godotengine.org)
-[![Rust - 1.60.0](https://img.shields.io/badge/Rust-1.60.0-e43716?style=for-the-badge&logo=Rust&logoColor=FFFFFF)](https://www.rust-lang.org/)
+[![Rust - 1.63.0+](https://img.shields.io/badge/Rust-1.63.0+-e43716?style=for-the-badge&logo=Rust&logoColor=FFFFFF)](https://www.rust-lang.org/)
 [![.NET - 8.0](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=csharp)](https://www.rust-lang.org/)
 [![WebRTC](https://img.shields.io/badge/WebRTC-0943a2?style=for-the-badge&logo=webrtc)](https://webrtc.org)
 
