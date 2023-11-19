@@ -1,2 +1,5 @@
 # Rust
 target/
+
+# Godot
+.godot/
