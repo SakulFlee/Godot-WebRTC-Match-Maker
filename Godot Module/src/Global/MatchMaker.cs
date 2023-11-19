@@ -5,7 +5,10 @@ using Godot.Collections;
 public partial class MatchMaker : Node
 {
 	[Export]
-	public string MatchMakerConnectionString;
+	public GDScript WorkaroundScript;
+
+	[Export]
+	public string MatchMakerConnectionString = "ws://127.0.0.1:33333";
 
 	private WebSocketPeer peer;
 
@@ -13,6 +16,12 @@ public partial class MatchMaker : Node
 
 	public override void _Ready()
 	{
+		if (WorkaroundScript == null)
+		{
+			GD.PrintErr("No Workaround Script path set!");
+			return;
+		}
+
 		peer = new();
 		var err = peer.ConnectToUrl(MatchMakerConnectionString);
 		if (err != Error.Ok)
@@ -47,11 +56,15 @@ public partial class MatchMaker : Node
 				{
 					foreach (var peerUUID in response.MatchMaking.peers)
 					{
+						var workaroundScriptInstance = (GodotObject)WorkaroundScript.New();
+						var workaroundScriptInner = (WebRtcPeerConnection)workaroundScriptInstance.Get("inner");
+
 						var connection = new WebRTCConnection()
 						{
 							Name = $"WebRTCConnection@{peerUUID}",
 							IsHost = response.MatchMaking.isHost,
 							PeerUUID = peerUUID,
+							peer = workaroundScriptInner,
 						};
 						connection.HostICECandidate += OnHostICECandidate;
 						connection.ClientSession += OnClientSession;
