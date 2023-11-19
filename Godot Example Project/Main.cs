@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class Multiplayer : Node
+public partial class Main : Node
 {
 	private MatchMaker matchMaker;
 	private bool requestSend = false;

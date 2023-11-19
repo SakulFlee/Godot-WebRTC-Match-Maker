@@ -4,8 +4,4 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>WebRTC-Match-Maker-Godot-Module.Empty</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="../Godot Module/src/**/*.cs" />
-  </ItemGroup>
 </Project>
