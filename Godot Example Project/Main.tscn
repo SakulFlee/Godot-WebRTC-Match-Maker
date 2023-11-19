@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://6g75efppoade"]
+
+[ext_resource type="Script" path="res://Main.cs" id="1_wny1r"]
+[ext_resource type="Script" path="res://Global/MatchMaker.cs" id="2_i14hs"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_wny1r")
+
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("2_i14hs")
