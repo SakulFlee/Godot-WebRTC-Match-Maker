@@ -11,7 +11,7 @@ public partial class WebRTCConnection : Node
 	[Export]
 	public bool IsHost;
 
-	private WebRtcPeerConnection peer;
+	public WebRtcPeerConnection peer;   // TODO: Change to private once workaround is no longer needed
 	private WebRtcDataChannel chatChannel;
 
 	// TODO: Add support for new data channels _after_ being connected
@@ -24,7 +24,8 @@ public partial class WebRTCConnection : Node
 
 	public override void _Ready()
 	{
-		peer = new();
+		// TODO: Enable once Workaround is no longer needed!
+		// peer = new();
 		var err = peer.Initialize(new Dictionary() {
 			{"iceServers", new Dictionary() {
 				{"urls", new string[]{
