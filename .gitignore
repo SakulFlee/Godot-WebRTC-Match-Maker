@@ -3,3 +3,4 @@ target/
 
 # Godot
 .godot/
+*.csproj.old*
