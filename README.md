@@ -1,9 +1,18 @@
 # Godot WebRTC Match Maker
 
+>⚠️⚠️⚠️  
+>
+> As of writing this there is an issue with Godot 4.x and C# when using the [WebRTC-Plugin for Godot].
+> There is a fix for this in the making [godotengine/webrtc-native#116](https://github.com/godotengine/webrtc-native/issues/116) & [godotengine/godot#pr-84947](https://github.com/godotengine/godot/pull/84947).
+> However, as of writing this, this change has not been integrated into Godot yet.
+>
+> We currently provide a workaround using GDScript to get around this limitation.  
+> In a future version this will be fixed and easier to work with.
+
 This repository holds two projects:
 
 - A Match Maker server, used for connecting clients and hosts via [WebRTC] and acting as a Queue
-- A Godot module to interface and integrate the Match Maker, while also connecting everyone via [WebRTC] and the official [WebRTC-Plugin for Godot](https://github.com/godotengine/webrtc-native).
+- A Godot module to interface and integrate the Match Maker, while also connecting everyone via [WebRTC] and the official [WebRTC-Plugin for Godot].
 
 > Note:  
 > While this project is made for Godot, it can be used in any other Engine and Project.
@@ -69,3 +78,4 @@ Follow the existing implementation in Godot:
 8. Assure peers are connected
 
 [WebRTC]: https://webrtc.org/
+[WebRTC-Plugin for Godot]:(https://github.com/godotengine/webrtc-native)
