@@ -40,4 +40,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Match Maker Server
-        path: Match Maker Server/target/
+        path: |
+          Match Maker Server/target/debug/match_maker_server
+          Match Maker Server/target/release/match_maker_server
