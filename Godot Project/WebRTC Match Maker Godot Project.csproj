@@ -2,6 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <RootNamespace>WebRTC-Match-Maker-Godot-Module.Empty</RootNamespace>
+    <RootNamespace>WebRTC-Match-Maker-Godot-Project.Empty</RootNamespace>
   </PropertyGroup>
 </Project>
