@@ -1,11 +1,15 @@
 use std::{
     collections::HashMap,
+    error::Error,
     str::FromStr,
     sync::{Arc, Mutex},
 };
 
 use uuid::Uuid;
 use ws::Sender;
+
+mod app_config;
+pub use app_config::*;
 
 mod request;
 pub use request::*;
@@ -254,16 +258,19 @@ impl ws::Handler for Handler {
     }
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
+    let app_config = AppConfig::load()?;
+
     let queue = Arc::new(Mutex::new(HashMap::new()));
     let peers = Arc::new(Mutex::new(HashMap::new()));
 
     println!("Match Maker Server listening on 0.0.0.0:33333 ...");
-    ws::listen("0.0.0.0:33333", |sender| Handler {
+    ws::listen(app_config.listen_string(), |sender| Handler {
         local_sender: sender,
         local_uuid: Uuid::new_v4(),
         queue: queue.clone(),
         peers: peers.clone(),
-    })
-    .expect("WebSocket creation failed");
+    })?;
+
+    Ok(())
 }
