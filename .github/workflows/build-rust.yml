@@ -1,0 +1,46 @@
+name: Rust Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        fail-fast: false
+        rust-channel: ["stable", "beta", "nightly", "1.70.0", "1.60.0"]
+      
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust
+      run: |
+        rustup install ${{ matrix.rust-channel }}
+        rustup show
+        rustup --version
+        cargo +${{ matrix.rust-channel }} --version
+        rustc +${{ matrix.rust-channel }} --version
+    
+    - name: Debug Build
+      run: cargo build
+      working-directory: Match Maker Server/
+      
+    - name: Release Build
+      run: cargo build --release
+      working-directory: Match Maker Server/
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: Match Maker Server
+        path: |
+          Match Maker Server/target/debug/match_maker_server
+          Match Maker Server/target/release/match_maker_server
