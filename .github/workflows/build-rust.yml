@@ -12,8 +12,8 @@ env:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        fail-fast: false
         rust-channel: ["stable", "beta", "nightly", "1.70.0", "1.60.0"]
       
     runs-on: ubuntu-latest
