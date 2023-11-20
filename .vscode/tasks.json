@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Match Maker Server (Debug)",
+            "label": "[Match Maker] Build Server (Debug)",
             "command": "cargo build",
             "type": "shell",
             "args": [],
@@ -12,13 +12,10 @@
             "problemMatcher": [
                 "$rustc"
             ],
-            "presentation": {
-                "reveal": "always"
-            },
             "group": "build"
         },
         {
-            "label": "Build Match Maker Server (Release)",
+            "label": "[Match Maker] Build Server (Release)",
             "command": "cargo build --release",
             "type": "shell",
             "args": [],
@@ -28,10 +25,37 @@
             "problemMatcher": [
                 "$rustc"
             ],
-            "presentation": {
-                "reveal": "always"
-            },
             "group": "build"
+        },
+        {
+            "label": "[Godot] Prepare Solution",
+            "type": "shell",
+            "command": "godot --headless --build-solutions --quit || exit 0",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            },
+        },
+        {
+            "label": "[Godot] Restore Project",
+            "type": "shell",
+            "command": "dotnet restore",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            },
+            "dependsOn": "[Godot] Prepare Solution"
+        },
+        {
+            "label": "[Godot] Build Project",
+            "type": "shell",
+            "command": "dotnet build",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            },
+            "group": "build",
+            "dependsOn": "[Godot] Restore Project"
         }
     ]
 }
