@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        godot-version: [4.0.0, 4.1.0, 4.2.0-rc.1]
+        godot-version: [4.1.0, 4.2.0-rc.1]
 
     defaults:
       run:
@@ -23,34 +23,35 @@ jobs:
         
     steps:
       - uses: actions/checkout@v3
-        name: 🧾 Checkout
+        name: Checkout
 
       - uses: actions/setup-dotnet@v3
-        name: 💽 Setup .NET SDK
+        name: Setup .NET SDK
         with:
           dotnet-version: 8.0.x
 
-      - name: 📦 Restore Dependencies
-        run: dotnet restore
-        working-directory: Godot Example Project/
+      - name: .NET Version
+        run: dotnet --version
 
       - uses: chickensoft-games/setup-godot@v1
-        name: 🤖 Setup Godot
+        name: Setup Godot
         with:
           # Version must include major, minor, and patch, and be >= 4.0.0
           version: ${{ matrix.godot-version }}
           # Use .NET-enabled version of Godot (the default is also true).
           use-dotnet: true
 
-      - name: 🔬 Verify Setup
-        run: |
-          dotnet --version
-          godot --version
+      - name: Godot Version
+        run: godot --version
 
-      - name: 🧑‍🔬 Generate .NET Bindings
+      - name: Restore Dependencies
+        run: dotnet restore
+        working-directory: Godot Example Project/
+
+      - name: Generate .NET Bindings
         run: godot --headless --build-solutions --quit || exit 0
         working-directory: Godot Example Project/
 
-      - name: 🦺 Build Projects
+      - name: Build Projects
         run: dotnet build
         working-directory: Godot Example Project/
