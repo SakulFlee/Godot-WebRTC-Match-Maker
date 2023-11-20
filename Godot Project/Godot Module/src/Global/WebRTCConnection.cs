@@ -11,6 +11,9 @@ public partial class WebRTCConnection : Node
 	[Export]
 	public bool IsHost;
 
+	[Export]
+	public Dictionary TurnAndStunServerConfig;
+
 	public WebRtcPeerConnection peer;   // TODO: Change to private once workaround is no longer needed
 	private WebRtcDataChannel chatChannel;
 
@@ -26,25 +29,18 @@ public partial class WebRTCConnection : Node
 	{
 		// TODO: Enable once Workaround is no longer needed!
 		// peer = new();
-		var err = peer.Initialize(new Dictionary() {
-			{"iceServers", new Dictionary() {
-				{"urls", new string[]{
-					"turn:calamity-chicken.sakul-flee.de:3478"
-				} },
-				{"username", "fWfgM4lFGdcniMtkRBiJkwmLcmlFtGNWZgtsYQBpe7AIycUkb77MQy0wztJ-XOunqlKyq1n7T0G2UbEA8LXHN17CWtidDZaGKyfotPXJSPwfweIuJz0YZirKgU_IACJoSUxuYgIG-rxo6DPm24lLOHf0RojVlM8Og-s8GYrjgOe2d9gtXWZux92mhnjeXRCwqJ7dc8JXNLkAYg6Ux8oBNI-lkw2gUenuv1-xLiaoTuEhAOZlZ4dmooAs5XBnR7op5mdD540myoGRjTLZaF0cdqPNx448KbKbRNJp-yKWnsMpSs96eXGdy2rmaQDuYLaKW7ltv9mzkV3bHpTbTLtnXj3a5rQ8xwu8fGuf0ZxVfT38KS_j-YktbulvaoTKdYmKY94QDSHbEJnk6x-cThbZzmJIbw3vYo6WI2oIgYqoBiU0MA1tFrCvsuRPn8vjhmaz7wI9BoneqT2HQmoWbscZLr5TYLScUswf4IxVQIZE1e6FKKaVMKe08Qmf1rTbAKRc"},
-				{"credential", "Jp061115KZbB1zk9mPW4pk05gpOltu5TFNjLa5Z5lnaUXfw8glACfUAuLv-EBvabyH6egnUoVX7PUp5V4dlFmx6U797fiffFCtajC4FzIWGJaY7CVQYdqKLaxGU70QR9k4RbxnVE2LXRolgNeRh2sZh0H7BUwByIf6Pk6Z1-u069IYuBOSETaTY9Oc7zkIqOhtTG6knlCYuC0rKVqKbAPybnTCM40-XsBh2cYRhGphO1n05L6pvpikwYLjrQaq3YBYRnlFmvUpGZVarHiLVbmKvkrV4LlYSFricvKWOhev5j6ct8k2hTKuhkdLie-x1cJj7Lofp_EycrU6SKUlY33oscEX0PiZn6IWCkEb-1ChuBZGb_MdnTCfxTYgXoLjvdYGflcftxALJVc-VfgeGGziPvb3Ejf6kUY4UswIbbvSv9FRXIUyMQSkhxKNpmKmLtcCPB1Z9CUHWN2KKA9-73rbeSk6pUO2dwaEIYZZQU4tY5nt67y9-mO_6g3lbjUgXM"},
-			}},
-		});
 
-		// {
-		//     "iceServers": [
-		//     		{
-		//     			"urls": [ "turn:turn.example.com:3478" ], # One or more TURN servers.
-		//     			"username": "a_username", # Optional username for the TURN server.
-		//     			"credential": "a_password", # Optional password for the TURN server.
-		//     		}
-		//     ]
-		// }
+		var err = peer.Initialize(new Dictionary()
+		{
+			{ "iceServers", TurnAndStunServerConfig }
+		});
+		if (err != Error.Ok)
+		{
+			GD.PrintErr("Failed to intitialize WebRTC with server config! Configuration may be invalid");
+
+			GetTree().Quit();
+			return;
+		}
 
 		chatChannel = peer.CreateDataChannel("chat", new Godot.Collections.Dictionary()
 		{

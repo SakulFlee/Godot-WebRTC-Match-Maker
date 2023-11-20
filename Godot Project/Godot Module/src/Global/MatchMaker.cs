@@ -4,11 +4,70 @@ using Godot.Collections;
 [GlobalClass]
 public partial class MatchMaker : Node
 {
+	/// <summary>
+	/// NOTE: This is currently just a workaround and won't be needed 
+	/// anymore in the future!
+	/// 
+	/// The GDScript containing the workaround for making WebRTC work 
+	/// in current Godot versions.
+	/// </summary>
 	[Export]
 	public GDScript WorkaroundScript;
 
+	/// <summary>
+	/// The connection string to the Match Maker server.
+	/// This should be in the format of:
+	/// ws://<ip or domain>:<port>
+	/// 
+	/// Or, for SSL secured sockets:
+	/// wss://<ip or domain>:<port>
+	/// </summary>
 	[Export]
 	public string MatchMakerConnectionString = "ws://127.0.0.1:33333";
+
+	/// <summary>
+	/// Expected to be in the same format as <see cref="WebRtcPeerConnection.Initialize"/>.
+	/// 
+	/// Mainly, a field `urls` is expected with one or more strings (string[]):
+	/// 
+	/// <code>
+	/// {
+	/// 	"urls",
+	///		[
+	/// 		"stun:some-stun-server.com:3478",
+	///			"turn:some-turn-server.com:3478"
+	/// 	]
+	/// }
+	/// </code>
+	///
+	/// Additionally, especially for TURN servers, you want to add 
+	/// your credentials here too.
+	/// To do this, add a `username` and `credential` field:
+	/// 
+	/// <code>
+	/// {
+	///		"urls": [
+	///			"stun:some-stun-server.com:3478",
+	///			"turn:some-turn-server.com:3478"
+	///		],
+	///		"username": {
+	///			"YOUR USERNAME HERE"
+	/// 	},
+	/// 	"credential": {
+	///			"YOUR CREDENTIALS HERE"
+	/// 	}
+	/// }
+	/// </code>
+	/// </summary>
+	[Export]
+	public Dictionary TurnAndStunServerConfig = new() {
+		{
+			"urls",
+			new string[] {
+				"stun:stun.l.google.com:19302"
+			}
+		}
+	};
 
 	private WebSocketPeer peer;
 
@@ -64,6 +123,7 @@ public partial class MatchMaker : Node
 							Name = $"WebRTCConnection@{peerUUID}",
 							IsHost = response.MatchMaking.isHost,
 							PeerUUID = peerUUID,
+							TurnAndStunServerConfig = TurnAndStunServerConfig,
 							peer = workaroundScriptInner,
 						};
 						connection.HostICECandidate += OnHostICECandidate;
