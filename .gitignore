@@ -4,3 +4,6 @@ target/
 # Godot
 .godot/
 *.csproj.old*
+
+# Temporary files
+~*
