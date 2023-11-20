@@ -1,0 +1,8 @@
+Godot:
+  - Godot Project/**
+
+Server:
+  - Match Maker Server/**
+
+CI:
+  - .github/**
