@@ -1,6 +1,6 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRTC Match Maker Godot Example Project", "WebRTC Match Maker Godot Example Project.csproj", "{45425D27-CB44-4C78-B07C-75D3E2FD5BFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRTC Match Maker Godot Project", "WebRTC Match Maker Godot Project.csproj", "{45425D27-CB44-4C78-B07C-75D3E2FD5BFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

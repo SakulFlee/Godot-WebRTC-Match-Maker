@@ -46,12 +46,12 @@ jobs:
 
       - name: Restore Dependencies
         run: dotnet restore
-        working-directory: Godot Example Project/
+        working-directory: Godot Project/
 
       - name: Generate .NET Bindings
         run: godot --headless --build-solutions --quit || exit 0
-        working-directory: Godot Example Project/
+        working-directory: Godot Project/
 
       - name: Build Projects
         run: dotnet build
-        working-directory: Godot Example Project/
+        working-directory: Godot Project/
