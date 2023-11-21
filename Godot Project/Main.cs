@@ -17,7 +17,6 @@ public partial class Main : Node
 			var error = matchMaker.SendRequest(new MatchMakingRequest()
 			{
 				name = "Test",
-				slots = 2,
 			});
 			requestSend = error == Error.Ok;
 		}

@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::Display};
+use std::{collections::HashMap, error::Error, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -6,21 +6,21 @@ use serde::{Deserialize, Serialize};
 pub struct AppConfig {
     pub listen_address: String,
     pub listen_port: u16,
+    pub slots: HashMap<String, u8>,
 }
 
 impl AppConfig {
     pub fn load() -> Result<Self, Box<dyn Error>> {
-        let app_config: AppConfig = confy::load("MatchMaker", None)?;
-
         println!(
-            "Config path: {}
-{}
-",
+            "Config path: {}",
             confy::get_configuration_file_path("MatchMaker", None)?
                 .to_str()
-                .unwrap(),
-            app_config
+                .unwrap()
         );
+
+        let app_config: AppConfig = confy::load("MatchMaker", None)?;
+
+        println!("{}", app_config);
 
         Ok(app_config)
     }
@@ -32,9 +32,13 @@ impl AppConfig {
 
 impl Default for AppConfig {
     fn default() -> Self {
+        let mut slots = HashMap::new();
+        slots.insert(String::from("Test"), 2);
+
         Self {
             listen_address: String::from("0.0.0.0"),
             listen_port: 33333,
+            slots,
         }
     }
 }
@@ -45,8 +49,16 @@ impl Display for AppConfig {
             f,
             "AppConfig:
 \tListen Address:\t{}
-\tListen Port:\t{}",
-            self.listen_address, self.listen_port
+\tListen Port:\t{}
+\tQueue Slot Config:
+{}",
+            self.listen_address,
+            self.listen_port,
+            self.slots
+                .iter()
+                .map(|(k, v)| format!("\t\t\"{}\": {} slots", k, v))
+                .collect::<Vec<String>>()
+                .join("\n")
         )
     }
 }

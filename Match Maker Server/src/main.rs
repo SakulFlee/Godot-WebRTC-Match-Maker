@@ -44,12 +44,25 @@ pub use peer::*;
 pub struct Handler {
     local_sender: Sender,
     local_uuid: Uuid,
+    app_config: Arc<AppConfig>,
     queue: Arc<Mutex<HashMap<String, MatchMakingQuery>>>,
     peers: Arc<Mutex<HashMap<Uuid, Sender>>>,
 }
 
 impl Handler {
     fn handle_match_making(&mut self, request: MatchMakingRequest) -> ws::Result<()> {
+        let slot_requirement = match self.app_config.slots.get(&request.name) {
+            Some(slot) => *slot as usize,
+            None => {
+                return Err(ws::Error::new(
+                    ws::ErrorKind::Protocol,
+                    String::from(
+                        "Invalid request: Slot config does not exist for the requested queue!",
+                    ),
+                ))
+            }
+        };
+
         if let Ok(mut lock) = self.queue.lock() {
             match lock.get_mut(&request.name) {
                 Some(query) => {
@@ -58,7 +71,7 @@ impl Handler {
                     query.add_peer(self.local_uuid);
 
                     // Check if room is full
-                    if query.is_filled() {
+                    if query.is_filled(slot_requirement) {
                         println!("Queue full!");
 
                         if let Ok(lock) = self.peers.lock() {
@@ -259,8 +272,7 @@ impl ws::Handler for Handler {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let app_config = AppConfig::load()?;
-
+    let app_config = Arc::new(AppConfig::load()?);
     let queue = Arc::new(Mutex::new(HashMap::new()));
     let peers = Arc::new(Mutex::new(HashMap::new()));
 
@@ -268,6 +280,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     ws::listen(app_config.listen_string(), |sender| Handler {
         local_sender: sender,
         local_uuid: Uuid::new_v4(),
+        app_config: app_config.clone(),
         queue: queue.clone(),
         peers: peers.clone(),
     })?;
