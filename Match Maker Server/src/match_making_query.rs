@@ -5,7 +5,6 @@ use crate::MatchMakingRequest;
 #[derive(Debug, Clone)]
 pub struct MatchMakingQuery {
     pub name: String,
-    pub slots: u8,
     pub peers: Vec<Uuid>,
 }
 
@@ -28,8 +27,8 @@ impl MatchMakingQuery {
         });
     }
 
-    pub fn is_filled(&self) -> bool {
-        self.peers.len() >= self.slots as usize
+    pub fn is_filled(&self, requirement: usize) -> bool {
+        self.peers.len() >= requirement
     }
 }
 
@@ -37,7 +36,6 @@ impl From<MatchMakingRequest> for MatchMakingQuery {
     fn from(value: MatchMakingRequest) -> Self {
         Self {
             name: value.name,
-            slots: value.slots,
             peers: Vec::new(),
         }
     }
