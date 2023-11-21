@@ -1,3 +1,4 @@
+using System.Dynamic;
 using Godot;
 using Godot.Collections;
 
@@ -69,9 +70,18 @@ public partial class MatchMaker : Node
 		}
 	};
 
-	private WebSocketPeer peer;
+	public WebSocketPeer peer { get; private set; }
 
-	private Dictionary<string, WebRTCConnection> webRTCConnections;
+	public Dictionary<string, WebRTCConnection> webRTCConnections { get; private set; }
+
+	public System.Collections.Generic.LinkedList<(string, long, string)> LocalICECandidates
+	{
+		get; private set;
+	} = new();
+	public System.Collections.Generic.LinkedList<(string, long, string)> RemoteICECandidates { get; private set; } = new();
+
+	public (string, string) LocalSession { get; private set; }
+	public (string, string) RemoteSession { get; private set; }
 
 	public override void _Ready()
 	{
@@ -136,10 +146,14 @@ public partial class MatchMaker : Node
 				else if (response.ICECandidate != null)
 				{
 					webRTCConnections[response.ICECandidate.uuid].AddICECandidate(response.ICECandidate);
+
+					RemoteICECandidates.AddLast((response.ICECandidate.mediaId, response.ICECandidate.index, response.ICECandidate.name));
 				}
 				else if (response.SessionDescription != null)
 				{
 					webRTCConnections[response.SessionDescription.uuid].SetRemoteSessionDescription(response.SessionDescription);
+
+					RemoteSession = (response.SessionDescription.type, response.SessionDescription.sdp);
 				}
 				else
 				{
@@ -175,6 +189,7 @@ public partial class MatchMaker : Node
 	public void OnHostICECandidate(string peerUUID, string mediaId, int index, string name)
 	{
 		GD.Print($"[ICECandidate@{peerUUID}] {mediaId} - {index} - {name}");
+		LocalICECandidates.AddLast((mediaId, index, name));
 
 		var iceCandidateRequest = new ICECandidateRequest()
 		{
@@ -200,6 +215,7 @@ public partial class MatchMaker : Node
 	public void OnClientSession(string peerUUID, string type, string sdp)
 	{
 		GD.Print($"[Session@{peerUUID}]: {type} - {sdp}");
+		LocalSession = (type, sdp);
 
 		var sessionDescriptionRequest = new SessionDescriptionRequest()
 		{
