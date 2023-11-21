@@ -66,14 +66,11 @@ impl Handler {
         if let Ok(mut lock) = self.queue.lock() {
             match lock.get_mut(&request.name) {
                 Some(query) => {
-                    println!("Queue exists!");
                     // Query exists -> Add peer
                     query.add_peer(self.local_uuid);
 
                     // Check if room is full
                     if query.is_filled(slot_requirement) {
-                        println!("Queue full!");
-
                         if let Ok(lock) = self.peers.lock() {
                             // First peer is host, others are clients
                             let host = &query.peers[0];
@@ -93,7 +90,6 @@ impl Handler {
                                     format!("Invalid request: {}", e),
                                 )
                             })?;
-                            println!("Sending (Host): {}", response_json);
 
                             host_peer.send(response_json)?;
 
@@ -114,7 +110,6 @@ impl Handler {
                                             format!("Invalid request: {}", e),
                                         )
                                     })?;
-                                println!("Sending (Client): {}", response_json);
 
                                 client_peer.send(response_json)?;
                             }
@@ -125,8 +120,6 @@ impl Handler {
                 }
                 None => {
                     // Query doesn't exist -> Create
-                    println!("Queue created!");
-
                     let mut query: MatchMakingQuery = request.clone().into();
                     query.add_peer(self.local_uuid);
                     lock.insert(query.name.clone(), query);
@@ -163,7 +156,6 @@ impl Handler {
                         ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
                     })?;
 
-                    println!("Sending Session to {}", uuid);
                     peer.send(response_json)?;
 
                     return Ok(());
@@ -204,7 +196,6 @@ impl Handler {
                         ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
                     })?;
 
-                    println!("Sending ICE to {}", uuid);
                     peer.send(response_json)?;
 
                     return Ok(());
@@ -228,9 +219,6 @@ impl Handler {
 
 impl ws::Handler for Handler {
     fn on_open(&mut self, _shake: ws::Handshake) -> ws::Result<()> {
-        println!("Connection opened: {:?}", _shake);
-        println!("Local UUID: {}", self.local_uuid);
-
         // Add to peers
         if let Ok(mut lock) = self.peers.lock() {
             lock.insert(self.local_uuid, self.local_sender.clone());
