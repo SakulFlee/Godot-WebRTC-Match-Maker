@@ -10,6 +10,7 @@
                 "program": "${workspaceFolder}/Match Maker Server/target/debug/match_maker_server.exe",
             },
             "args": [],
+            "console": "integratedTerminal",
             "preLaunchTask": "[Match Maker] Build Server (Debug)",
         },
         {
@@ -26,7 +27,7 @@
             ],
             "cwd": "${workspaceFolder}/Godot Project/",
             "stopAtEntry": false,
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "preLaunchTask": "[Godot] Build Project"
         },
         {
@@ -42,7 +43,7 @@
             ],
             "cwd": "${workspaceFolder}/Godot Project/",
             "stopAtEntry": false,
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "preLaunchTask": "[Godot] Build Project"
         },
         {
@@ -58,7 +59,7 @@
             ],
             "cwd": "${workspaceFolder}/Godot Project/",
             "stopAtEntry": false,
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "preLaunchTask": "[Godot] Build Project"
         },
         {
@@ -74,7 +75,7 @@
             ],
             "cwd": "${workspaceFolder}/Godot Project/",
             "stopAtEntry": false,
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "preLaunchTask": "[Godot] Build Project"
         },
         {
@@ -90,7 +91,7 @@
             ],
             "cwd": "${workspaceFolder}/Godot Project/",
             "stopAtEntry": false,
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "preLaunchTask": "[Godot] Build Project"
         },
         {
@@ -106,7 +107,7 @@
             ],
             "cwd": "${workspaceFolder}/Godot Project/",
             "stopAtEntry": false,
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "preLaunchTask": "[Godot] Build Project"
         }
     ],
