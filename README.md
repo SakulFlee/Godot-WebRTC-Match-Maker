@@ -179,7 +179,7 @@ Once this succeeded, both peers should be able to connect to each other.
 
 Here is a _simplified_ overview:
 
-![Overview](Overview.drawio.png)
+![Overview](Overview.drawio.svg)
 
 ## Usage in non-Godot projects
 
