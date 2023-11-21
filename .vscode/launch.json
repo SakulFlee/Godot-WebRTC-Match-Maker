@@ -4,13 +4,136 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Match Maker Server",
+            "name": "[Match Maker] Launch Server",
             "program": "${workspaceFolder}/Match Maker Server/target/debug/match_maker_server",
             "windows": {
                 "program": "${workspaceFolder}/Match Maker Server/target/debug/match_maker_server.exe",
             },
             "args": [],
-            "preLaunchTask": "Build Match Maker Server (Debug)",
+            "preLaunchTask": "[Match Maker] Build Server (Debug)",
+        },
+        {
+            "name": "[Godot] Launch Editor",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "godot",
+            "windows": {
+                "program": "godot.exe"
+            },
+            "args": [
+                "--editor",
+                "."
+            ],
+            "cwd": "${workspaceFolder}/Godot Project/",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "[Godot] Build Project"
+        },
+        {
+            "name": "[Godot] Launch Game #1",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "godot",
+            "windows": {
+                "program": "godot.exe"
+            },
+            "args": [
+                "."
+            ],
+            "cwd": "${workspaceFolder}/Godot Project/",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "[Godot] Build Project"
+        },
+        {
+            "name": "[Godot] Launch Game #2",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "godot",
+            "windows": {
+                "program": "godot.exe"
+            },
+            "args": [
+                "."
+            ],
+            "cwd": "${workspaceFolder}/Godot Project/",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "[Godot] Build Project"
+        },
+        {
+            "name": "[Godot] Launch Game #3",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "godot",
+            "windows": {
+                "program": "godot.exe"
+            },
+            "args": [
+                "."
+            ],
+            "cwd": "${workspaceFolder}/Godot Project/",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "[Godot] Build Project"
+        },
+        {
+            "name": "[Godot] Launch Game #4",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "godot",
+            "windows": {
+                "program": "godot.exe"
+            },
+            "args": [
+                "."
+            ],
+            "cwd": "${workspaceFolder}/Godot Project/",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "[Godot] Build Project"
+        },
+        {
+            "name": "[Godot] Launch Main scene",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "godot",
+            "windows": {
+                "program": "godot.exe"
+            },
+            "args": [
+                "Main.tscn"
+            ],
+            "cwd": "${workspaceFolder}/Godot Project/",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "[Godot] Build Project"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "[Godot] Launch 2x Game Instances",
+            "configurations": [
+                "[Godot] Launch Game #1",
+                "[Godot] Launch Game #2"
+            ]
+        },
+        {
+            "name": "[Godot] Launch 3x Game Instances",
+            "configurations": [
+                "[Godot] Launch Game #1",
+                "[Godot] Launch Game #2",
+                "[Godot] Launch Game #3"
+            ]
+        },
+        {
+            "name": "[Godot] Launch 4x Game Instances",
+            "configurations": [
+                "[Godot] Launch Game #1",
+                "[Godot] Launch Game #2",
+                "[Godot] Launch Game #3",
+                "[Godot] Launch Game #4"
+            ]
         }
     ]
 }
