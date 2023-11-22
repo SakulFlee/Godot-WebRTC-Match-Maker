@@ -15,7 +15,7 @@ public partial class WebRTCConnection : Node
 	public Dictionary TurnAndStunServerConfig;
 
 	public WebRtcPeerConnection peer;   // TODO: Change to private once workaround is no longer needed
-	private WebRtcDataChannel chatChannel;
+	private WebRtcDataChannel mainChannel;
 
 	// TODO: Add support for new data channels _after_ being connected
 
@@ -24,6 +24,9 @@ public partial class WebRTCConnection : Node
 
 	[Signal]
 	public delegate void ClientSessionEventHandler(string peerUUID, string type, string sdp);
+
+	[Signal]
+	public delegate void ChannelMessageReceivedEventHandler(string peerUUID, string channel, byte[] data);
 
 	public override void _Ready()
 	{
@@ -36,13 +39,13 @@ public partial class WebRTCConnection : Node
 		});
 		if (err != Error.Ok)
 		{
-			GD.PrintErr("Failed to intitialize WebRTC with server config! Configuration may be invalid");
+			GD.PrintErr("Failed to initialize WebRTC with server config! Configuration may be invalid");
 
 			GetTree().Quit();
 			return;
 		}
 
-		chatChannel = peer.CreateDataChannel("chat", new Godot.Collections.Dictionary()
+		mainChannel = peer.CreateDataChannel("chat", new Godot.Collections.Dictionary()
 		{
 			{ "id", 1 },
 			{ "negotiated", true },
@@ -62,27 +65,15 @@ public partial class WebRTCConnection : Node
 	{
 		peer.Poll();
 
-		if (chatChannel.GetReadyState() == WebRtcDataChannel.ChannelState.Open)
+		if (mainChannel.GetReadyState() == WebRtcDataChannel.ChannelState.Open)
 		{
-			while (chatChannel.GetAvailablePacketCount() > 0)
+			while (mainChannel.GetAvailablePacketCount() > 0)
 			{
-				var message = chatChannel.GetPacket().GetStringFromUtf8();
+				var message_data = mainChannel.GetPacket();
+				var message = message_data.GetStringFromUtf8();
 				GD.Print($"[Chat@{PeerUUID}] {message}");
 
-				if (message == "Ping")
-				{
-					chatChannel.PutPacket("Pong".ToUtf8Buffer());
-				}
-			}
-
-			if (IsHost)
-			{
-
-				var err = chatChannel.PutPacket("Ping".ToUtf8Buffer());
-				if (err != Error.Ok)
-				{
-					GD.PrintErr("Failed sending something!");
-				}
+				EmitSignal(SignalName.ChannelMessageReceived, PeerUUID, "main", message_data);
 			}
 		}
 	}
@@ -137,6 +128,24 @@ public partial class WebRTCConnection : Node
 		peer.AddIceCandidate(response.mediaId, response.index, response.name);
 		GD.Print($"[WebRTCConnection@{PeerUUID}] ICE Candidate added!");
 
+		return Error.Ok;
+	}
+
+	public Error SendMessageOnChannel(string channel, byte[] data)
+	{
+		if (channel != "main")
+		{
+			GD.PrintErr("Invalid channel!");
+			return Error.Failed;
+		}
+
+		if (mainChannel.GetReadyState() != WebRtcDataChannel.ChannelState.Open)
+		{
+			GD.PrintErr("Channel not yet ready!");
+			return Error.Failed;
+		}
+
+		mainChannel.PutPacket(data);
 		return Error.Ok;
 	}
 }

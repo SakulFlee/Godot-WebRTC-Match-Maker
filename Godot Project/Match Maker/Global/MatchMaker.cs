@@ -73,6 +73,9 @@ public partial class MatchMaker : Node
 
 	private Dictionary<string, WebRTCConnection> webRTCConnections;
 
+	[Signal]
+	public delegate void ChannelMessageReceivedEventHandler(string peerUUID, string channel, byte[] data);
+
 	public override void _Ready()
 	{
 		if (WorkaroundScript == null)
@@ -219,5 +222,15 @@ public partial class MatchMaker : Node
 			GD.PrintErr($"[SessionDescription] Failed to send to Match Maker!");
 			return;
 		}
+	}
+
+	private void OnChannelMessageReceived(string peerUUID, string channel, byte[] data)
+	{
+		EmitSignal(SignalName.ChannelMessageReceived, peerUUID, channel, data);
+	}
+
+	public Error SendMessageOnChannel(string peerUUID, string channel, byte[] data)
+	{
+		return webRTCConnections[peerUUID].SendMessageOnChannel(channel, data);
 	}
 }
