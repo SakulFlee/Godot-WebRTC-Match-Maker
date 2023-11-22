@@ -83,6 +83,9 @@ public partial class MatchMaker : Node
 	public (string, string) LocalSession { get; private set; }
 	public (string, string) RemoteSession { get; private set; }
 
+	[Signal]
+	public delegate void ChannelMessageReceivedEventHandler(string peerUUID, string channel, byte[] data);
+
 	public override void _Ready()
 	{
 		if (WorkaroundScript == null)
@@ -139,6 +142,7 @@ public partial class MatchMaker : Node
 						connection.HostICECandidate += OnHostICECandidate;
 						connection.ClientSession += OnClientSession;
 						AddChild(connection);
+						connection.ChannelMessageReceived += OnChannelMessageReceived;
 
 						webRTCConnections.Add(peerUUID, connection);
 					}
@@ -235,5 +239,43 @@ public partial class MatchMaker : Node
 			GD.PrintErr($"[SessionDescription] Failed to send to Match Maker!");
 			return;
 		}
+	}
+
+	private void OnChannelMessageReceived(string peerUUID, string channel, byte[] data)
+	{
+		EmitSignal(SignalName.ChannelMessageReceived, peerUUID, channel, data);
+	}
+
+	public Error SendMessageOnChannel(string peerUUID, string channel, byte[] data)
+	{
+		return webRTCConnections[peerUUID].SendMessageOnChannel(channel, data);
+	}
+
+	public Error BroadcastMessageOnChannel(string channel, byte[] data)
+	{
+		var anyErrors = false;
+		foreach (var connection in webRTCConnections)
+		{
+			var err = connection.Value.SendMessageOnChannel(channel, data);
+			if (err != Error.Ok)
+			{
+				GD.PrintErr($"Failed broadcasting message: {err}");
+				anyErrors = true;
+			}
+		}
+
+		if (anyErrors)
+		{
+			return Error.Failed;
+		}
+		else
+		{
+			return Error.Ok;
+		}
+	}
+
+	public bool IsChannelReady(string peerUUID, string channel)
+	{
+		return webRTCConnections[peerUUID].IsChannelReady(channel);
 	}
 }

@@ -135,6 +135,33 @@
                 "[Godot] Launch Game #3",
                 "[Godot] Launch Game #4"
             ]
+        },
+        {
+            "name": "[Godot] Launch 2x Game Instances + Server",
+            "configurations": [
+                "[Match Maker] Launch Server",
+                "[Godot] Launch Game #1",
+                "[Godot] Launch Game #2"
+            ]
+        },
+        {
+            "name": "[Godot] Launch 3x Game Instances + Server",
+            "configurations": [
+                "[Match Maker] Launch Server",
+                "[Godot] Launch Game #1",
+                "[Godot] Launch Game #2",
+                "[Godot] Launch Game #3"
+            ]
+        },
+        {
+            "name": "[Godot] Launch 4x Game Instances + Server",
+            "configurations": [
+                "[Match Maker] Launch Server",
+                "[Godot] Launch Game #1",
+                "[Godot] Launch Game #2",
+                "[Godot] Launch Game #3",
+                "[Godot] Launch Game #4"
+            ]
         }
     ]
 }

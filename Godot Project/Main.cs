@@ -9,6 +9,7 @@ public partial class Main : Node
 
 	private MatchMaker matchMaker;
 	private bool requestSend = false;
+	private bool initialMessageSend = false;
 
 	public override void _Ready()
 	{
@@ -16,8 +17,10 @@ public partial class Main : Node
 		LabelLocalState = GetNode<RichTextLabel>("%LabelLocalState");
 		LabelRemoteState = GetNode<RichTextLabel>("%LabelRemoteState");
 		LabelMessages = GetNode<RichTextLabel>("%LabelMessages");
+		LabelMessages.Text = "Messages:";
 
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
+		matchMaker.ChannelMessageReceived += ChannelMessageReceived;
 
 		UpdateLabel();
 	}
@@ -31,6 +34,21 @@ public partial class Main : Node
 				name = "Test",
 			});
 			requestSend = error == Error.Ok;
+		}
+
+		if (!initialMessageSend)
+		{
+			foreach (var (_, value) in matchMaker.webRTCConnections)
+			{
+				if (value.IsChannelReady("main"))
+				{
+					var err = value.SendMessageOnChannel("main", "Ping!".ToUtf8Buffer());
+					if (err == Error.Ok)
+					{
+						initialMessageSend = true;
+					}
+				}
+			}
 		}
 
 		UpdateLabel();
@@ -69,13 +87,13 @@ public partial class Main : Node
 		var localSession = "";
 		if (matchMaker.LocalSession != (null, null))
 		{
-			localSession = $"{matchMaker.LocalSession.Item1}:\n{matchMaker.LocalSession.Item2.Replace("\n", "\n\t")}";
+			localSession = $"{matchMaker.LocalSession.Item1}:\n\t{matchMaker.LocalSession.Item2.Replace("\n", "\n\t\t")}";
 		}
 
 		var remoteSession = "";
 		if (matchMaker.RemoteSession != (null, null))
 		{
-			remoteSession = $"{matchMaker.RemoteSession.Item1}:\n{matchMaker.RemoteSession.Item2.Replace("\n", "\n\t")}";
+			remoteSession = $"{matchMaker.RemoteSession.Item1}:\n\t{matchMaker.RemoteSession.Item2.Replace("\n", "\n\t\t")}";
 		}
 
 		var peers = "";
@@ -92,6 +110,7 @@ public partial class Main : Node
 	Is Ready: {matchMaker.IsReady()}
 	Peer Status: {matchMaker.peer.GetReadyState()}
 	Request send: {requestSend}
+	Initial message send: {initialMessageSend}
 
 Peers:
 {peers}
@@ -106,8 +125,26 @@ Peers:
 ------------------------------------------------------------------------------------------------------------------------
 {remoteSession}
 ";
-		LabelMessages.Text = $@"Messages:
+	}
 
-";
+	private void ChannelMessageReceived(string peerUUID, string channel, byte[] data)
+	{
+		var message = data.GetStringFromUtf8();
+
+		LabelMessages.Text += $"\n[{peerUUID}@{channel}]\n{message}\n";
+
+		// Send back Pings and Pongs!
+		if (message == "Ping!")
+		{
+			matchMaker.SendMessageOnChannel(peerUUID, channel, "Pong!".ToUtf8Buffer());
+		}
+		else if (message == "Pong!")
+		{
+			matchMaker.SendMessageOnChannel(peerUUID, channel, "Ping!".ToUtf8Buffer());
+		}
+		else
+		{
+			GD.PrintErr("Invalid ping/pong received!");
+		}
 	}
 }
