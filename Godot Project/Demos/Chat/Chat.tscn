@@ -1,0 +1,134 @@
+[gd_scene load_steps=4 format=3 uid="uid://bmto3fmgdtm86"]
+
+[ext_resource type="Script" path="res://Demos/Chat/Chat.cs" id="1_m8l45"]
+[ext_resource type="Script" path="res://Match Maker/Global/MatchMaker.cs" id="2_4wu21"]
+[ext_resource type="Script" path="res://Match Maker/Global/Workaround.gd" id="3_2qwbc"]
+
+[node name="Chat" type="Node"]
+script = ExtResource("1_m8l45")
+
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("2_4wu21")
+WorkaroundScript = ExtResource("3_2qwbc")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel"]
+custom_minimum_size = Vector2(0.925, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/HBoxContainer"]
+custom_minimum_size = Vector2(628, 0)
+layout_mode = 2
+
+[node name="PanelMatchMaker" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 248)
+layout_mode = 2
+
+[node name="LabelMatchMaker" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelMatchMaker"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelMatchMaker"
+autowrap_mode = 0
+
+[node name="PanelLocalState" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 2
+
+[node name="LabelLocalState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelLocalState"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelLocalState"
+autowrap_mode = 0
+
+[node name="PanelRemoteSession" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 2
+
+[node name="LabelRemoteState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelRemoteSession"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelRemoteState"
+autowrap_mode = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainerMessages" type="VBoxContainer" parent="Control/Panel/HBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PanelMessages" type="Panel" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LabelMessages" type="RichTextLabel" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/PanelMessages"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelMessages"
+scroll_following = true
+autowrap_mode = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages"]
+layout_mode = 2
+
+[node name="InputField" type="TextEdit" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Type a message ..."
+
+[node name="SendButton" type="Button" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer"]
+layout_mode = 2
+text = "Send"
+
+[connection signal="text_changed" from="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer/InputField" to="." method="OnTextChanged"]
+[connection signal="pressed" from="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer/SendButton" to="." method="OnSendButtonPressed"]
