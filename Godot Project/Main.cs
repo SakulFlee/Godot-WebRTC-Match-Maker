@@ -81,7 +81,7 @@ public partial class Main : Node
 		}
 		else
 		{
-			localICECandidates = "\tNo ICE Candidates!";
+			remoteICECandidates = "\tNo ICE Candidates!";
 		}
 
 		var localSession = "";
@@ -125,6 +125,32 @@ Peers:
 ------------------------------------------------------------------------------------------------------------------------
 {remoteSession}
 ";
+
+#if DEBUG
+		using (var file = FileAccess.Open("user://debug.log", FileAccess.ModeFlags.Write))
+		{
+			file.StoreString($@"Match Maker:
+	Is Ready: {matchMaker.IsReady()}
+	Peer Status: {matchMaker.peer.GetReadyState()}
+	Request send: {requestSend}
+	Initial message send: {initialMessageSend}
+
+Peers:
+{peers}
+
+Local State:w
+{localICECandidates}
+------------------------------------------------------------------------------------------------------------------------
+{localSession}
+
+Remote State:
+{remoteICECandidates}
+------------------------------------------------------------------------------------------------------------------------
+{remoteSession}
+");
+			file.Flush();
+		}
+#endif
 	}
 
 	private void ChannelMessageReceived(string peerUUID, string channel, byte[] data)
