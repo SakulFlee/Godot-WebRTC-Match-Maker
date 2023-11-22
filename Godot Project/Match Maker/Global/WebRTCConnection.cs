@@ -45,7 +45,7 @@ public partial class WebRTCConnection : Node
 			return;
 		}
 
-		mainChannel = peer.CreateDataChannel("chat", new Godot.Collections.Dictionary()
+		mainChannel = peer.CreateDataChannel("main", new Godot.Collections.Dictionary()
 		{
 			{ "id", 1 },
 			{ "negotiated", true },
@@ -71,7 +71,6 @@ public partial class WebRTCConnection : Node
 			{
 				var message_data = mainChannel.GetPacket();
 				var message = message_data.GetStringFromUtf8();
-				GD.Print($"[Chat@{PeerUUID}] {message}");
 
 				EmitSignal(SignalName.ChannelMessageReceived, PeerUUID, "main", message_data);
 			}
@@ -131,6 +130,17 @@ public partial class WebRTCConnection : Node
 		return Error.Ok;
 	}
 
+	public bool IsChannelReady(string channel)
+	{
+		if (channel != "main")
+		{
+			GD.PrintErr("Invalid channel!");
+			return false;
+		}
+
+		return mainChannel.GetReadyState() == WebRtcDataChannel.ChannelState.Open;
+	}
+
 	public Error SendMessageOnChannel(string channel, byte[] data)
 	{
 		if (channel != "main")
@@ -139,7 +149,7 @@ public partial class WebRTCConnection : Node
 			return Error.Failed;
 		}
 
-		if (mainChannel.GetReadyState() != WebRtcDataChannel.ChannelState.Open)
+		if (!IsChannelReady(channel))
 		{
 			GD.PrintErr("Channel not yet ready!");
 			return Error.Failed;

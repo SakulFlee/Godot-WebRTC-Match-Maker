@@ -142,6 +142,7 @@ public partial class MatchMaker : Node
 						connection.HostICECandidate += OnHostICECandidate;
 						connection.ClientSession += OnClientSession;
 						AddChild(connection);
+						connection.ChannelMessageReceived += OnChannelMessageReceived;
 
 						webRTCConnections.Add(peerUUID, connection);
 					}
@@ -248,5 +249,33 @@ public partial class MatchMaker : Node
 	public Error SendMessageOnChannel(string peerUUID, string channel, byte[] data)
 	{
 		return webRTCConnections[peerUUID].SendMessageOnChannel(channel, data);
+	}
+
+	public Error BroadcastMessageOnChannel(string channel, byte[] data)
+	{
+		var anyErrors = false;
+		foreach (var connection in webRTCConnections)
+		{
+			var err = connection.Value.SendMessageOnChannel(channel, data);
+			if (err != Error.Ok)
+			{
+				GD.PrintErr($"Failed broadcasting message: {err}");
+				anyErrors = true;
+			}
+		}
+
+		if (anyErrors)
+		{
+			return Error.Failed;
+		}
+		else
+		{
+			return Error.Ok;
+		}
+	}
+
+	public bool IsChannelReady(string peerUUID, string channel)
+	{
+		return webRTCConnections[peerUUID].IsChannelReady(channel);
 	}
 }
