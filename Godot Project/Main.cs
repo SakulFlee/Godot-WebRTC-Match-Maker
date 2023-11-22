@@ -1,176 +1,24 @@
 using Godot;
 
-public partial class Main : Node
+public partial class Main : Control
 {
-	private RichTextLabel LabelMatchMaker;
-	private RichTextLabel LabelLocalState;
-	private RichTextLabel LabelRemoteState;
-	private RichTextLabel LabelMessages;
-
-	private MatchMaker matchMaker;
-	private bool requestSend = false;
-	private bool initialMessageSend = false;
-
-	public override void _Ready()
+	public void OnPingPongButton()
 	{
-		LabelMatchMaker = GetNode<RichTextLabel>("%LabelMatchMaker");
-		LabelLocalState = GetNode<RichTextLabel>("%LabelLocalState");
-		LabelRemoteState = GetNode<RichTextLabel>("%LabelRemoteState");
-		LabelMessages = GetNode<RichTextLabel>("%LabelMessages");
-		LabelMessages.Text = "Messages:";
-
-		matchMaker = GetNode<MatchMaker>("MatchMaker");
-		matchMaker.ChannelMessageReceived += ChannelMessageReceived;
-
-		UpdateLabel();
+		var err = GetTree().ChangeSceneToFile("res://Demos/PingPong/PingPong.tscn");
+		if (err != Error.Ok)
+		{
+			GD.PrintErr($"Failed to switch scene ({err})");
+			return;
+		}
 	}
 
-	public override void _Process(double delta)
+	public void OnChatButton()
 	{
-		if (!requestSend && matchMaker.IsReady())
+		var err = GetTree().ChangeSceneToFile("res://Demos/Chat/Chat.tscn");
+		if (err != Error.Ok)
 		{
-			var error = matchMaker.SendRequest(new MatchMakingRequest()
-			{
-				name = "Test",
-			});
-			requestSend = error == Error.Ok;
-		}
-
-		if (!initialMessageSend)
-		{
-			foreach (var (_, value) in matchMaker.webRTCConnections)
-			{
-				if (value.IsChannelReady("main"))
-				{
-					var err = value.SendMessageOnChannel("main", "Ping!".ToUtf8Buffer());
-					if (err == Error.Ok)
-					{
-						initialMessageSend = true;
-					}
-				}
-			}
-		}
-
-		UpdateLabel();
-	}
-
-	private void UpdateLabel()
-	{
-		var localICECandidates = "";
-		foreach (var localICECandidate in matchMaker.LocalICECandidates)
-		{
-			localICECandidates += "\t" + localICECandidate.ToString() + "\n";
-		}
-		if (localICECandidates.Length > 0)
-		{
-			localICECandidates = localICECandidates.Substr(0, localICECandidates.Length - 1);
-		}
-		else
-		{
-			localICECandidates = "\tNo ICE Candidates!";
-		}
-
-		var remoteICECandidates = "";
-		foreach (var remoteICECandidate in matchMaker.RemoteICECandidates)
-		{
-			remoteICECandidates += "\t" + remoteICECandidate.ToString() + "\n";
-		}
-		if (remoteICECandidates.Length > 0)
-		{
-			remoteICECandidates = remoteICECandidates.Substr(0, remoteICECandidates.Length - 1);
-		}
-		else
-		{
-			remoteICECandidates = "\tNo ICE Candidates!";
-		}
-
-		var localSession = "";
-		if (matchMaker.LocalSession != (null, null))
-		{
-			localSession = $"{matchMaker.LocalSession.Item1}:\n\t{matchMaker.LocalSession.Item2.Replace("\n", "\n\t\t")}";
-		}
-
-		var remoteSession = "";
-		if (matchMaker.RemoteSession != (null, null))
-		{
-			remoteSession = $"{matchMaker.RemoteSession.Item1}:\n\t{matchMaker.RemoteSession.Item2.Replace("\n", "\n\t\t")}";
-		}
-
-		var peers = "";
-		foreach (var (uuid, _) in matchMaker.webRTCConnections)
-		{
-			peers += "\t" + uuid + "\n";
-		}
-		if (peers.Length > 0)
-		{
-			peers = peers.Substr(0, peers.Length - 1);
-		}
-
-		LabelMatchMaker.Text = $@"Match Maker:
-	Is Ready: {matchMaker.IsReady()}
-	Peer Status: {matchMaker.peer.GetReadyState()}
-	Request send: {requestSend}
-	Initial message send: {initialMessageSend}
-
-Peers:
-{peers}
-";
-		LabelLocalState.Text = $@"Local State:
-{localICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{localSession}
-";
-		LabelRemoteState.Text = $@"Remote State:
-{remoteICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{remoteSession}
-";
-
-#if DEBUG
-		using (var file = FileAccess.Open("user://debug.log", FileAccess.ModeFlags.Write))
-		{
-			file.StoreString($@"Match Maker:
-	Is Ready: {matchMaker.IsReady()}
-	Peer Status: {matchMaker.peer.GetReadyState()}
-	Request send: {requestSend}
-	Initial message send: {initialMessageSend}
-
-Peers:
-{peers}
-
-Local State:w
-{localICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{localSession}
-
-Remote State:
-{remoteICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{remoteSession}
-");
-			file.Flush();
-		}
-#endif
-	}
-
-	private void ChannelMessageReceived(string peerUUID, string channel, byte[] data)
-	{
-		var message = data.GetStringFromUtf8();
-
-		LabelMessages.Text += $"\n[{peerUUID}@{channel}]\n{message}\n";
-
-		// Send back Pings and Pongs!
-		if (message == "Ping!")
-		{
-			matchMaker.SendMessageOnChannel(peerUUID, channel, "Pong!".ToUtf8Buffer());
-		}
-		else if (message == "Pong!")
-		{
-			matchMaker.SendMessageOnChannel(peerUUID, channel, "Ping!".ToUtf8Buffer());
-		}
-		else
-		{
-			GD.PrintErr("Invalid ping/pong received!");
+			GD.PrintErr($"Failed to switch scene ({err})");
+			return;
 		}
 	}
 }

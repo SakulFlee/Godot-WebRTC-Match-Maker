@@ -1,0 +1,106 @@
+[gd_scene load_steps=4 format=3 uid="uid://6g75efppoade"]
+
+[ext_resource type="Script" path="res://Demos/PingPong/PingPong.cs" id="1_r6cp2"]
+[ext_resource type="Script" path="res://Match Maker/Global/MatchMaker.cs" id="2_5033x"]
+[ext_resource type="Script" path="res://Match Maker/Global/Workaround.gd" id="3_hps7x"]
+
+[node name="PingPong" type="Node"]
+script = ExtResource("1_r6cp2")
+
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("2_5033x")
+WorkaroundScript = ExtResource("3_hps7x")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel"]
+custom_minimum_size = Vector2(0.925, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/HBoxContainer"]
+custom_minimum_size = Vector2(628, 0)
+layout_mode = 2
+
+[node name="PanelMatchMaker" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 248)
+layout_mode = 2
+
+[node name="LabelMatchMaker" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelMatchMaker"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelMatchMaker"
+autowrap_mode = 0
+
+[node name="PanelLocalState" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 2
+
+[node name="LabelLocalState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelLocalState"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelLocalState"
+autowrap_mode = 0
+
+[node name="PanelRemoteSession" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 2
+
+[node name="LabelRemoteState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelRemoteSession"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 192)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelRemoteState"
+autowrap_mode = 0
+
+[node name="PanelMessages" type="Panel" parent="Control/Panel/HBoxContainer"]
+custom_minimum_size = Vector2(518, 0)
+layout_mode = 2
+
+[node name="LabelMessages" type="RichTextLabel" parent="Control/Panel/HBoxContainer/PanelMessages"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(352, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LabelMessages"
+scroll_following = true
+autowrap_mode = 0
