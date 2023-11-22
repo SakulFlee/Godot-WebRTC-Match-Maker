@@ -1,4 +1,12 @@
-# Godot WebRTC Match Maker
+# MPDungeon WebRTC
+
+Clone instructions:
+
+```bash
+git clone git@github.com:SakulFlee/MPDungeonWebRTC.git
+cd MPDungeonWebRTC
+git remote add upstream git@github.com:SakulFlee/Godot-WebRTC-Match-Maker.git
+```
 
 [![Godot - 4.x](https://img.shields.io/badge/Godot-4.x-53a4e0?style=for-the-badge&logo=godotengine&logoColor=53a4e0)](https://godotengine.org)
 [![Rust - 1.63.0+](https://img.shields.io/badge/Rust-1.63.0+-e43716?style=for-the-badge&logo=Rust&logoColor=FFFFFF)](https://www.rust-lang.org/)
