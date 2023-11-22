@@ -60,28 +60,28 @@ jobs:
         run: |
           mkdir -p builds/Windows Desktop/
           godot --headless --export-release 'Main: Windows Desktop' builds/Windows Desktop/
-        if: ${{ matrix.os }} == "windows-latest"
+        if: matrix.os == 'windows-latest'
 
       - name: 'Export Main: Linux/X11'
         run: |
           mkdir -p builds/Linux/
           godot --headless --export-release 'Main: Linux/X11' builds/Linux/
-        if: ${{ matrix.os }} == "ubuntu-latest"
+        if: matrix.os == 'ubuntu-latest'
   
       - name: 'Export Main: Android'
         run: |
           mkdir -p builds/Android/
           godot --headless --export-release 'Main: Android' builds/Android/
-        if: ${{ matrix.os }} == "ubuntu-latest"
+        if: matrix.os == 'ubuntu-latest'
 
       - name: 'Export Main: macOS'
         run: |
           mkdir -p builds/macOS/
           godot --headless --export-release 'Main: macOS' builds/macOS/
-        if: ${{ matrix.os }} == "macos-latest"
+        if: matrix.os == 'macos-latest'
 
       - name: 'Export Main: iOS'
         run: |
           mkdir -p builds/iOS/
           godot --headless --export-release 'Main: iOS' builds/iOS/
-        if: ${{ matrix.os }} == "macos-latest"
+        if: matrix.os == 'macos-latest'
