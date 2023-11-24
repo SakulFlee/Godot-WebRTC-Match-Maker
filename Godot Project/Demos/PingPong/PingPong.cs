@@ -20,7 +20,7 @@ public partial class PingPong : Node
 		LabelMessages.Text = "Messages:";
 
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
-		matchMaker.ChannelMessageReceived += ChannelMessageReceived;
+		matchMaker.OnMessageString += ChannelMessageReceived;
 
 		UpdateLabel();
 	}
@@ -40,13 +40,11 @@ public partial class PingPong : Node
 		{
 			foreach (var (_, value) in matchMaker.webRTCConnections)
 			{
-				if (value.IsChannelReady("main"))
+				if (value.IsChannelOpen(WebRTCPeer.MAIN_CHANNEL_ID))
 				{
-					var err = value.SendMessageOnChannel("main", "Ping!".ToUtf8Buffer());
-					if (err == Error.Ok)
-					{
-						initialMessageSend = true;
-					}
+					value.SendOnChannel(WebRTCPeer.MAIN_CHANNEL_ID, "Ping!");
+
+					initialMessageSend = true;
 				}
 			}
 		}
@@ -56,91 +54,89 @@ public partial class PingPong : Node
 
 	private void UpdateLabel()
 	{
-		var localICECandidates = "";
-		foreach (var localICECandidate in matchMaker.LocalICECandidates)
-		{
-			localICECandidates += "\t" + localICECandidate.ToString() + "\n";
-		}
-		if (localICECandidates.Length > 0)
-		{
-			localICECandidates = localICECandidates.Substr(0, localICECandidates.Length - 1);
-		}
-		else
-		{
-			localICECandidates = "\tNo ICE Candidates!";
-		}
+		// 		var localICECandidates = "";
+		// 		foreach (var localICECandidate in matchMaker.LocalICECandidates)
+		// 		{
+		// 			localICECandidates += "\t" + localICECandidate.ToString() + "\n";
+		// 		}
+		// 		if (localICECandidates.Length > 0)
+		// 		{
+		// 			localICECandidates = localICECandidates.Substr(0, localICECandidates.Length - 1);
+		// 		}
+		// 		else
+		// 		{
+		// 			localICECandidates = "\tNo ICE Candidates!";
+		// 		}
 
-		var remoteICECandidates = "";
-		foreach (var remoteICECandidate in matchMaker.RemoteICECandidates)
-		{
-			remoteICECandidates += "\t" + remoteICECandidate.ToString() + "\n";
-		}
-		if (remoteICECandidates.Length > 0)
-		{
-			remoteICECandidates = remoteICECandidates.Substr(0, remoteICECandidates.Length - 1);
-		}
-		else
-		{
-			localICECandidates = "\tNo ICE Candidates!";
-		}
+		// 		var remoteICECandidates = "";
+		// 		foreach (var remoteICECandidate in matchMaker.RemoteICECandidates)
+		// 		{
+		// 			remoteICECandidates += "\t" + remoteICECandidate.ToString() + "\n";
+		// 		}
+		// 		if (remoteICECandidates.Length > 0)
+		// 		{
+		// 			remoteICECandidates = remoteICECandidates.Substr(0, remoteICECandidates.Length - 1);
+		// 		}
+		// 		else
+		// 		{
+		// 			localICECandidates = "\tNo ICE Candidates!";
+		// 		}
 
-		var localSession = "";
-		if (matchMaker.LocalSession != (null, null))
-		{
-			localSession = $"{matchMaker.LocalSession.Item1}:\n\t{matchMaker.LocalSession.Item2.Replace("\n", "\n\t\t")}";
-		}
+		// 		var localSession = "";
+		// 		if (matchMaker.LocalSession != (null, null))
+		// 		{
+		// 			localSession = $"{matchMaker.LocalSession.Item1}:\n\t{matchMaker.LocalSession.Item2.Replace("\n", "\n\t\t")}";
+		// 		}
 
-		var remoteSession = "";
-		if (matchMaker.RemoteSession != (null, null))
-		{
-			remoteSession = $"{matchMaker.RemoteSession.Item1}:\n\t{matchMaker.RemoteSession.Item2.Replace("\n", "\n\t\t")}";
-		}
+		// 		var remoteSession = "";
+		// 		if (matchMaker.RemoteSession != (null, null))
+		// 		{
+		// 			remoteSession = $"{matchMaker.RemoteSession.Item1}:\n\t{matchMaker.RemoteSession.Item2.Replace("\n", "\n\t\t")}";
+		// 		}
 
-		var peers = "";
-		foreach (var (uuid, _) in matchMaker.webRTCConnections)
-		{
-			peers += "\t" + uuid + "\n";
-		}
-		if (peers.Length > 0)
-		{
-			peers = peers.Substr(0, peers.Length - 1);
-		}
+		// 		var peers = "";
+		// 		foreach (var (uuid, _) in matchMaker.webRTCConnections)
+		// 		{
+		// 			peers += "\t" + uuid + "\n";
+		// 		}
+		// 		if (peers.Length > 0)
+		// 		{
+		// 			peers = peers.Substr(0, peers.Length - 1);
+		// 		}
 
-		LabelMatchMaker.Text = $@"Match Maker:
-	Is Ready: {matchMaker.IsReady()}
-	Peer Status: {matchMaker.peer.GetReadyState()}
-	Request send: {requestSend}
-	Initial message send: {initialMessageSend}
+		// 		LabelMatchMaker.Text = $@"Match Maker:
+		// 	Is Ready: {matchMaker.IsReady()}
+		// 	Peer Status: {matchMaker.peer.GetReadyState()}
+		// 	Request send: {requestSend}
+		// 	Initial message send: {initialMessageSend}
 
-Peers:
-{peers}
-";
-		LabelLocalState.Text = $@"Local State:
-{localICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{localSession}
-";
-		LabelRemoteState.Text = $@"Remote State:
-{remoteICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{remoteSession}
-";
+		// Peers:
+		// {peers}
+		// ";
+		// 		LabelLocalState.Text = $@"Local State:
+		// {localICECandidates}
+		// ------------------------------------------------------------------------------------------------------------------------
+		// {localSession}
+		// ";
+		// 		LabelRemoteState.Text = $@"Remote State:
+		// {remoteICECandidates}
+		// ------------------------------------------------------------------------------------------------------------------------
+		// {remoteSession}
+		// ";
 	}
 
-	private void ChannelMessageReceived(string peerUUID, string channel, byte[] data)
+	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
 	{
-		var message = data.GetStringFromUtf8();
-
 		LabelMessages.Text += $"\n[{peerUUID}@{channel}]\n{message}\n";
 
 		// Send back Pings and Pongs!
 		if (message == "Ping!")
 		{
-			matchMaker.SendMessageOnChannel(peerUUID, channel, "Pong!".ToUtf8Buffer());
+			matchMaker.SendOnChannelString(peerUUID, channel, "Pong!");
 		}
 		else if (message == "Pong!")
 		{
-			matchMaker.SendMessageOnChannel(peerUUID, channel, "Ping!".ToUtf8Buffer());
+			matchMaker.SendOnChannelString(peerUUID, channel, "Ping!");
 		}
 		else
 		{
