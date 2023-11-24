@@ -3,14 +3,17 @@ using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
 using SIPSorcery.Net;
-using TinyJson;
 
 [GlobalClass]
 public partial class WebRTCPeer : Node
 {
+    #region Globals
+    public static readonly ushort MAIN_CHANNEL_ID = 0;
+    #endregion
+
     #region Exports
     [Export]
-    public Array ICEServers = new() {
+    public Godot.Collections.Array ICEServers = new() {
         new Dictionary() {
             {"url", "turn:calamity-chicken.sakul-flee.de:3478"},
             {"username", "MPDungeon"},
@@ -112,7 +115,7 @@ public partial class WebRTCPeer : Node
         #region Main Channel
         mainChannel = await peer.createDataChannel("main", new RTCDataChannelInit()
         {
-            id = 0,
+            id = MAIN_CHANNEL_ID,
             negotiated = true,
         });
 
@@ -220,6 +223,17 @@ public partial class WebRTCPeer : Node
         return "main";
     }
 
+    public bool IsChannelOpen(ushort channelId)
+    {
+        if (channelId != 0)
+        {
+            GD.PrintErr("[WebRTC] Invalid channel!");
+            return false;
+        }
+
+        return mainChannel.IsOpened;
+    }
+
     public async Task<string> AutomatedBegin()
     {
         RTCSessionDescriptionInit sdp;
@@ -233,12 +247,17 @@ public partial class WebRTCPeer : Node
         }
 
         await SetLocalDescription(sdp);
-        return sdp.ToJson();
+        return sdp.toJSON();
     }
 
     public void AutomatedFinish(RTCSessionDescriptionInit sdp)
     {
         SetRemoteDescription(sdp);
+    }
+
+    public void AddICECandidate(RTCIceCandidateInit init)
+    {
+        peer.addIceCandidate(init);
     }
 
     public RTCSessionDescriptionInit CreateOffer()
