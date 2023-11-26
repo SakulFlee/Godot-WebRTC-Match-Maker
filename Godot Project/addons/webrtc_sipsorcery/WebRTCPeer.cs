@@ -36,6 +36,9 @@ public partial class WebRTCPeer : Node
 
     [Signal]
     public delegate void OnICEConnectionStateChangeEventHandler(string state);
+    
+    [Signal]
+    public delegate void OnICEGatheringStateChangeEventHandler(string state);
 
     [Signal]
     public delegate void OnSignalingStateChangeEventHandler(string state);
@@ -184,7 +187,7 @@ public partial class WebRTCPeer : Node
         GD.Print($"[WebRTC] Gathering State Changed: {state}");
 #endif
 
-        EmitSignal(SignalName.OnGatheringStateChange, state);
+        EmitSignal(SignalName.OnICEGatheringStateChange, state);
     }
 
     private void signalOnMessage(ushort channelId, string protocol, byte[] data)
