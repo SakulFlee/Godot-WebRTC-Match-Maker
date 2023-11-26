@@ -13,7 +13,7 @@ public partial class WebRTCPeer : Node
 
     #region Exports
     [Export]
-    public Godot.Collections.Array ICEServers = new() {
+    public Array ICEServers = new() {
         new Dictionary() {
             {"url", "turn:calamity-chicken.sakul-flee.de:3478"},
             {"username", "MPDungeon"},

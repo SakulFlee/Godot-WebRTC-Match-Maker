@@ -35,6 +35,10 @@ public partial class MatchMaker : Node
             {"url", "stun4.l.google.com:19302"},
         }
     };
+
+    [Export]
+    public CandidateFilter AllowedCandidateTypes = CandidateFilter.All;
+
     #endregion
 
     #region Fields
@@ -127,8 +131,9 @@ public partial class MatchMaker : Node
                             {
                                 CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
                             };
-                            connection.OnMessageRaw += (channelId, message)=>  {
-
+                            connection.OnMessageRaw += (channelId, message) =>
+                            {
+                                // TODO
                             };
                             connection.OnMessageString += (channelId, message) =>
                             {
@@ -169,7 +174,33 @@ public partial class MatchMaker : Node
                     case PacketType.ICECandidate:
                         var iceCandidate = packet.ParseICECandidate();
 
-                        webRTCConnections[packet.from].AddICECandidate(iceCandidate);
+                        if (
+                            // All are allowed
+                            AllowedCandidateTypes == CandidateFilter.All
+                        || (
+                            // Or: Relay is allowed
+                            AllowedCandidateTypes == CandidateFilter.Relay
+                            && iceCandidate.candidate.Contains("relay")
+                            )
+                        || (
+                            // Or: Host is allowed
+                            AllowedCandidateTypes == CandidateFilter.Host
+                            && iceCandidate.candidate.Contains("host")
+                            )
+                        || (
+                            // Or: Server Reflexiv is allowed
+                            AllowedCandidateTypes == CandidateFilter.ServerReflexiv
+                            && iceCandidate.candidate.Contains("srflx")
+                            )
+                        || (
+                            // Or: Peer Reflexiv is allowed
+                            AllowedCandidateTypes == CandidateFilter.PeerReflexiv
+                            && iceCandidate.candidate.Contains("prflx")
+                            )
+                        )
+                        {
+                            webRTCConnections[packet.from].AddICECandidate(iceCandidate);
+                        }
 
                         break;
                     default:
