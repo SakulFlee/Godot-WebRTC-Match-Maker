@@ -58,6 +58,9 @@ public partial class MatchMaker : Node
 
     #region Signals
     [Signal]
+    public delegate void OnNewConnectionEventHandler(string peerUUID);
+
+    [Signal]
     public delegate void OnMessageRawEventHandler(string peerUUID, ushort channelId, byte[] data);
 
     [Signal]
@@ -152,6 +155,9 @@ public partial class MatchMaker : Node
                                 var json = session.toJSON();
                                 SendPacket(PacketType.SessionDescription, peerUUID, json);
                             }
+
+                            // Signal
+                            EmitSignal(SignalName.OnNewConnection, peerUUID);
                         }
 
                         break;
