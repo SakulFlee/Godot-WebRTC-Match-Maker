@@ -1,26 +1,66 @@
+using System;
 using Godot;
 
 public partial class PingPong : Node
 {
-	private RichTextLabel LabelMatchMaker;
-	private RichTextLabel LabelLocalState;
-	private RichTextLabel LabelRemoteState;
-	private RichTextLabel LabelMessages;
+	private RichTextLabel DebugLabel;
+	private Label ConnectionLabel;
 
 	private MatchMaker matchMaker;
 	private bool requestSend = false;
 	private bool initialMessageSend = false;
 
+	private string template;
+
+	private string signalingState = "None";
+	private string connectionState = "None";
+	private string iceConnectionState = "None";
+	private string iceGatheringState = "None";
+
+	private bool connected = false;
+	private bool connectionLabelChanged = false;
+	private uint sendPingCounter = 0;
+	private uint sendPongCounter = 0;
+	private uint receivedPingCounter = 0;
+	private uint receivedPongCounter = 0;
+
+	public override void _EnterTree()
+	{
+		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
+		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
+
+		template = DebugLabel.Text;
+		DebugLabel.Text = "";
+	}
+
 	public override void _Ready()
 	{
-		LabelMatchMaker = GetNode<RichTextLabel>("%LabelMatchMaker");
-		LabelLocalState = GetNode<RichTextLabel>("%LabelLocalState");
-		LabelRemoteState = GetNode<RichTextLabel>("%LabelRemoteState");
-		LabelMessages = GetNode<RichTextLabel>("%LabelMessages");
-		LabelMessages.Text = "Messages:";
-
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
+		matchMaker.OnNewConnection += (peerUUID) =>
+		{
+			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
+			{
+				signalingState = state;
+			};
+			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += (state) =>
+			{
+				connectionState = state;
+
+				if (state == "connected")
+				{
+					connected = true;
+				}
+			};
+			matchMaker.webRTCConnections[peerUUID].OnICEConnectionStateChange += (state) =>
+			{
+				iceConnectionState = state;
+			};
+			matchMaker.webRTCConnections[peerUUID].OnICEGatheringStateChange += (state) =>
+			{
+				iceGatheringState = state;
+			};
+		};
 
 		UpdateLabel();
 	}
@@ -54,6 +94,30 @@ public partial class PingPong : Node
 
 	private void UpdateLabel()
 	{
+		var peersString = "";
+		foreach (var (peerUUID, _) in matchMaker.webRTCConnections)
+		{
+			peersString += $"- {peerUUID}";
+		}
+
+		DebugLabel.Text = string.Format(template, new[] {
+			signalingState,
+			connectionState,
+			iceConnectionState,
+			iceGatheringState,
+			matchMaker.OwnUUID,
+			matchMaker.HostUUID,
+			matchMaker.IsHost ? "yes" : "no",
+			peersString
+		});
+
+		if (connected)
+		{
+			ConnectionLabel.Text = $@"Send           Pings: {sendPingCounter} | Pongs: {sendPongCounter}
+Received    Pings: {receivedPingCounter} | Pongs: {receivedPongCounter}";
+		}
+
+
 		// 		var localICECandidates = "";
 		// 		foreach (var localICECandidate in matchMaker.LocalICECandidates)
 		// 		{
@@ -127,16 +191,22 @@ public partial class PingPong : Node
 
 	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
 	{
-		LabelMessages.Text += $"\n[{peerUUID}@{channel}]\n{message}\n";
+		// LabelMessages.Text += $"\n[{peerUUID}@{channel}]\n{message}\n";
 
 		// Send back Pings and Pongs!
 		if (message == "Ping!")
 		{
 			matchMaker.SendOnChannelString(peerUUID, channel, "Pong!");
+
+			receivedPingCounter++;
+			sendPongCounter++;
 		}
 		else if (message == "Pong!")
 		{
 			matchMaker.SendOnChannelString(peerUUID, channel, "Ping!");
+
+			receivedPongCounter++;
+			sendPingCounter++;
 		}
 		else
 		{

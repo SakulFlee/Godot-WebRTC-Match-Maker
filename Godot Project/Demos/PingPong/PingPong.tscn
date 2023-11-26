@@ -25,8 +25,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel"]
-custom_minimum_size = Vector2(0.925, 0)
+[node name="CenterContainer" type="CenterContainer" parent="Control/Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,71 +33,45 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/HBoxContainer"]
-custom_minimum_size = Vector2(628, 0)
-layout_mode = 2
-
-[node name="PanelMatchMaker" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 248)
-layout_mode = 2
-
-[node name="LabelMatchMaker" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelMatchMaker"]
+[node name="ConnectionLabel" type="Label" parent="Control/Panel/CenterContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 192)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelMatchMaker"
-autowrap_mode = 0
+layout_mode = 2
+text = "Connecting ..."
 
-[node name="PanelLocalState" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 192)
+[node name="MarginContainer" type="MarginContainer" parent="Control"]
+layout_mode = 2
+offset_right = 384.0
+offset_bottom = 128.0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PanelContainer" type="PanelContainer" parent="Control/MarginContainer"]
 layout_mode = 2
 
-[node name="LabelLocalState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelLocalState"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 192)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelLocalState"
-autowrap_mode = 0
-
-[node name="PanelRemoteSession" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 192)
+[node name="MarginContainer" type="MarginContainer" parent="Control/MarginContainer/PanelContainer"]
 layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="LabelRemoteState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelRemoteSession"]
+[node name="DebugLabel" type="RichTextLabel" parent="Control/MarginContainer/PanelContainer/MarginContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 192)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelRemoteState"
-autowrap_mode = 0
-
-[node name="PanelMessages" type="Panel" parent="Control/Panel/HBoxContainer"]
-custom_minimum_size = Vector2(518, 0)
+clip_contents = false
 layout_mode = 2
+bbcode_enabled = true
+text = "Signaling State: {0}
+Connection State: {1}
+ICE Connection State: {2}
+ICE Gathering State: {3}
 
-[node name="LabelMessages" type="RichTextLabel" parent="Control/Panel/HBoxContainer/PanelMessages"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(352, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelMessages"
-scroll_following = true
-autowrap_mode = 0
+Own UUID: {4}
+Host UUID: {5}
+Is Host: {6}
+
+Peers:
+{7}"
+fit_content = true
+scroll_active = false
