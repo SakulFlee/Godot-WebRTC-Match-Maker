@@ -1,5 +1,6 @@
 public class MatchMakingResponse
 {
-    public bool isHost { get; set; }
+    public string ownUUID { get; set; }
+    public string hostUUID { get; set; }
     public string[] peers { get; set; }
 }

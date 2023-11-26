@@ -21,9 +21,17 @@ public partial class MatchMaker : Node
     public Array ICEServers = new() {
         new Dictionary() {
             {"url", "stun.l.google.com:19302"},
+        },
+        new Dictionary() {
             {"url", "stun1.l.google.com:19302"},
+        },
+        new Dictionary() {
             {"url", "stun2.l.google.com:19302"},
+        },
+        new Dictionary() {
             {"url", "stun3.l.google.com:19302"},
+        },
+        new Dictionary() {
             {"url", "stun4.l.google.com:19302"},
         }
     };
@@ -33,6 +41,15 @@ public partial class MatchMaker : Node
     private WebSocketPeer peer = new();
 
     public Dictionary<string, WebRTCPeer> webRTCConnections { get; private set; } = new();
+
+    public string OwnUUID { get; private set; }
+
+    public string HostUUID { get; private set; }
+    public bool IsHost
+    {
+        get { return HostUUID == OwnUUID; }
+    }
+
     #endregion
 
     #region Signals
@@ -54,7 +71,7 @@ public partial class MatchMaker : Node
         }
     }
 
-    public override void _Process(double delta)
+    public override async void _Process(double delta)
     {
         peer.Poll();
         if (peer.GetReadyState() == WebSocketPeer.State.Open)
@@ -63,7 +80,10 @@ public partial class MatchMaker : Node
             while (peer.GetAvailablePacketCount() > 0)
             {
                 var message = peer.GetPacket().GetStringFromUtf8();
+
+#if DEBUG
                 GD.Print("Message: " + message);
+#endif
 
                 var packet = Packet.FromJSON(message);
                 if (packet == null)
@@ -77,13 +97,26 @@ public partial class MatchMaker : Node
                 {
                     case PacketType.MatchMakerResponse:
                         var matchMakerResponse = packet.ParseMatchMakingResponse();
+                        OwnUUID = packet.to;
+                        GD.Print($"[MatchMaker] Own UUID: {OwnUUID}");
+
+                        HostUUID = matchMakerResponse.hostUUID;
+                        GD.Print($"[MatchMaker] Host UUID: {OwnUUID}");
+
+                        GD.Print($"[MatchMaker] Is Host: {IsHost}");
 
                         foreach (var peerUUID in matchMakerResponse.peers)
                         {
+                            if (peerUUID == OwnUUID)
+                            {
+                                // Skip if it's our own peer UUID
+                                continue;
+                            }
+
                             var connection = new WebRTCPeer()
                             {
                                 Name = $"WebRTCConnection#{peerUUID}",
-                                IsHost = matchMakerResponse.isHost,
+                                IsHost = IsHost,
                                 ICEServers = ICEServers,
                             };
                             connection.OnICECandidateJSON += (json) =>
@@ -94,25 +127,49 @@ public partial class MatchMaker : Node
                             {
                                 CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
                             };
+                            connection.OnMessageRaw += (channelId, message)=>  {
+
+                            };
                             connection.OnMessageString += (channelId, message) =>
                             {
                                 CallDeferred("signalOnMessageString", peerUUID, channelId, message);
                             };
 
                             webRTCConnections.Add(peerUUID, connection);
+                            AddChild(connection);
+
+                            // Begin automation
+                            if (IsHost)
+                            {
+                                var session = connection.CreateOffer();
+                                await connection.SetLocalDescription(session);
+
+                                var json = session.toJSON();
+                                SendPacket(PacketType.SessionDescription, peerUUID, json);
+                            }
                         }
 
                         break;
                     case PacketType.SessionDescription:
                         var sessionDescription = packet.ParseSessionDescription();
 
-                        webRTCConnections[packet.uuid].AutomatedFinish(sessionDescription);
+                        var sessionConnection = webRTCConnections[packet.from];
+                        sessionConnection.SetRemoteDescription(sessionDescription);
+
+                        if (!IsHost)
+                        {
+                            var session = sessionConnection.CreateAnswer();
+                            await sessionConnection.SetLocalDescription(session);
+
+                            var json = session.toJSON();
+                            SendPacket(PacketType.SessionDescription, packet.from, json);
+                        }
 
                         break;
                     case PacketType.ICECandidate:
                         var iceCandidate = packet.ParseICECandidate();
 
-                        webRTCConnections[packet.uuid].AddICECandidate(iceCandidate);
+                        webRTCConnections[packet.from].AddICECandidate(iceCandidate);
 
                         break;
                     default:
@@ -130,7 +187,8 @@ public partial class MatchMaker : Node
         var packet = new Packet()
         {
             type = PacketType.ICECandidate,
-            uuid = peerUUID,
+            from = OwnUUID,
+            to = peerUUID,
             json = json,
         };
 
@@ -139,7 +197,7 @@ public partial class MatchMaker : Node
 
     private void signalOnMessageRaw(string peerUUID, ushort channelId, byte[] data)
     {
-        EmitSignal(SignalName.OnMessageString, peerUUID, channelId, data);
+        EmitSignal(SignalName.OnMessageRaw, peerUUID, channelId, data);
     }
 
     private void signalOnMessageString(string peerUUID, ushort channelId, string message)
@@ -154,7 +212,18 @@ public partial class MatchMaker : Node
         return peer.GetReadyState() == WebSocketPeer.State.Open;
     }
 
-    public Error SendRequest(MatchMakingRequest matchMaking)
+    public Error SendMatchMakingRequest(MatchMakingRequest matchMaking)
+    {
+        if (peer.GetReadyState() != WebSocketPeer.State.Open)
+        {
+            return Error.Failed;
+        }
+
+        var json = matchMaking.ToJson();
+        return SendPacket(PacketType.MatchMakerRequest, "MatchMaker", "UNKNOWN", json);
+    }
+
+    public Error SendPacket(PacketType type, string to, string from, string json)
     {
         if (peer.GetReadyState() != WebSocketPeer.State.Open)
         {
@@ -163,11 +232,18 @@ public partial class MatchMaker : Node
 
         var packet = new Packet()
         {
-            type = PacketType.MatchMakerRequest,
-            json = matchMaking.ToJson(),
+            type = type,
+            to = to,
+            from = from,
+            json = json,
         };
 
         return peer.SendText(packet.ToJson());
+    }
+
+    public Error SendPacket(PacketType type, string to, string json)
+    {
+        return SendPacket(type, to, OwnUUID, json);
     }
 
     public void SendOnChannelRaw(string peerUUID, ushort channelId, byte[] data)

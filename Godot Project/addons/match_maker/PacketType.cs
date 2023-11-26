@@ -1,4 +1,5 @@
-public enum PacketType {
+public enum PacketType
+{
     MatchMakerRequest,
     MatchMakerResponse,
     ICECandidate,

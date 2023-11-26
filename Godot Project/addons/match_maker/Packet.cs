@@ -6,7 +6,8 @@ using SIPSorcery.Net;
 public class Packet
 {
     public PacketType type { get; set; }
-    public string uuid { get; set; }
+    public string from { get; set; }
+    public string to { get; set; }
     public string json { get; set; }
 
     public static Packet FromJSON(string json)
@@ -15,6 +16,9 @@ public class Packet
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = {
+                new JsonStringEnumConverter(),
+            },
         });
     }
 
@@ -24,6 +28,9 @@ public class Packet
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = {
+                new JsonStringEnumConverter(),
+            },
         });
     }
 
@@ -76,7 +83,7 @@ public class Packet
         });
         return result;
     }
-    
+
     public MatchMakingResponse ParseMatchMakingResponse()
     {
         if (type != PacketType.MatchMakerResponse)

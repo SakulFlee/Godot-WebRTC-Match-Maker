@@ -56,12 +56,13 @@ public partial class WebRTCPeer : Node
     #region Godot Functions
     public override async void _Ready()
     {
-        var rTCIceServers = new List<RTCIceServer>();
+        var rtcIceServers = new List<RTCIceServer>();
         foreach (Dictionary iceServer in ICEServers)
         {
+            var url = (string)iceServer["url"];
             var rtcIceServer = new RTCIceServer
             {
-                urls = (string)iceServer["url"],
+                urls = url,
             };
 
             Variant usernameVariant;
@@ -74,16 +75,22 @@ public partial class WebRTCPeer : Node
                 rtcIceServer.credentialType = RTCIceCredentialType.password;
                 rtcIceServer.username = username;
                 rtcIceServer.credential = credential;
+
+#if DEBUG
+                GD.Print($"[WebRTC] ICE Server: {url} (WITH credentials)");
             }
+            else
+            {
+                GD.Print($"[WebRTC] ICE Server: {url} (NO credentials)");
+#endif
+            }
+
+            rtcIceServers.Add(rtcIceServer);
         }
         var config = new RTCConfiguration()
         {
-            iceServers = rTCIceServers,
+            iceServers = rtcIceServers,
         };
-
-#if DEBUG
-        GD.Print($"RTC Config: {config}");
-#endif
 
         #region Peer
         peer = new RTCPeerConnection(config);
@@ -118,6 +125,11 @@ public partial class WebRTCPeer : Node
             id = MAIN_CHANNEL_ID,
             negotiated = true,
         });
+        if (mainChannel == null)
+        {
+            GD.PrintErr("[WebRTC] Main channel creation failed!");
+            return;
+        }
 
         mainChannel.onmessage += (channel, protocol, data) =>
         {
@@ -133,7 +145,7 @@ public partial class WebRTCPeer : Node
     private void signalEmitterOnICECandidate(string json)
     {
 #if DEBUG
-        GD.Print($"[WebRTC]: ICE Candidate: {json}");
+        GD.Print($"[WebRTC] ICE Candidate: {json}");
 #endif
 
         EmitSignal(SignalName.OnICECandidateJSON, json);
@@ -142,7 +154,7 @@ public partial class WebRTCPeer : Node
     private void signalOnICEConnectionStateChangeEventHandler(string state)
     {
 #if DEBUG
-        GD.Print($"[WebRTC]: ICE Connection State Changed: {state}");
+        GD.Print($"[WebRTC] ICE Connection State Changed: {state}");
 #endif
 
         EmitSignal(SignalName.OnICEConnectionStateChange, state);
@@ -151,7 +163,7 @@ public partial class WebRTCPeer : Node
     private void signalOnSignalingStateChangeEventHandler(string state)
     {
 #if DEBUG
-        GD.Print($"[WebRTC]: Signaling State Changed: {state}");
+        GD.Print($"[WebRTC] Signaling State Changed: {state}");
 #endif
 
         EmitSignal(SignalName.OnSignalingStateChange, state);
@@ -160,7 +172,7 @@ public partial class WebRTCPeer : Node
     private void signalOnConnectionStateChangeEventHandler(string state)
     {
 #if DEBUG
-        GD.Print($"[WebRTC]: Connection State Changed: {state}");
+        GD.Print($"[WebRTC] Connection State Changed: {state}");
 #endif
 
         EmitSignal(SignalName.OnConnectionStateChange, state);
@@ -169,7 +181,7 @@ public partial class WebRTCPeer : Node
     private void signalOnGatheringStateChangeEventHandler(string state)
     {
 #if DEBUG
-        GD.Print($"[WebRTC]: Gathering State Changed: {state}");
+        GD.Print($"[WebRTC] Gathering State Changed: {state}");
 #endif
 
         EmitSignal(SignalName.OnGatheringStateChange, state);
@@ -184,8 +196,8 @@ public partial class WebRTCPeer : Node
         GD.Print($"[WebRTC] Message on #{channelId}@{channelLabel} ({protocol}): {message}");
 #endif
 
-        EmitSignal(SignalName.OnMessageRaw, data);
-        EmitSignal(SignalName.OnMessageString, message);
+        EmitSignal(SignalName.OnMessageRaw, channelId, data);
+        EmitSignal(SignalName.OnMessageString, channelId, message);
     }
     #endregion
 
@@ -231,28 +243,7 @@ public partial class WebRTCPeer : Node
             return false;
         }
 
-        return mainChannel.IsOpened;
-    }
-
-    public async Task<string> AutomatedBegin()
-    {
-        RTCSessionDescriptionInit sdp;
-        if (IsHost)
-        {
-            sdp = CreateOffer();
-        }
-        else
-        {
-            sdp = CreateAnswer();
-        }
-
-        await SetLocalDescription(sdp);
-        return sdp.toJSON();
-    }
-
-    public void AutomatedFinish(RTCSessionDescriptionInit sdp)
-    {
-        SetRemoteDescription(sdp);
+        return mainChannel != null && mainChannel.IsOpened;
     }
 
     public void AddICECandidate(RTCIceCandidateInit init)

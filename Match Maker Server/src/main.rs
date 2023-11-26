@@ -6,8 +6,7 @@ use std::{
 };
 
 use match_maker_server::{
-    AppConfig, ICECandidateRequest, ICECandidateResponse, MatchMakingQuery, MatchMakingRequest,
-    MatchMakingResponse, Request, Response, SessionDescriptionRequest, SessionDescriptionResponse,
+    AppConfig, MatchMakingQuery, MatchMakingRequest, MatchMakingResponse, Packet, PacketType,
 };
 use uuid::Uuid;
 use ws::Sender;
@@ -43,46 +42,37 @@ impl Handler {
                     // Check if room is full
                     if query.is_filled(slot_requirement) {
                         if let Ok(lock) = self.peers.lock() {
-                            // First peer is host, others are clients
-                            let host = &query.peers[0];
-                            let clients = &query.peers[1..query.peers.len()].to_vec();
-
-                            let host_peer = &lock[host];
-
-                            let match_making_response = MatchMakingResponse {
-                                is_host: true,
-                                peers: clients.iter().map(|x| x.to_string()).collect(),
-                            };
-
-                            let response = Response::MatchMaking(match_making_response);
-                            let response_json = serde_json::to_string(&response).map_err(|e| {
-                                ws::Error::new(
-                                    ws::ErrorKind::Protocol,
-                                    format!("Invalid request: {}", e),
-                                )
-                            })?;
-
-                            host_peer.send(response_json)?;
-
-                            // Others are clients
-                            for client in clients {
-                                let client_peer = &lock[client];
-
-                                let match_making_response = MatchMakingResponse {
-                                    is_host: false,
-                                    peers: vec![host.to_string()],
-                                };
-                                let response = Response::MatchMaking(match_making_response);
-
-                                let response_json =
-                                    serde_json::to_string(&response).map_err(|e| {
+                            let host_uuid = query.peers[0].to_string();
+                            for peer in &query.peers {
+                                let _ = &lock[peer].send(
+                                    Packet {
+                                        ty: PacketType::MatchMakerResponse,
+                                        from: String::from("MatchMaker"),
+                                        to: peer.to_string(),
+                                        json: serde_json::to_string(&MatchMakingResponse {
+                                            own_uuid: peer.to_string(),
+                                            host_uuid: host_uuid.clone(),
+                                            peers: query
+                                                .peers
+                                                .iter()
+                                                .map(|x| x.to_string())
+                                                .collect(),
+                                        })
+                                        .map_err(|e| {
+                                            ws::Error::new(
+                                                ws::ErrorKind::Protocol,
+                                                format!("Invalid request: {}", e),
+                                            )
+                                        })?,
+                                    }
+                                    .to_json()
+                                    .map_err(|e| {
                                         ws::Error::new(
                                             ws::ErrorKind::Protocol,
                                             format!("Invalid request: {}", e),
                                         )
-                                    })?;
-
-                                client_peer.send(response_json)?;
+                                    })?,
+                                )?;
                             }
                         }
                     }
@@ -96,87 +86,6 @@ impl Handler {
                     lock.insert(query.name.clone(), query);
 
                     return Ok(());
-                }
-            }
-        }
-
-        Err(ws::Error::new(
-            ws::ErrorKind::Protocol,
-            format!("Unknown error ocurred (race condition?)"),
-        ))
-    }
-
-    fn handle_session_description(&mut self, request: SessionDescriptionRequest) -> ws::Result<()> {
-        let uuid = Uuid::from_str(&request.uuid).map_err(|e| {
-            ws::Error::new(
-                ws::ErrorKind::Protocol,
-                format!("Invalid request: UUID is invalid! ({})", e),
-            )
-        })?;
-
-        if let Ok(lock) = self.peers.lock() {
-            match lock.get(&uuid) {
-                Some(peer) => {
-                    // Request seems to be valid -> send the packet
-                    let mut session_description_response: SessionDescriptionResponse =
-                        request.into();
-                    session_description_response.uuid = self.local_uuid.to_string();
-
-                    let response = Response::SessionDescription(session_description_response);
-                    let response_json = serde_json::to_string(&response).map_err(|e| {
-                        ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
-                    })?;
-
-                    peer.send(response_json)?;
-
-                    return Ok(());
-                }
-                None => {
-                    // Peer UUID can't be found -> Request is invalid
-                    return Err(ws::Error::new(
-                        ws::ErrorKind::Protocol,
-                        format!("Invalid request: UUID is invalid!"),
-                    ));
-                }
-            }
-        }
-
-        Err(ws::Error::new(
-            ws::ErrorKind::Protocol,
-            format!("Unknown error ocurred (race condition?)"),
-        ))
-    }
-
-    fn handle_ice_candidate(&mut self, request: ICECandidateRequest) -> ws::Result<()> {
-        let uuid = Uuid::from_str(&request.uuid).map_err(|e| {
-            ws::Error::new(
-                ws::ErrorKind::Protocol,
-                format!("Invalid request: UUID is invalid! ({})", e),
-            )
-        })?;
-
-        if let Ok(lock) = self.peers.lock() {
-            match lock.get(&uuid) {
-                Some(peer) => {
-                    // Request seems to be valid -> send the packet
-                    let mut ice_candidate_response: ICECandidateResponse = request.into();
-                    ice_candidate_response.uuid = self.local_uuid.to_string();
-
-                    let response = Response::ICECandidate(ice_candidate_response);
-                    let response_json = serde_json::to_string(&response).map_err(|e| {
-                        ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
-                    })?;
-
-                    peer.send(response_json)?;
-
-                    return Ok(());
-                }
-                None => {
-                    // Peer UUID can't be found -> Request is invalid
-                    return Err(ws::Error::new(
-                        ws::ErrorKind::Protocol,
-                        format!("Invalid request: UUID is invalid!"),
-                    ));
                 }
             }
         }
@@ -215,16 +124,76 @@ impl ws::Handler for Handler {
     }
 
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
-        let request: Request = serde_json::from_str(&msg.as_text()?).map_err(|e| {
+        let packet = Packet::from_json(&msg.as_text()?).map_err(|e| {
             ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
         })?;
-        println!("Request: {:?}", request);
+        println!("Packet: {:?}", packet);
 
-        match request {
-            Request::MatchMaking(request) => self.handle_match_making(request)?,
-            Request::SessionDescription(request) => self.handle_session_description(request)?,
-            Request::ICECandidate(request) => self.handle_ice_candidate(request)?,
+        if packet.ty == PacketType::MatchMakerRequest {
+            // Match Maker request!
+
+            if packet.from != "UNKNOWN" {
+                return Err(ws::Error::new(ws::ErrorKind::Protocol, format!("Initial MatchMakingRequest packet with known PeerUUID is impossible! (from: 'MatchMaker' != from: '{}')", packet.from)));
+            }
+
+            if packet.to != "MatchMaker" {
+                return Err(ws::Error::new(ws::ErrorKind::Protocol, format!("Initial MatchMakingRequest packet without addressing it to MatchMaker (to: 'MatchMaker' != to: '{}')", packet.to)));
+            }
+
+            let match_maker_request: MatchMakingRequest = serde_json::from_str(&packet.json)
+                .map_err(|e| {
+                    ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
+                })?;
+
+            self.handle_match_making(match_maker_request)?;
+        } else if packet.ty == PacketType::MatchMakerResponse {
+            // Very invalid package ... Seriously why send this?
+
+            return Err(ws::Error::new(
+                ws::ErrorKind::Protocol,
+                format!("Why would you send a MatchMakerRESPONSE to the server ... ?"),
+            ));
+        } else {
+            // Relay mode
+            // Any other package that falls in this block doesn't
+            // need to be parsed! We can just relay that to the
+            // peer it's intended to be.
+            // UUID checking is done locally on each peer too!
+
+            if let Ok(peers) = self.peers.lock() {
+                let uuid = Uuid::from_str(&packet.to).map_err(|e| {
+                    ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
+                })?;
+
+                match peers.get(&uuid) {
+                    Some(peer) => {
+                        return peer.send(packet.to_json().map_err(|e| {
+                            ws::Error::new(
+                                ws::ErrorKind::Protocol,
+                                format!("Invalid request: {}", e),
+                            )
+                        })?)
+                    }
+                    None => {
+                        return Err(ws::Error::new(
+                            ws::ErrorKind::Protocol,
+                            format!("Invalid UUID!"),
+                        ))
+                    }
+                }
+            }
         }
+
+        // let request: Request = serde_json::from_str(&msg.as_text()?).map_err(|e| {
+        //     ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
+        // })?;
+        // println!("Request: {:?}", request);
+
+        // match request {
+        //     Request::MatchMaking(request) => self.handle_match_making(request)?,
+        //     Request::SessionDescription(request) => self.handle_session_description(request)?,
+        //     Request::ICECandidate(request) => self.handle_ice_candidate(request)?,
+        // }
 
         Ok(())
     }

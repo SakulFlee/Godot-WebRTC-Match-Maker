@@ -29,7 +29,7 @@ public partial class PingPong : Node
 	{
 		if (!requestSend && matchMaker.IsReady())
 		{
-			var error = matchMaker.SendRequest(new MatchMakingRequest()
+			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
 			{
 				name = "Test",
 			});

@@ -1,15 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://bmto3fmgdtm86"]
+[gd_scene load_steps=2 format=3 uid="uid://bmto3fmgdtm86"]
 
 [ext_resource type="Script" path="res://Demos/Chat/Chat.cs" id="1_m8l45"]
-[ext_resource type="Script" path="res://Match Maker/Global/MatchMaker.cs" id="2_4wu21"]
-[ext_resource type="Script" path="res://Match Maker/Global/Workaround.gd" id="3_2qwbc"]
 
 [node name="Chat" type="Node"]
 script = ExtResource("1_m8l45")
-
-[node name="MatchMaker" type="Node" parent="."]
-script = ExtResource("2_4wu21")
-WorkaroundScript = ExtResource("3_2qwbc")
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
