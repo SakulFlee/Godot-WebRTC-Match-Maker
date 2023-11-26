@@ -8,12 +8,6 @@ script = ExtResource("1_r6cp2")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("3_hps7x")
-MatchMakerConnectionString = "ws://calamity-chicken.sakul-flee.de:33333"
-ICEServers = [{
-"credential": "BS8om**B8R8WYPQ&NoiLq4T2jkphMS3*",
-"url": "turn:calamity-chicken.sakul-flee.de:3478",
-"username": "MPDungeon"
-}]
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
