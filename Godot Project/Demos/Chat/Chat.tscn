@@ -10,6 +10,12 @@ script = ExtResource("1_m8l45")
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_4wu21")
 WorkaroundScript = ExtResource("3_2qwbc")
+MatchMakerConnectionString = "ws://calamity-chicken.sakul-flee.de:33333"
+TurnAndStunServerConfig = {
+"credential": "CH8PYj8ddXy9b637Skt3jvkjhpG1kxAZONq7KFAV07Stox-nHK3_y0meJxTpYoDHdG7v7fKFtWoMo7kMAVOQ02CI-QB4VXM8CJox4EJOjB6hbRhQLxh9Ujj6nqPDWLg-YrrYp37NPKpUfokK3La10Yp6nRfJecJpevxYqa-pl7jjEMtbftleAj0MdqRAa9oBAM3astZqe3VOfjydAGuNwO9hBU6uHQ5sQcYE1JwplDZzp4sWaL5rQfioWIkzgQo2CtyE-gsGL987DppZoE4M3ejLAp-VSPsyYJhrpml4DMw6I4pkGSZEmxW1d_RtIxRP8mlSTzrSfELQyOQ5_ADDJkD9n70uoOXxmYFl0Kh5nK3w_F0q4LePPADoqfQciSPi_lLZVb6YXXWOQhwjIHHd1Tav3nlSEeId76EJxwvIZfH_xPe208Li_9AXc1v7JIUm9P6NLNx3nOzN7a3DXh8x9gmPe6oYLcSxqxcQQWo-usukX7J3xeg9YFlEnG1VxsIb",
+"urls": PackedStringArray("turn:calamity-chicken.sakul-flee.de:3478"),
+"username": "6RWAVyogRWMkXFqzLKj-w5_DSlQXKrqu8vcZ7Wa-DUEFSbNURZDZkY66wKAFdhf5ZRhx6Mcu-jgnz8OccBznLCLTGK6wLsLaAB5tqozwlFO2-moUFViZfhJ7A-xwDLc_3m9B86sFD6og9SfMXUwSpBy-UFtMlhhaqrBw7697Vtew5f6TBfryWbGe_UR8WBLf-Ry_rYPUkLqQxWBwmibX7-IBFoyQAqkktZe0m23r98csncE1eig7y-9SwcpDt6x1VgxjR4wCCxG4SdoMXtz0Zw1yvg8vh8cBWIXc3xbMumPIkVaL1TGuFadfz_w2L2eJi5sNbQo25zxGw32i1Hq5w_UfXgaCeY-8xLAlh8E9i038eaaicjpI8HHmwmxRz6znYDEpr2O0TmfArYhB00NarwxztqYMBQPHCdZMaxEtj3I8OXVSaFY6KJm4t3HrSaeD4LVi2JfA1iWHOKEoEaqGbRxoJYJzZ3srqimEG2pPdEAeqaWcvrMbGIOTwQon9Ue5"
+}
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3

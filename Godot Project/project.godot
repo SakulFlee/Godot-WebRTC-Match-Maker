@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="WebRTC Match Maker Godot Project"
+config/name="Dungeon MP WebRTC"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 config/icon="res://icon.svg"
@@ -18,3 +18,7 @@ config/icon="res://icon.svg"
 [dotnet]
 
 project/assembly_name="WebRTC Match Maker Godot Project"
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true

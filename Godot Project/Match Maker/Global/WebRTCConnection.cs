@@ -33,10 +33,7 @@ public partial class WebRTCConnection : Node
 		// TODO: Enable once Workaround is no longer needed!
 		// peer = new();
 
-		var err = peer.Initialize(new Dictionary()
-		{
-			{ "iceServers", TurnAndStunServerConfig }
-		});
+		var err = peer.Initialize(TurnAndStunServerConfig);
 		if (err != Error.Ok)
 		{
 			GD.PrintErr("Failed to initialize WebRTC with server config! Configuration may be invalid");
