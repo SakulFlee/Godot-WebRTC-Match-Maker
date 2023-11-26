@@ -51,7 +51,7 @@ public partial class MatchMaker : Node
     public string HostUUID { get; private set; }
     public bool IsHost
     {
-        get { return HostUUID == OwnUUID; }
+        get { return OwnUUID != null && HostUUID != null && HostUUID == OwnUUID; }
     }
 
     #endregion
