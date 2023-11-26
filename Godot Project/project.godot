@@ -23,4 +23,4 @@ project/assembly_name="WebRTC Match Maker Godot Project"
 textures/vram_compression/import_etc2_astc=true
 
 [editor_plugins]
-enabled=PackedStringArray("res://addons/webrtc_sipsorcery/plugin.cfg")
+enabled=PackedStringArray("res://addons/match_maker/plugin.cfg", "res://addons/webrtc_sipsorcery/plugin.cfg")

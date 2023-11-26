@@ -1,23 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://6g75efppoade"]
+[gd_scene load_steps=3 format=3 uid="uid://6g75efppoade"]
 
 [ext_resource type="Script" path="res://Demos/PingPong/PingPong.cs" id="1_r6cp2"]
-[ext_resource type="Script" path="res://Match Maker/Global/MatchMaker.cs" id="2_5033x"]
-[ext_resource type="Script" path="res://Match Maker/Global/Workaround.gd" id="3_hps7x"]
+[ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="3_hps7x"]
 
 [node name="PingPong" type="Node"]
 script = ExtResource("1_r6cp2")
 
 [node name="MatchMaker" type="Node" parent="."]
-script = ExtResource("2_5033x")
-WorkaroundScript = ExtResource("3_hps7x")
-MatchMakerConnectionString = "ws://calamity-chicken.sakul-flee.de:33333"
-TurnAndStunServerConfig = {
-"iceServers": [{
-"credential": "BS8om**B8R8WYPQ&NoiLq4T2jkphMS3*-nHK3_y0meJxTpYoDHdG7v7fKFtWoMo7kMAVOQ02CI-QB4VXM8CJox4EJOjB6hbRhQLxh9Ujj6nqPDWLg-YrrYp37NPKpUfokK3La10Yp6nRfJecJpevxYqa-pl7jjEMtbftleAj0MdqRAa9oBAM3astZqe3VOfjydAGuNwO9hBU6uHQ5sQcYE1JwplDZzp4sWaL5rQfioWIkzgQo2CtyE-gsGL987DppZoE4M3ejLAp-VSPsyYJhrpml4DMw6I4pkGSZEmxW1d_RtIxRP8mlSTzrSfELQyOQ5_ADDJkD9n70uoOXxmYFl0Kh5nK3w_F0q4LePPADoqfQciSPi_lLZVb6YXXWOQhwjIHHd1Tav3nlSEeId76EJxwvIZfH_xPe208Li_9AXc1v7JIUm9P6NLNx3nOzN7a3DXh8x9gmPe6oYLcSxqxcQQWo-usukX7J3xeg9YFlEnG1VxsIb",
-"urls": "turn:calamity-chicken.sakul-flee.de:3478",
-"username": "MPDungeon"
-}]
-}
+script = ExtResource("3_hps7x")
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
