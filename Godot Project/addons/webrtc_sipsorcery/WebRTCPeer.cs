@@ -15,9 +15,19 @@ public partial class WebRTCPeer : Node
     [Export]
     public Array ICEServers = new() {
         new Dictionary() {
-            {"url", "turn:calamity-chicken.sakul-flee.de:3478"},
-            {"username", "MPDungeon"},
-            {"credential", "BS8om**B8R8WYPQ&NoiLq4T2jkphMS3*"}
+            {"url", "stun.l.google.com:19302"},
+        },
+        new Dictionary() {
+            {"url", "stun1.l.google.com:19302"},
+        },
+        new Dictionary() {
+            {"url", "stun2.l.google.com:19302"},
+        },
+        new Dictionary() {
+            {"url", "stun3.l.google.com:19302"},
+        },
+        new Dictionary() {
+            {"url", "stun4.l.google.com:19302"},
         }
     };
 
@@ -36,7 +46,7 @@ public partial class WebRTCPeer : Node
 
     [Signal]
     public delegate void OnICEConnectionStateChangeEventHandler(string state);
-    
+
     [Signal]
     public delegate void OnICEGatheringStateChangeEventHandler(string state);
 
