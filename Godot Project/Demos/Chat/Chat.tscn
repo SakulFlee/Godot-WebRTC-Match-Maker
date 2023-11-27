@@ -1,15 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://bmto3fmgdtm86"]
+[gd_scene load_steps=3 format=3 uid="uid://1t5glognimha"]
 
 [ext_resource type="Script" path="res://Demos/Chat/Chat.cs" id="1_m8l45"]
-[ext_resource type="Script" path="res://Match Maker/Global/MatchMaker.cs" id="2_4wu21"]
-[ext_resource type="Script" path="res://Match Maker/Global/Workaround.gd" id="3_2qwbc"]
+[ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_86nxv"]
 
 [node name="Chat" type="Node"]
 script = ExtResource("1_m8l45")
 
 [node name="MatchMaker" type="Node" parent="."]
-script = ExtResource("2_4wu21")
-WorkaroundScript = ExtResource("3_2qwbc")
+script = ExtResource("2_86nxv")
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
@@ -27,8 +25,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel"]
-custom_minimum_size = Vector2(0.925, 0)
+[node name="CenterContainer" type="CenterContainer" parent="Control/Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,99 +33,100 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/HBoxContainer"]
-custom_minimum_size = Vector2(628, 0)
-layout_mode = 2
-
-[node name="PanelMatchMaker" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 248)
-layout_mode = 2
-
-[node name="LabelMatchMaker" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelMatchMaker"]
+[node name="ConnectionLabel" type="Label" parent="Control/Panel/CenterContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 192)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelMatchMaker"
-autowrap_mode = 0
-
-[node name="PanelLocalState" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 192)
 layout_mode = 2
+text = "Connecting ..."
 
-[node name="LabelLocalState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelLocalState"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 192)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelLocalState"
-autowrap_mode = 0
-
-[node name="PanelRemoteSession" type="Panel" parent="Control/Panel/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 192)
+[node name="MarginContainer" type="MarginContainer" parent="Control"]
 layout_mode = 2
-
-[node name="LabelRemoteState" type="RichTextLabel" parent="Control/Panel/HBoxContainer/VBoxContainer/PanelRemoteSession"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 192)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelRemoteState"
-autowrap_mode = 0
-
-[node name="MarginContainer" type="MarginContainer" parent="Control/Panel/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
+offset_right = 384.0
+offset_bottom = 128.0
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="VBoxContainerMessages" type="VBoxContainer" parent="Control/Panel/HBoxContainer/MarginContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="Control/MarginContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
 
-[node name="PanelMessages" type="Panel" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages"]
+[node name="MarginContainer" type="MarginContainer" parent="Control/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="DebugLabel" type="RichTextLabel" parent="Control/MarginContainer/PanelContainer/MarginContainer"]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 2
+bbcode_enabled = true
+text = "Signaling State: {0}
+Connection State: {1}
+ICE Connection State: {2}
+ICE Gathering State: {3}
+
+Own UUID: {4}
+Host UUID: {5}
+Is Host: {6}
+
+Peers:
+{7}"
+fit_content = true
+scroll_active = false
+
+[node name="MarginContainer2" type="MarginContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -544.0
+offset_bottom = 638.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PanelContainer" type="PanelContainer" parent="Control/MarginContainer2"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/MarginContainer2/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/MarginContainer2/PanelContainer/MarginContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="ChatLabel" type="RichTextLabel" parent="Control/MarginContainer2/PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+clip_contents = false
+custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
 size_flags_vertical = 3
+bbcode_enabled = true
+text = "Chat messages go here ...
+[b]ababab[/b]"
+fit_content = true
+scroll_active = false
 
-[node name="LabelMessages" type="RichTextLabel" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/PanelMessages"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "LabelMessages"
-scroll_following = true
-autowrap_mode = 0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/MarginContainer2/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="InputField" type="TextEdit" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer"]
+[node name="ChatTextEdit" type="TextEdit" parent="Control/MarginContainer2/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Type a message ..."
 
-[node name="SendButton" type="Button" parent="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer"]
+[node name="SendButton" type="Button" parent="Control/MarginContainer2/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Send"
 
-[connection signal="text_changed" from="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer/InputField" to="." method="OnTextChanged"]
-[connection signal="pressed" from="Control/Panel/HBoxContainer/MarginContainer/VBoxContainerMessages/HBoxContainer/SendButton" to="." method="OnSendButtonPressed"]
+[connection signal="text_changed" from="Control/MarginContainer2/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/ChatTextEdit" to="." method="OnChatTextEditChanged"]
+[connection signal="pressed" from="Control/MarginContainer2/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/SendButton" to="." method="OnSendButtonPressed"]

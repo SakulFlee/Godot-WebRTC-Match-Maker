@@ -4,4 +4,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>WebRTC-Match-Maker-Godot-Project.Empty</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SIPSorcery" Version="6.0.12" />
+  </ItemGroup>
 </Project>

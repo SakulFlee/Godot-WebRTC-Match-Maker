@@ -1,27 +1,66 @@
+using System.Threading.Channels;
 using Godot;
 
 public partial class Chat : Node
 {
-	private RichTextLabel LabelMatchMaker;
-	private RichTextLabel LabelLocalState;
-	private RichTextLabel LabelRemoteState;
-	private RichTextLabel LabelMessages;
-	private TextEdit InputField;
+	private RichTextLabel DebugLabel;
+	private Label ConnectionLabel;
+	private RichTextLabel ChatLabel;
+	private TextEdit ChatTextEdit;
 
 	private MatchMaker matchMaker;
 	private bool requestSend = false;
 
+	private string debugTemplate;
+
+	private string signalingState = "None";
+	private string connectionState = "None";
+	private string iceConnectionState = "None";
+	private string iceGatheringState = "None";
+
+	private bool connected = false;
+
+	public override void _EnterTree()
+	{
+		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
+		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
+		ChatLabel = GetNode<RichTextLabel>("%ChatLabel");
+		ChatTextEdit = GetNode<TextEdit>("%ChatTextEdit");
+
+		ChatLabel.Text = "";
+
+		debugTemplate = DebugLabel.Text;
+		DebugLabel.Text = "";
+	}
+
 	public override void _Ready()
 	{
-		LabelMatchMaker = GetNode<RichTextLabel>("%LabelMatchMaker");
-		LabelLocalState = GetNode<RichTextLabel>("%LabelLocalState");
-		LabelRemoteState = GetNode<RichTextLabel>("%LabelRemoteState");
-		LabelMessages = GetNode<RichTextLabel>("%LabelMessages");
-		LabelMessages.Text = "Messages:";
-		InputField = GetNode<TextEdit>("%InputField");
-
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
-		matchMaker.ChannelMessageReceived += ChannelMessageReceived;
+		matchMaker.OnMessageString += ChannelMessageReceived;
+		matchMaker.OnNewConnection += (peerUUID) =>
+		{
+			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
+			{
+				signalingState = state;
+			};
+			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += (state) =>
+			{
+				connectionState = state;
+
+				if (state == "connected")
+				{
+					connected = true;
+				}
+			};
+			matchMaker.webRTCConnections[peerUUID].OnICEConnectionStateChange += (state) =>
+			{
+				iceConnectionState = state;
+			};
+			matchMaker.webRTCConnections[peerUUID].OnICEGatheringStateChange += (state) =>
+			{
+				iceGatheringState = state;
+			};
+		};
 
 		UpdateLabel();
 	}
@@ -30,7 +69,7 @@ public partial class Chat : Node
 	{
 		if (!requestSend && matchMaker.IsReady())
 		{
-			var error = matchMaker.SendRequest(new MatchMakingRequest()
+			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
 			{
 				name = "Test",
 			});
@@ -42,103 +81,69 @@ public partial class Chat : Node
 
 	private void UpdateLabel()
 	{
-		var localICECandidates = "";
-		foreach (var localICECandidate in matchMaker.LocalICECandidates)
+		var peersString = "";
+		foreach (var (peerUUID, _) in matchMaker.webRTCConnections)
 		{
-			localICECandidates += "\t" + localICECandidate.ToString() + "\n";
-		}
-		if (localICECandidates.Length > 0)
-		{
-			localICECandidates = localICECandidates.Substr(0, localICECandidates.Length - 1);
-		}
-		else
-		{
-			localICECandidates = "\tNo ICE Candidates!";
+			peersString += $"- {peerUUID}";
 		}
 
-		var remoteICECandidates = "";
-		foreach (var remoteICECandidate in matchMaker.RemoteICECandidates)
-		{
-			remoteICECandidates += "\t" + remoteICECandidate.ToString() + "\n";
-		}
-		if (remoteICECandidates.Length > 0)
-		{
-			remoteICECandidates = remoteICECandidates.Substr(0, remoteICECandidates.Length - 1);
-		}
-		else
-		{
-			localICECandidates = "\tNo ICE Candidates!";
-		}
+		DebugLabel.Text = string.Format(debugTemplate, new[] {
+			signalingState,
+			connectionState,
+			iceConnectionState,
+			iceGatheringState,
+			matchMaker.OwnUUID,
+			matchMaker.HostUUID,
+			matchMaker.IsHost ? "yes" : "no",
+			peersString
+		});
 
-		var localSession = "";
-		if (matchMaker.LocalSession != (null, null))
+		if (connected && ConnectionLabel.Visible)
 		{
-			localSession = $"{matchMaker.LocalSession.Item1}:\n\t{matchMaker.LocalSession.Item2.Replace("\n", "\n\t\t")}";
+			ConnectionLabel.Visible = false;
 		}
-
-		var remoteSession = "";
-		if (matchMaker.RemoteSession != (null, null))
-		{
-			remoteSession = $"{matchMaker.RemoteSession.Item1}:\n\t{matchMaker.RemoteSession.Item2.Replace("\n", "\n\t\t")}";
-		}
-
-		var peers = "";
-		foreach (var (uuid, _) in matchMaker.webRTCConnections)
-		{
-			peers += "\t" + uuid + "\n";
-		}
-		if (peers.Length > 0)
-		{
-			peers = peers.Substr(0, peers.Length - 1);
-		}
-
-		LabelMatchMaker.Text = $@"Match Maker:
-	Is Ready: {matchMaker.IsReady()}
-	Peer Status: {matchMaker.peer.GetReadyState()}
-	Request send: {requestSend}
-
-Peers:
-{peers}
-";
-		LabelLocalState.Text = $@"Local State:
-{localICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{localSession}
-";
-		LabelRemoteState.Text = $@"Remote State:
-{remoteICECandidates}
-------------------------------------------------------------------------------------------------------------------------
-{remoteSession}
-";
 	}
 
-	private void ChannelMessageReceived(string peerUUID, string channel, byte[] data)
+	private void SendMessage(string message)
 	{
-		var message = data.GetStringFromUtf8();
-
-		LabelMessages.Text += $"\n[{peerUUID}@{channel}]\n{message}\n";
-	}
-
-	private void ProcessSendMessage()
-	{
-		var text = InputField.Text;
-		InputField.Clear();
-
-		LabelMessages.Text += $"[Us]\n{text}\n";
-
-		matchMaker.BroadcastMessageOnChannel("main", text.ToUtf8Buffer());
-	}
-
-	private void OnTextChanged()
-	{
-		if (InputField.Text.EndsWith("\n"))
+		foreach (var (_, value) in matchMaker.webRTCConnections)
 		{
-			ProcessSendMessage();
+			value.SendOnChannel(WebRTCPeer.MAIN_CHANNEL_ID, message);
 		}
+
+		ChannelMessageReceived(matchMaker.OwnUUID, WebRTCPeer.MAIN_CHANNEL_ID, message);
 	}
 
 	private void OnSendButtonPressed()
 	{
-		ProcessSendMessage();
+		var text = ChatTextEdit.Text.Trim();
+		if (text.Length > 0)
+		{
+			SendMessage(text);
+		}
+
+		ChatTextEdit.Text = "";
+	}
+
+	private void OnChatTextEditChanged()
+	{
+		var text = ChatTextEdit.Text;
+		if (text.Length > 0 && text.EndsWith("\n"))
+		{
+			text = text.Substr(0, text.Length - 1);
+			SendMessage(text);
+
+			ChatTextEdit.Text = "";
+		}
+	}
+
+	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
+	{
+		var pre = "";
+		if (ChatLabel.Text != "")
+		{
+			pre = "\n";
+		}
+		ChatLabel.Text += $"{pre}[[b][color=red]{peerUUID}[/color]@[color=blue]{channel}[/color][/b]] {message}";
 	}
 }
