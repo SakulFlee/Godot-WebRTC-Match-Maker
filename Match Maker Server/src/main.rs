@@ -8,20 +8,38 @@ use std::{
 };
 
 use match_maker_server::{
-    AppConfig, MatchMakingQuery, MatchMakingRequest, MatchMakingResponse, Packet, PacketType,
+    AppConfig, MatchMakingQueue, MatchMakingRequest, MatchMakingResponse, Packet, PacketType,
 };
 use uuid::Uuid;
 use ws::Sender;
 
+/// Main Handler for WS-RS
 pub struct Handler {
+    /// The local handle for the connection
     local_sender: Sender,
+    /// The local assigned UUID for this connection
     local_uuid: Uuid,
+    /// App configuration, mostly for queue filling
     app_config: Arc<AppConfig>,
-    queue: Arc<Mutex<HashMap<String, MatchMakingQuery>>>,
+    /// Queue lookup-table
+    queue: Arc<Mutex<HashMap<String, MatchMakingQueue>>>,
+    /// Peer lookup-table
     peers: Arc<Mutex<HashMap<Uuid, Sender>>>,
 }
 
 impl Handler {
+    /// Handles Match Making requests.
+    /// Main server logic is in here.
+    ///
+    /// On request, we do:
+    /// 1. Validate the request
+    /// 2. Check if a queue exists for the request
+    /// 3a. If there is no queue: Add a new queue
+    /// 3b. If there is a queue: Add the peer to the queue
+    /// 4. Check if the queue is filled
+    /// 5. If filled: Send a response packet back to each peer,
+    /// containing all information needed to connect
+    /// to each other.
     fn handle_match_making(&mut self, request: MatchMakingRequest) -> ws::Result<()> {
         let slot_requirement = match self.app_config.slots.get(&request.name) {
             Some(slot) => *slot as usize,
@@ -45,6 +63,8 @@ impl Handler {
                     if query.is_filled(slot_requirement) {
                         if let Ok(lock) = self.peers.lock() {
                             let host_uuid = query.peers[0].to_string();
+
+                            // For each peer, send a Response packet
                             for peer in &query.peers {
                                 let _ = &lock[peer].send(
                                     Packet {
@@ -83,7 +103,7 @@ impl Handler {
                 }
                 None => {
                     // Query doesn't exist -> Create
-                    let mut query: MatchMakingQuery = request.clone().into();
+                    let mut query: MatchMakingQueue = request.clone().into();
                     query.add_peer(self.local_uuid);
                     lock.insert(query.name.clone(), query);
 
@@ -100,6 +120,9 @@ impl Handler {
 }
 
 impl ws::Handler for Handler {
+    /// A connection got made to the server.
+    ///
+    /// We want to add the connection to our peers list.
     fn on_open(&mut self, _shake: ws::Handshake) -> ws::Result<()> {
         // Add to peers
         if let Ok(mut lock) = self.peers.lock() {
@@ -109,6 +132,9 @@ impl ws::Handler for Handler {
         Ok(())
     }
 
+    /// A connection is closed.
+    ///
+    /// The peer should be removed from peers and any queues.
     fn on_close(&mut self, _code: ws::CloseCode, _reason: &str) {
         // Remove peer
         if let Ok(mut lock) = self.peers.lock() {
@@ -125,6 +151,11 @@ impl ws::Handler for Handler {
         }
     }
 
+    /// A message is received.
+    ///
+    /// Validate & Parse the package, then either send it
+    /// to be handled (in case of a MatchMaker request), or,
+    /// relay the packet to the peer.
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
         let packet = Packet::from_json(msg.as_text()?).map_err(|e| {
             ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
@@ -133,6 +164,7 @@ impl ws::Handler for Handler {
 
         if packet.ty == PacketType::MatchMakerRequest {
             // Match Maker request!
+            // Validate and send it to the MatchMaker handler
 
             if packet.from != "UNKNOWN" {
                 return Err(ws::Error::new(ws::ErrorKind::Protocol, format!("Initial MatchMakingRequest packet with known PeerUUID is impossible! (from: 'MatchMaker' != from: '{}')", packet.from)));
@@ -185,17 +217,6 @@ impl ws::Handler for Handler {
                 }
             }
         }
-
-        // let request: Request = serde_json::from_str(&msg.as_text()?).map_err(|e| {
-        //     ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
-        // })?;
-        // println!("Request: {:?}", request);
-
-        // match request {
-        //     Request::MatchMaking(request) => self.handle_match_making(request)?,
-        //     Request::SessionDescription(request) => self.handle_session_description(request)?,
-        //     Request::ICECandidate(request) => self.handle_ice_candidate(request)?,
-        // }
 
         Ok(())
     }

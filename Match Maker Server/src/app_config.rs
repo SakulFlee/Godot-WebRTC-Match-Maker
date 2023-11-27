@@ -2,14 +2,27 @@ use std::{collections::HashMap, error::Error, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
+/// App Configuration
+///
+/// Defines all options for the app
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppConfig {
+    /// The address the server should listen on.
+    /// Use 0.0.0.0 (IPv4) or ::1 (IPv6) to listen to 
+    /// all addresses.
     pub listen_address: String,
+    /// The port the server should listen on.
     pub listen_port: u16,
+    /// Map of slots being used by the server queue.
+    /// The key (String) is the Queue/Room/Level/Map name.
+    /// The value (u8) is the amount of slots per instance.
     pub slots: HashMap<String, u8>,
 }
 
 impl AppConfig {
+    /// Loads a config from it's default path OR, if the config
+    /// is missing, creates a default config on disk and returns
+    /// it.
     pub fn load() -> Result<Self, Box<dyn Error>> {
         println!(
             "Config path: {}",
@@ -25,6 +38,8 @@ impl AppConfig {
         Ok(app_config)
     }
 
+    /// Converts the listen address and port into a string,
+    /// like expected by WS-RS.
     pub fn listen_string(&self) -> String {
         format!("{}:{}", self.listen_address, self.listen_port)
     }
