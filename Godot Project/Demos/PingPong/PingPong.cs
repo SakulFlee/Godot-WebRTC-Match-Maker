@@ -9,7 +9,7 @@ public partial class PingPong : Node
 	private bool requestSend = false;
 	private bool initialMessageSend = false;
 
-	private string template;
+	private string debugTemplate;
 
 	private string signalingState = "None";
 	private string connectionState = "None";
@@ -28,7 +28,7 @@ public partial class PingPong : Node
 		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
 		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
 
-		template = DebugLabel.Text;
+		debugTemplate = DebugLabel.Text;
 		DebugLabel.Text = "";
 	}
 
@@ -99,7 +99,7 @@ public partial class PingPong : Node
 			peersString += $"- {peerUUID}";
 		}
 
-		DebugLabel.Text = string.Format(template, new[] {
+		DebugLabel.Text = string.Format(debugTemplate, new[] {
 			signalingState,
 			connectionState,
 			iceConnectionState,
