@@ -92,7 +92,7 @@ impl Handler {
 
         Err(ws::Error::new(
             ws::ErrorKind::Protocol,
-            format!("Unknown error ocurred (race condition?)"),
+            "Unknown error ocurred (race condition?)".to_string(),
         ))
     }
 }
@@ -124,7 +124,7 @@ impl ws::Handler for Handler {
     }
 
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
-        let packet = Packet::from_json(&msg.as_text()?).map_err(|e| {
+        let packet = Packet::from_json(msg.as_text()?).map_err(|e| {
             ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
         })?;
         println!("Packet: {:?}", packet);
@@ -151,7 +151,7 @@ impl ws::Handler for Handler {
 
             return Err(ws::Error::new(
                 ws::ErrorKind::Protocol,
-                format!("Why would you send a MatchMakerRESPONSE to the server ... ?"),
+                "Why would you send a MatchMakerRESPONSE to the server ... ?".to_string(),
             ));
         } else {
             // Relay mode
@@ -177,7 +177,7 @@ impl ws::Handler for Handler {
                     None => {
                         return Err(ws::Error::new(
                             ws::ErrorKind::Protocol,
-                            format!("Invalid UUID!"),
+                            "Invalid UUID!".to_string(),
                         ))
                     }
                 }
