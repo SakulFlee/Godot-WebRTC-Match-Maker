@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)] // WS-RS issue
+
 use std::{
     collections::HashMap,
     error::Error,
