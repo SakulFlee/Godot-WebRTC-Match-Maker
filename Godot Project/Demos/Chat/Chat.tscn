@@ -110,8 +110,7 @@ custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
-text = "Chat messages go here ...
-[b]ababab[/b]"
+text = "Chat messages go here ..."
 fit_content = true
 scroll_active = false
 
