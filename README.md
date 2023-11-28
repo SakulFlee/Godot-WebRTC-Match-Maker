@@ -18,6 +18,7 @@
   - [How does this work?](#how-does-this-work)
   - [Usage in non-Godot projects](#usage-in-non-godot-projects)
   - [Contributing](#contributing)
+  - [License](#license)
 
 ## What is this?
 
@@ -51,8 +52,11 @@ Currently, only a connection between **two** peers is possible.
 Once we reach Milestone 2.0.0, we will support more than wo peers.
 
 Android, possibly iOS, builds seem to be broken as for now.  
-However, this seems to be a .NET issue rather than a [Godot] issue.
-With future updates to .NET and [Godot] this should start working.
+However, this seems to be a .NET issue rather than a Godot issue.
+With future updates to .NET and Godot this should start working.
+
+Web builds are currently not possible with Godot either.  
+Until they re-add Web-Builds this can't be tested.
 
 ## How to use this?
 
@@ -322,6 +326,14 @@ The current _Match Maker Server_ **does** work, but could be a security liabilit
 
 If you end up porting this to another Engine, Framework or Project, please open an [issue](issues/) to merge it into this repository for everyone.
 Alternatively, we could link to your repository, however merging would be highly appreciated!
+
+## License
+
+This repository (includes BOTH projects) is licensed under the MIT License.  
+Essentially, do whatever you want with this :)
+
+However, [contributions](#contributing) are highly appreciated!  
+Please don't hesitate to reach out to me.
 
 [WebRTC]: https://webrtc.org/
 [Rust]: https://www.rust-lang.org/
