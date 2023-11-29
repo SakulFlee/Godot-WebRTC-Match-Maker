@@ -10,7 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Dungeon MP WebRTC"
+config/name="Godot WebRTC Demo Project"
+config/version="1.0.1"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 config/icon="res://icon.svg"
