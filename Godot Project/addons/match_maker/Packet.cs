@@ -25,11 +25,11 @@ public class Packet
     /// </summary>
     public string json { get; set; }
 
-/// <summary>
-/// Deserializes (/Parse) from JSON
-/// </summary>
-/// <param name="json">The JSON string to parse</param>
-/// <returns>An instance of this Packet class</returns>
+    /// <summary>
+    /// Deserializes (/Parse) from JSON
+    /// </summary>
+    /// <param name="json">The JSON string to parse</param>
+    /// <returns>An instance of this Packet class</returns>
     public static Packet FromJSON(string json)
     {
         return JsonSerializer.Deserialize<Packet>(json, new JsonSerializerOptions()
@@ -42,10 +42,10 @@ public class Packet
         });
     }
 
-/// <summary>
-/// Serializes this instance to JSON
-/// </summary>
-/// <returns>This Packet as JSON</returns>
+    /// <summary>
+    /// Serializes this instance to JSON
+    /// </summary>
+    /// <returns>This Packet as JSON</returns>
     public string ToJSON()
     {
         return JsonSerializer.Serialize(this, new JsonSerializerOptions()
@@ -58,12 +58,12 @@ public class Packet
         });
     }
 
-/// <summary>
-/// Special function to parse the nested value as an ICE Candidate
-/// 
-/// ⚠️ Make sure the 'type' is correct!
-/// </summary>
-/// <returns>The parsed ICE Candidate</returns>
+    /// <summary>
+    /// Special function to parse the nested value as an ICE Candidate
+    /// 
+    /// ⚠️ Make sure the 'type' is correct!
+    /// </summary>
+    /// <returns>The parsed ICE Candidate</returns>
     public RTCIceCandidateInit ParseICECandidate()
     {
         if (type != PacketType.ICECandidate)

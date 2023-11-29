@@ -21,4 +21,14 @@ public partial class Main : Control
 			return;
 		}
 	}
+
+	public void OnGameButton()
+	{
+		var err = GetTree().ChangeSceneToFile("res://Demos/Game/Game.tscn");
+		if (err != Error.Ok)
+		{
+			GD.PrintErr($"Failed to switch scene ({err})");
+			return;
+		}
+	}
 }
