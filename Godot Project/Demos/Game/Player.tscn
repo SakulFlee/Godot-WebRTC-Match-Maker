@@ -2,35 +2,46 @@
 
 [ext_resource type="Texture2D" uid="uid://clwinlwu14ihy" path="res://icon.svg" id="1_qg3lr"]
 
-[sub_resource type="SystemFont" id="SystemFont_mcnpn"]
-font_names = PackedStringArray("Monospace")
-subpixel_positioning = 0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cwq82"]
+size = Vector2(64, 64)
+
+[sub_resource type="SystemFont" id="SystemFont_mgs22"]
+multichannel_signed_distance_field = true
 oversampling = 2.5
 
-[sub_resource type="LabelSettings" id="LabelSettings_u6sfe"]
-font = SubResource("SystemFont_mcnpn")
-font_size = 12
+[node name="Player" type="CharacterBody2D"]
 
-[node name="Player" type="Node2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -8)
+shape = SubResource("RectangleShape2D_cwq82")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(64, 64)
-offset_right = 1.0
-offset_bottom = 27.0
-size_flags_horizontal = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
 
 [node name="Icon" type="TextureRect" parent="VBoxContainer"]
 clip_contents = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 4
+size_flags_vertical = 6
 texture = ExtResource("1_qg3lr")
 expand_mode = 1
 
-[node name="ID" type="Label" parent="VBoxContainer"]
+[node name="ID" type="RichTextLabel" parent="VBoxContainer"]
 layout_mode = 2
-text = "{ Peer UUID }"
-label_settings = SubResource("LabelSettings_u6sfe")
-horizontal_alignment = 1
-vertical_alignment = 1
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_fonts/normal_font = SubResource("SystemFont_mgs22")
+theme_override_font_sizes/normal_font_size = 8
+bbcode_enabled = true
+text = "[center]{ Peer UUID super long string }[/center]"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+shortcut_keys_enabled = false

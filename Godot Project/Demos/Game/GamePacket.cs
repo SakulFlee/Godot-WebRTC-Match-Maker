@@ -4,16 +4,16 @@ using System.Text.Json.Serialization;
 public class GamePacket
 {
     public GamePacketType Type;
-    public string InnerJSON;
+    public string Inner;
 
     /// <summary>
     /// Deserializes (/Parse) from JSON
     /// </summary>
     /// <param name="json">The JSON string to parse</param>
-    /// <returns>An instance of this Packet class</returns>
-    public static Packet FromJSON(string json)
+    /// <returns>An instance of this GamePacket class</returns>
+    public static GamePacket FromJSON(string json)
     {
-        return JsonSerializer.Deserialize<Packet>(json, new JsonSerializerOptions()
+        return JsonSerializer.Deserialize<GamePacket>(json, new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -26,7 +26,7 @@ public class GamePacket
     /// <summary>
     /// Serializes this instance to JSON
     /// </summary>
-    /// <returns>This Packet as JSON</returns>
+    /// <returns>This GamePacket as JSON</returns>
     public string ToJSON()
     {
         return JsonSerializer.Serialize(this, new JsonSerializerOptions()
@@ -37,5 +37,14 @@ public class GamePacket
                 new JsonStringEnumConverter(),
             },
         });
+    }
+
+    public static GamePacket MakeAddPlayerPacket(string peerUUID)
+    {
+        return new GamePacket
+        {
+            Type = GamePacketType.AddPlayer,
+            Inner = peerUUID,
+        };
     }
 }

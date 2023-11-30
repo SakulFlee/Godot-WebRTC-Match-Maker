@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 public partial class Game : Node
@@ -5,9 +6,11 @@ public partial class Game : Node
 	[Export]
 	private PackedScene playerScene;
 
-	private GodotObject player;
+	private CharacterBody2D ownPlayer;
+	private Dictionary<string, CharacterBody2D> players = new();
 
 	private RichTextLabel DebugLabel;
+	private Control ConnectionPanel;
 	private Label ConnectionLabel;
 
 	private MatchMaker matchMaker;
@@ -21,11 +24,13 @@ public partial class Game : Node
 	private string iceGatheringState = "None";
 
 	private bool connected = false;
+	private bool addPlayerPacketSend = false;
 
 	public override void _EnterTree()
 	{
 		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
 		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
+		ConnectionPanel = GetNode<Control>("%ConnectionPanel");
 
 		debugTemplate = DebugLabel.Text;
 		DebugLabel.Text = "";
@@ -34,7 +39,7 @@ public partial class Game : Node
 	public override void _Ready()
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
-		matchMaker.OnMessageString += ChannelMessageReceived;
+		matchMaker.OnMessageString += OnChannelMessageReceived;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
 			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
@@ -59,7 +64,6 @@ public partial class Game : Node
 				iceGatheringState = state;
 			};
 		};
-
 		UpdateLabel();
 	}
 
@@ -73,13 +77,41 @@ public partial class Game : Node
 			});
 			requestSend = error == Error.Ok;
 		}
+		UpdateLabel();
 
-		if (connected && player == null)
+		if (ownPlayer != null && Input.IsAnythingPressed())
 		{
-			AddPlayer(matchMaker.OwnUUID);
+			var inputDirection = Input.GetVector("Move Left", "Move Right", "Move Forward", "Move Backward");
+
+			ownPlayer.Velocity = inputDirection * 400;
+			ownPlayer.MoveAndSlide();
 		}
 
-		UpdateLabel();
+		if (connected && !addPlayerPacketSend)
+		{
+			// TODO: Need 1.0.2
+			// Need a way of knowing if the (main) channel is open, closed, etc. ideally event based
+
+			var packet = GamePacket.MakeAddPlayerPacket(matchMaker.OwnUUID);
+
+			if (matchMaker.IsHost)
+			{
+
+			}
+			else
+			{
+				var hostConnection = matchMaker.webRTCConnections[matchMaker.HostUUID];
+				if (hostConnection.IsChannelOpen(WebRTCPeer.MAIN_CHANNEL_ID))
+				{
+					var json = packet.ToJSON();
+					hostConnection.SendOnChannel(WebRTCPeer.MAIN_CHANNEL_ID, json);
+
+					addPlayerPacketSend = false;
+				}
+			}
+
+			// SendGamePacketBroadcast(GamePacket.MakeAddPlayerPacket(matchMaker.OwnUUID));
+		}
 	}
 
 	private void UpdateLabel()
@@ -101,35 +133,111 @@ public partial class Game : Node
 			peersString
 		});
 
-		if (connected && ConnectionLabel.Visible)
+		if (connected && (ConnectionLabel.Visible || ConnectionPanel.Visible))
 		{
 			ConnectionLabel.Visible = false;
+			ConnectionPanel.Visible = false;
 		}
 	}
 
-	private void SendMessage(string message)
+	/// <summary>
+	/// Called when a <see cref="GamePacketType.AddPlayer"/> packet is received.
+	/// </summary>
+	/// <param name="gamePacket"></param>
+	private void HandleAddPlayer(string peerUUID, GamePacket gamePacket)
 	{
-		foreach (var (_, value) in matchMaker.webRTCConnections)
+		// Instantiate a new player
+		var newPlayer = playerScene.Instantiate<CharacterBody2D>();
+		newPlayer.Name = $"Player#{peerUUID}";
+
+		// Set the player label to the UUID
+		var idNode = newPlayer.GetNode<RichTextLabel>("VBoxContainer/ID");
+		idNode.Text = $"{{{peerUUID}}}";
+
+		AddChild(newPlayer);
+
+		// If the peer UUID is our own, add this also as our own player that we can control
+		if (peerUUID == matchMaker.OwnUUID)
 		{
-			value.SendOnChannel(WebRTCPeer.MAIN_CHANNEL_ID, message);
+			ownPlayer = newPlayer;
 		}
-
-		ChannelMessageReceived(matchMaker.OwnUUID, WebRTCPeer.MAIN_CHANNEL_ID, message);
 	}
 
-	private void AddPlayer(string peerUUID)
+	private void SendGamePacketToHost(ushort channel, GamePacket gamePacket)
 	{
-		var player = playerScene.Instantiate();
-		player.Name = $"Player#{peerUUID}";
-		var idNode = player.GetNode<Label>("VBoxContainer/ID");
-		idNode.Text = peerUUID;
-
-		AddChild(player);
+		SendGamePacketToPeer(matchMaker.HostUUID, channel, gamePacket);
 	}
 
-	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
+	private void SendGamePacketToHost(GamePacket gamePacket)
 	{
+		SendGamePacketToHost(WebRTCPeer.MAIN_CHANNEL_ID, gamePacket);
+	}
+
+	private void SendGamePacketToPeer(string peerUUID, ushort channel, GamePacket gamePacket)
+	{
+		if (peerUUID == matchMaker.OwnUUID)
+		{
+			// If it's our own UUID, just pass it
+			OnGamePacketReceived(peerUUID, channel, gamePacket);
+		}
+		else
+		{
+			// If not, send it to the peer
+			var json = gamePacket.ToJSON();
+			matchMaker.webRTCConnections[peerUUID].SendOnChannel(channel, json);
+		}
+	}
+
+	private void SendGamePacketToPeer(string peerUUID, GamePacket gamePacket)
+	{
+		SendGamePacketToPeer(peerUUID, WebRTCPeer.MAIN_CHANNEL_ID, gamePacket);
+	}
+
+	private void SendGamePacketBroadcast(ushort channel, GamePacket gamePacket)
+	{
+		var json = gamePacket.ToJSON();
+		foreach (var (_, connection) in matchMaker.webRTCConnections)
+		{
+			connection.SendOnChannel(channel, json);
+		}
+	}
+
+	private void SendGamePacketBroadcast(GamePacket gamePacket)
+	{
+		SendGamePacketBroadcast(WebRTCPeer.MAIN_CHANNEL_ID, gamePacket);
+	}
+
+	private void SendGamePacketBroadcastIncludingSelf(ushort channel, GamePacket gamePacket)
+	{
+		SendGamePacketBroadcast(channel, gamePacket);
+
+		OnGamePacketReceived(matchMaker.OwnUUID, channel, gamePacket);
+	}
+
+	private void SendGamePacketBroadcastIncludingSelf(GamePacket gamePacket)
+	{
+		SendGamePacketBroadcastIncludingSelf(WebRTCPeer.MAIN_CHANNEL_ID, gamePacket);
+	}
+
+	private void OnGamePacketReceived(string peerUUID, ushort channel, GamePacket gamePacket)
+	{
+		GD.Print($"[{peerUUID}@{channel}]\nGamePacket: {gamePacket} -> {gamePacket.Type}: {gamePacket.Inner}\n");
+
+		// switch (gamePacket.Type)
+		// {
+		// 	case GamePacketType.AddPlayer:
+		// 		HandleAddPlayer(peerUUID, gamePacket);
+		// 		break;
+		// 	default:
+		// 		break;
+		// }
+	}
+
+	private void OnChannelMessageReceived(string peerUUID, ushort channel, string message)
+	{
+		GD.Print("############################# MESSAGE RECEIVED ###############################");
 		var gamePacket = GamePacket.FromJSON(message);
 
+		OnGamePacketReceived(peerUUID, channel, gamePacket);
 	}
 }

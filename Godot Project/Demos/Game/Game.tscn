@@ -4,14 +4,18 @@
 [ext_resource type="PackedScene" uid="uid://dhd4y2rk7sekp" path="res://Demos/Game/Player.tscn" id="2_27xsw"]
 [ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_docdk"]
 
-[node name="Chat" type="Node"]
+[node name="Game" type="Node"]
 script = ExtResource("1_exnv6")
 playerScene = ExtResource("2_27xsw")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_docdk")
 
-[node name="Control" type="Control" parent="."]
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="Camera2D"]
+
+[node name="Control" type="Control" parent="Camera2D/CanvasLayer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +23,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="Panel" parent="Control"]
+[node name="ConnectionPanel" type="Panel" parent="Camera2D/CanvasLayer/Control"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,7 +32,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="Control/Panel"]
+[node name="CenterContainer" type="CenterContainer" parent="Camera2D/CanvasLayer/Control/ConnectionPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,12 +40,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ConnectionLabel" type="Label" parent="Control/Panel/CenterContainer"]
+[node name="ConnectionLabel" type="Label" parent="Camera2D/CanvasLayer/Control/ConnectionPanel/CenterContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Connecting ..."
 
-[node name="MarginContainer" type="MarginContainer" parent="Control"]
+[node name="MarginContainer" type="MarginContainer" parent="Camera2D/CanvasLayer/Control"]
 layout_mode = 2
 offset_right = 384.0
 offset_bottom = 128.0
@@ -49,17 +54,17 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="PanelContainer" type="PanelContainer" parent="Control/MarginContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="Camera2D/CanvasLayer/Control/MarginContainer"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="Control/MarginContainer/PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Camera2D/CanvasLayer/Control/MarginContainer/PanelContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="DebugLabel" type="RichTextLabel" parent="Control/MarginContainer/PanelContainer/MarginContainer"]
+[node name="DebugLabel" type="RichTextLabel" parent="Camera2D/CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer"]
 unique_name_in_owner = true
 clip_contents = false
 layout_mode = 2
