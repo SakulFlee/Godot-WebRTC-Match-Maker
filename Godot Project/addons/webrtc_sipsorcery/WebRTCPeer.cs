@@ -151,6 +151,36 @@ public partial class WebRTCPeer : Node
     /// </summary>
     [Signal]
     public delegate void OnMessageStringEventHandler(ushort channelId, string message);
+
+    /// <summary>
+    /// Gets called when a channel (including the main channel [<see cref="MAIN_CHANNEL_ID"/>]) opens and is ready to send/retrieve messages.
+    /// This is an alternative to:
+    /// <seealso cref="OnChannelClose"/>
+    /// <seealso cref="OnChannelStateChange"/>
+    /// </summary>
+    /// <param name="channelId">The channel that opened</param>
+    [Signal]
+    public delegate void OnChannelOpenEventHandler(ushort channelId);
+
+    /// <summary>
+    /// Gets called when a channel (including the main channel [<see cref="MAIN_CHANNEL_ID"/>]) closed and is no longer able to send/retrieve messages.
+    /// This is an alternative to:
+    /// <seealso cref="OnChannelOpen"/>
+    /// <seealso cref="OnChannelStateChange"/>
+    /// </summary>
+    /// <param name="channelId">The channel that closed</param>
+    [Signal]
+    public delegate void OnChannelCloseEventHandler(ushort channelId);
+
+    /// <summary>
+    /// Gets called when a channels state changes (including the main channel [<see cref="MAIN_CHANNEL_ID"/>]) 
+    /// This is an alternative to:
+    /// <seealso cref="OnChannelOpen"/>
+    /// <seealso cref="OnChannelClose"/>
+    /// </summary>
+    /// <param name="channelId">The channel that opened</param>
+    [Signal]
+    public delegate void OnChannelStateChangeEventHandler(ushort channelId, bool open);
     #endregion
 
     #region Godot Functions
@@ -236,6 +266,14 @@ public partial class WebRTCPeer : Node
         }
 
         // Signals
+        mainChannel.onopen += () =>
+        {
+            CallDeferred("signalOnChannelOpen", MAIN_CHANNEL_ID);
+        };
+        mainChannel.onclose += () =>
+        {
+            CallDeferred("signalOnChannelClose", MAIN_CHANNEL_ID);
+        };
         mainChannel.onmessage += (channel, protocol, data) =>
         {
             CallDeferred("signalOnMessage", channel.id ??= 0, protocol.ToString(), data);
@@ -337,6 +375,46 @@ public partial class WebRTCPeer : Node
 
         EmitSignal(SignalName.OnMessageRaw, channelId, data);
         EmitSignal(SignalName.OnMessageString, channelId, message);
+    }
+
+    /// <summary>
+    /// ⚠️ Workaround: Must be called deferred.
+    /// 
+    /// Will emit the following Signals: 
+    ///  - <see cref="OnChannelOpen"/>
+    ///  - <see cref="OnChannelStateChange"/>
+    /// <param name="channelId">The channel this got send</param>
+    /// <param name="protocol">The protocol being used</param>
+    /// <param name="data">The RAW (= byte[]) data send</param>
+    private void signalOnChannelOpen(ushort channel)
+    {
+#if DEBUG
+        var channelLabel = GetChannelLabel(channel);
+        GD.Print($"[WebRTC] Channel #{channel}/{channelLabel} opened!");
+#endif
+
+        EmitSignal(SignalName.OnChannelOpen, channel);
+        EmitSignal(SignalName.OnChannelStateChange, channel, true);
+    }
+
+    /// <summary>
+    /// ⚠️ Workaround: Must be called deferred.
+    /// 
+    /// Will emit the following Signals: 
+    ///  - <see cref="OnChannelClose"/>
+    ///  - <see cref="OnChannelStateChange"/>
+    /// <param name="channelId">The channel this got send</param>
+    /// <param name="protocol">The protocol being used</param>
+    /// <param name="data">The RAW (= byte[]) data send</param>
+    private void signalOnChannelClose(ushort channel)
+    {
+#if DEBUG
+        var channelLabel = GetChannelLabel(channel);
+        GD.Print($"[WebRTC] Channel #{channel}/{channelLabel} closed!");
+#endif
+
+        EmitSignal(SignalName.OnChannelClose, channel);
+        EmitSignal(SignalName.OnChannelStateChange, channel, false);
     }
     #endregion
 
