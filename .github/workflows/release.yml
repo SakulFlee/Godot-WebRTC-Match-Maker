@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout
         with:
-          ref: ${{ (inputs.tag) && inputs.tag || github.ref_name }}
+          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
       - uses: actions/setup-dotnet@v3
         name: Setup .NET SDK
@@ -82,69 +82,81 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
-    - name: Install Rust
-      run: |
-        rustup install ${{ env.RUST_CHANNEL }}
-        rustup show
-        rustup --version
-        cargo +${{ env.RUST_CHANNEL }} --version
-        rustc +${{ env.RUST_CHANNEL }} --version
-      
-    - name: Release Build
-      run: cargo build --release
-      working-directory: Match Maker Server/
-
-    - name: Upload build artifacts (Linux)
-      uses: actions/upload-artifact@v3
-      with:
-        name: match-maker-server-linux
-        path: Match Maker Server/target/release/match_maker_server
-      if: matrix.os == 'ubuntu-latest'
-
-    - name: Upload build artifacts (Windows)
-      uses: actions/upload-artifact@v3
-      with:
-        name: match-maker-server-windows
-        path: Match Maker Server/target/release/match_maker_server.exe
-      if: matrix.os == 'windows-latest'
+      - name: Install Rust
+        run: |
+          rustup install ${{ env.RUST_CHANNEL }}
+          rustup show
+          rustup --version
+          cargo +${{ env.RUST_CHANNEL }} --version
+          rustc +${{ env.RUST_CHANNEL }} --version
+        
+      - name: Release Build
+        run: cargo build --release
+        working-directory: Match Maker Server/
+  
+      - name: Upload build artifacts (Linux)
+        uses: actions/upload-artifact@v3
+        with:
+          name: match-maker-server-linux
+          path: Match Maker Server/target/release/match_maker_server
+        if: matrix.os == 'ubuntu-latest'
+  
+      - name: Upload build artifacts (Windows)
+        uses: actions/upload-artifact@v3
+        with:
+          name: match-maker-server-windows
+          path: Match Maker Server/target/release/match_maker_server.exe
+        if: matrix.os == 'windows-latest'
 
   archive-plugin-webrtc:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: plugin-webrtc
-        path: Godot Project/addons/webrtc_sipsorcery/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugin-webrtc
+          path: Godot Project/addons/webrtc_sipsorcery/
 
   archive-plugin-match-maker:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: plugin-match_maker
-        path: Godot Project/addons/match_maker/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugin-match_maker
+          path: Godot Project/addons/match_maker/
 
   archive-demo-project:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: demo_project
-        path: Godot Project/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: demo_project
+          path: Godot Project/
 
   release:
     runs-on: ubuntu-latest
@@ -212,5 +224,5 @@ jobs:
           artifactErrorsFailBuild: true
           makeLatest: true
           artifacts: "*.zip"
-          body: ${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
+          body: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
+          tag: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
