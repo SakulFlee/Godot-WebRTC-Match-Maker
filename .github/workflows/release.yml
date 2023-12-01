@@ -109,15 +109,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Archive WebRTC plugin
-      run: zip -r plugin-webrtc.zip addons/webrtc_sipsorcery/
-      working-directory: Godot Project/
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: plugin-webrtc
-        path: Godot Project/plugin-webrtc.zip
+        path: Godot Project/addons/webrtc_sipsorcery/
 
   archive-plugin-match-maker:
     runs-on: ubuntu-latest
