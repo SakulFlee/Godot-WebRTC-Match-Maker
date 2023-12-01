@@ -156,37 +156,47 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: godot-windows-release
-          path: Godot.Demo.Windows.zip
+          path: Godot.Demo.Windows
       - name: Download Artifact godot-linux-release
         uses: actions/download-artifact@v3
         with:
           name: godot-linux-release
-          path: Godot.Demo.Linux.zip
+          path: Godot.Demo.Linux
       - name: Download Artifact match-maker-server-linux
         uses: actions/download-artifact@v3
         with:
           name: match-maker-server-linux
-          path: MatchMaker.Linux.zip
+          path: MatchMaker.Linux
       - name: Download Artifact match-maker-server-windows
         uses: actions/download-artifact@v3
         with:
           name: match-maker-server-windows
-          path: MatchMaker.Windows.zip
+          path: MatchMaker.Windows
       - name: Download Artifact plugin-webrtc
         uses: actions/download-artifact@v3
         with:
           name: plugin-webrtc
-          path: Godot.Plugin.WebRTC.zip
+          path: Godot.Plugin.WebRTC
       - name: Download Artifact plugin-match_maker
         uses: actions/download-artifact@v3
         with:
           name: plugin-match_maker
-          path: Godot.Plugin.MatchMaker.zip
+          path: Godot.Plugin.MatchMaker
       - name: Download Artifact demo_project
         uses: actions/download-artifact@v3
         with:
           name: demo_project
-          path: Godot.Demo.Project.zip
+          path: Godot.Demo.Project
+
+      - name: Re-ZIP files
+        run: |
+          zip -r Godot.Demo.Windows.zip Godot.Demo.Windows/
+          zip -r Godot.Demo.Linux.zip Godot.Demo.Linux/
+          zip -r MatchMaker.Linux.zip MatchMaker.Linux/
+          zip -r MatchMaker.Windows.zip MatchMaker.Windows/
+          zip -r Godot.Plugin.WebRTC.zip Godot.Plugin.WebRTC/
+          zip -r Godot.Plugin.MatchMaker.zip Godot.Plugin.MatchMaker/
+          zip -r Godot.Demo.Project.zip Godot.Demo.Project/
 
       - uses: ncipollo/release-action@v1
         with:
