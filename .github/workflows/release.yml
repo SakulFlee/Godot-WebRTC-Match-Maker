@@ -56,8 +56,7 @@ jobs:
       - name: Godot Export
         run: |
           mkdir export/
-          godot --headless --export-release "${{ matrix.export-template }}" "export/${{ matrix.export-template }}"
-          ls -al export/
+          godot --headless --export-release "${{ matrix.export-template }}" "export/${{ matrix.export-template }}${{ (matrix.export-template == 'windows') && '.exe' || '' }}"
         working-directory: Godot Project/
 
       - name: Artifact upload
