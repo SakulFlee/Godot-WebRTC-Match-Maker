@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - v*
+      - "v*"
 
 env:
   GODOT_VERSION: 4.2.0
