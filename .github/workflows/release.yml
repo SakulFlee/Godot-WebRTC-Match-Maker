@@ -202,6 +202,7 @@ jobs:
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
+          makeLatest: true
           artifacts: "*.zip"
           body: ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
