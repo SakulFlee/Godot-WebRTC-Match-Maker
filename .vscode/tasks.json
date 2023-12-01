@@ -56,6 +56,94 @@
             },
             "group": "build",
             "dependsOn": "[Godot] Restore Project"
+        },
+        {
+            "label": "[Godot] Prepare Export Directory",
+            "type": "shell",
+            "command": "mkdir -p Exports Exports/Windows Exports/Windows/Debug Exports/Windows/Release Exports/Linux Exports/Linux/Debug Exports/Linux/Release",
+            "windows": {
+                "command": "New-Item -ItemType Directory -Force -Path Exports, Exports/Windows, Exports/Windows/Debug, Exports/Windows/Release, Exports/Linux, Exports/Linux/Debug, Exports/Linux/Release"
+            },
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            }
+        },
+        {
+            "label": "[Godot] Export for Windows (Debug)",
+            "type": "shell",
+            "command": "godot",
+            "windows": {
+                "command": "godot.exe"
+            },
+            "args": [
+                "--headless",
+                "--export-debug",
+                "Windows Desktop",
+                "Exports/Windows/Debug/DemoProject.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            },
+            "group": "build",
+            "dependsOn": "[Godot] Prepare Export Directory"
+        },
+        {
+            "label": "[Godot] Export for Windows (Release)",
+            "type": "shell",
+            "command": "godot",
+            "windows": {
+                "command": "godot.exe"
+            },
+            "args": [
+                "--headless",
+                "--export-release",
+                "Windows Desktop",
+                "Exports/Windows/Release/DemoProject.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            },
+            "group": "build",
+            "dependsOn": "[Godot] Prepare Export Directory"
+        },
+        {
+            "label": "[Godot] Export for Linux (Debug)",
+            "type": "shell",
+            "command": "godot",
+            "windows": {
+                "command": "godot.exe"
+            },
+            "args": [
+                "--headless",
+                "--export-debug",
+                "Linux/X11",
+                "Exports/Linux/Debug/DemoProject"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            },
+            "group": "build",
+            "dependsOn": "[Godot] Prepare Export Directory"
+        },
+        {
+            "label": "[Godot] Export for Linux (Release)",
+            "type": "shell",
+            "command": "godot",
+            "windows": {
+                "command": "godot.exe"
+            },
+            "args": [
+                "--headless",
+                "--export-release",
+                "Linux/X11",
+                "Exports/Linux/Release/DemoProject"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Godot Project/"
+            },
+            "group": "build",
+            "dependsOn": "[Godot] Prepare Export Directory"
         }
     ]
 }
