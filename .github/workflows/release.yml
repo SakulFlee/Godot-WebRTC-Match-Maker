@@ -155,6 +155,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
+    needs: 
+      - export-godot-release
+      - match-maker-server
+      - archive-plugin-webrtc
+      - archive-plugin-match-maker
+      - archive-demo-project
+
     steps:
       - name: Download all Artifacts
         uses: actions/download-artifact@v3
