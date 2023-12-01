@@ -63,6 +63,14 @@ public partial class Game : Node
 			{
 				iceGatheringState = state;
 			};
+			matchMaker.OnChannelOpen += (peerUUID, channel) =>
+			{
+				if (peerUUID == matchMaker.HostUUID || matchMaker.IsHost)
+				{
+					var packet = GamePacket.MakeAddPlayerPacket(matchMaker.OwnUUID);
+					SendGamePacketToHost(channel, packet);
+				}
+			};
 		};
 		UpdateLabel();
 	}
@@ -85,32 +93,6 @@ public partial class Game : Node
 
 			ownPlayer.Velocity = inputDirection * 400;
 			ownPlayer.MoveAndSlide();
-		}
-
-		if (connected && !addPlayerPacketSend)
-		{
-			// TODO: Need 1.0.2
-			// Need a way of knowing if the (main) channel is open, closed, etc. ideally event based
-
-			var packet = GamePacket.MakeAddPlayerPacket(matchMaker.OwnUUID);
-
-			if (matchMaker.IsHost)
-			{
-
-			}
-			else
-			{
-				var hostConnection = matchMaker.webRTCConnections[matchMaker.HostUUID];
-				if (hostConnection.IsChannelOpen(WebRTCPeer.MAIN_CHANNEL_ID))
-				{
-					var json = packet.ToJSON();
-					hostConnection.SendOnChannel(WebRTCPeer.MAIN_CHANNEL_ID, json);
-
-					addPlayerPacketSend = false;
-				}
-			}
-
-			// SendGamePacketBroadcast(GamePacket.MakeAddPlayerPacket(matchMaker.OwnUUID));
 		}
 	}
 
@@ -148,18 +130,23 @@ public partial class Game : Node
 	{
 		// Instantiate a new player
 		var newPlayer = playerScene.Instantiate<CharacterBody2D>();
-		newPlayer.Name = $"Player#{peerUUID}";
+		newPlayer.Name = $"Player#{gamePacket.Inner}";
 
 		// Set the player label to the UUID
 		var idNode = newPlayer.GetNode<RichTextLabel>("VBoxContainer/ID");
-		idNode.Text = $"{{{peerUUID}}}";
+		idNode.Text = $"{{{gamePacket.Inner}}}";
 
 		AddChild(newPlayer);
 
 		// If the peer UUID is our own, add this also as our own player that we can control
-		if (peerUUID == matchMaker.OwnUUID)
+		if (gamePacket.Inner == matchMaker.OwnUUID)
 		{
 			ownPlayer = newPlayer;
+		}
+
+		if (matchMaker.IsHost)
+		{
+			SendGamePacketBroadcast(GamePacket.MakeAddPlayerPacket(peerUUID));
 		}
 	}
 
@@ -221,21 +208,20 @@ public partial class Game : Node
 
 	private void OnGamePacketReceived(string peerUUID, ushort channel, GamePacket gamePacket)
 	{
-		GD.Print($"[{peerUUID}@{channel}]\nGamePacket: {gamePacket} -> {gamePacket.Type}: {gamePacket.Inner}\n");
+		GD.Print($"[{peerUUID}@{channel}]: GamePacket -> {gamePacket.Type}: {gamePacket.Inner}");
 
-		// switch (gamePacket.Type)
-		// {
-		// 	case GamePacketType.AddPlayer:
-		// 		HandleAddPlayer(peerUUID, gamePacket);
-		// 		break;
-		// 	default:
-		// 		break;
-		// }
+		switch (gamePacket.Type)
+		{
+			case GamePacketType.AddPlayer:
+				HandleAddPlayer(peerUUID, gamePacket);
+				break;
+			default:
+				break;
+		}
 	}
 
 	private void OnChannelMessageReceived(string peerUUID, ushort channel, string message)
 	{
-		GD.Print("############################# MESSAGE RECEIVED ###############################");
 		var gamePacket = GamePacket.FromJSON(message);
 
 		OnGamePacketReceived(peerUUID, channel, gamePacket);
