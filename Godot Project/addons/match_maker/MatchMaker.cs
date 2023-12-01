@@ -111,6 +111,40 @@ public partial class MatchMaker : Node
     /// <param name="message">The string that got send</param>
     [Signal]
     public delegate void OnMessageStringEventHandler(string peerUUID, ushort channelId, string message);
+
+    /// <summary>
+    /// Gets called when a channel (including the main channel [<see cref="WebRTCPeer.MAIN_CHANNEL_ID"/>]) opens and is ready to send/retrieve messages.
+    /// This is an alternative to:
+    /// <seealso cref="OnChannelClose"/>
+    /// <seealso cref="OnChannelStateChange"/>
+    /// </summary>
+    /// <param name="peerUUID">Peer this channel was opened</param>
+    /// <param name="channel">Channel that was opened</param>
+    [Signal]
+    public delegate void OnChannelOpenEventHandler(string peerUUID, ushort channel);
+
+    /// <summary>
+    /// Gets called when a channel (including the main channel [<see cref="WebRTCPeer.MAIN_CHANNEL_ID"/>]) closes and is no longer able to send/retrieve messages.
+    /// This is an alternative to:
+    /// <seealso cref="OnChannelOpen"/>
+    /// <seealso cref="OnChannelStateChange"/>
+    /// </summary>
+    /// <param name="peerUUID">Peer this channel was opened</param>
+    /// <param name="channel">Channel that was opened</param>
+    [Signal]
+    public delegate void OnChannelCloseEventHandler(string peerUUID, ushort channel);
+
+    /// <summary>
+    /// Gets called when a channel (including the main channel [<see cref="WebRTCPeer.MAIN_CHANNEL_ID"/>]) either opens or closes.
+    /// This is an alternative to:
+    /// <seealso cref="OnChannelOpen"/>
+    /// <seealso cref="OnChannelClose"/>
+    /// </summary>
+    /// <param name="peerUUID">Peer this channel was opened</param>
+    /// <param name="channel">Channel that was opened</param>
+    /// <param name="isOpen">Whether the channel opened or closed</param>
+    [Signal]
+    public delegate void OnChannelStateChangeEventHandler(string peerUUID, ushort channel, bool isOpen);
     #endregion
 
     #region Godot 
@@ -194,6 +228,18 @@ public partial class MatchMaker : Node
                             connection.OnMessageString += (channelId, message) =>
                             {
                                 CallDeferred("signalOnMessageString", peerUUID, channelId, message);
+                            };
+                            connection.OnChannelOpen += (channel) =>
+                            {
+                                CallDeferred("signalOnChannelOpen", peerUUID, channel);
+                            };
+                            connection.OnChannelClose += (channel) =>
+                            {
+                                CallDeferred("signalOnChannelClose", peerUUID, channel);
+                            };
+                            connection.OnChannelStateChange += (channel, isOpen) =>
+                            {
+                                CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
                             };
 
                             webRTCConnections.Add(peerUUID, connection);
@@ -328,6 +374,21 @@ public partial class MatchMaker : Node
     private void signalOnMessageString(string peerUUID, ushort channelId, string message)
     {
         EmitSignal(SignalName.OnMessageString, peerUUID, channelId, message);
+    }
+
+    private void signalOnChannelOpen(string peerUUID, short channel)
+    {
+        EmitSignal(SignalName.OnChannelOpen, peerUUID, channel);
+    }
+
+    private void signalOnChannelClose(string peerUUID, short channel)
+    {
+        EmitSignal(SignalName.OnChannelClose, peerUUID, channel);
+    }
+
+    private void signalOnChannelStateChange(string peerUUID, short channel, bool isOpen)
+    {
+        EmitSignal(SignalName.OnChannelStateChange, peerUUID, channel, isOpen);
     }
     #endregion
 
