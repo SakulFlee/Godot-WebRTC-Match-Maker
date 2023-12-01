@@ -1,0 +1,168 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  GODOT_VERSION: 4.2.0
+  RUST_CHANNEL: stable
+
+jobs:
+  export-godot-release:
+    strategy:
+      fail-fast: true
+      matrix:
+        export-template: [windows, linux]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - uses: actions/setup-dotnet@v3
+        name: Setup .NET SDK
+        with:
+          dotnet-version: 8.0.x
+
+      - name: .NET Version
+        run: dotnet --version
+
+      - uses: chickensoft-games/setup-godot@v1
+        name: Setup Godot
+        with:
+          # Version must include major, minor, and patch, and be >= 4.0.0
+          version: ${{ env.GODOT_VERSION }}
+          # Use .NET-enabled version of Godot (the default is also true).
+          use-dotnet: true
+
+      - name: Godot Version
+        run: godot --version
+
+      - name: Restore Dependencies
+        run: dotnet restore
+        working-directory: Godot Project/
+
+      - name: Generate .NET Bindings
+        run: godot --headless --build-solutions --quit || exit 0
+        working-directory: Godot Project/
+
+      - name: Build Projects
+        run: dotnet build
+        working-directory: Godot Project/
+
+      - name: Export directory
+        run: mkdir -p export/
+        working-directory: Godot Project/
+      
+      - name: Godot Export
+        run: godot --headless --export-release "${{ matrix.export-template }}" export/
+        working-directory: Godot Project/
+
+      - name: Artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: "godot-${{ matrix.export-template }}-release"
+          path: Godot Project/export/
+
+  match-maker-server: 
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      run: |
+        rustup install ${{ env.RUST_CHANNEL }}
+        rustup show
+        rustup --version
+        cargo +${{ env.RUST_CHANNEL }} --version
+        rustc +${{ env.RUST_CHANNEL }} --version
+      
+    - name: Release Build
+      run: cargo build --release
+      working-directory: Match Maker Server/
+
+    - name: Upload build artifacts (Linux)
+      uses: actions/upload-artifact@v3
+      with:
+        name: match-maker-server-linux
+        path: Match Maker Server/target/release/match_maker_server
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Upload build artifacts (Windows)
+      uses: actions/upload-artifact@v3
+      with:
+        name: match-maker-server-windows
+        path: Match Maker Server/target/release/match_maker_server.exe
+      if: matrix.os == 'windows-latest'
+
+  archive-plugin-webrtc:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Archive WebRTC plugin
+      run: zip -r plugin-webrtc.zip addons/webrtc_sipsorcery/
+      working-directory: Godot Project/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: plugin-webrtc
+        path: Godot Project/plugin-webrtc.zip
+
+  archive-plugin-match-maker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Archive Match-Maker plugin
+      run: zip -r plugin-match_maker.zip addons/match_maker/
+      working-directory: Godot Project/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: plugin-match_maker
+        path: Godot Project/plugin-match_maker.zip
+
+  archive-demo-project:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Archive Demo Project
+      run: zip -r demo_project.zip .
+      working-directory: Godot Project/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: demo_project
+        path: Godot Project/demo_project.zip
+
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all Artifacts
+        uses: actions/download-artifact@v3
+
+      - uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: "*"
+          body: ${{ github.ref }}
+          tag: ${{ github.ref }}
