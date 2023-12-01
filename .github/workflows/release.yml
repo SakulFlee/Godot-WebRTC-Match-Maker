@@ -52,13 +52,13 @@ jobs:
       - name: Build Projects
         run: dotnet build
         working-directory: Godot Project/
-
-      - name: Export directory
-        run: mkdir -p export/
-        working-directory: Godot Project/
       
       - name: Godot Export
-        run: godot --headless --export-release "${{ matrix.export-template }}" export/
+        run: |
+          mkdir export/
+          ls -al .
+          godot --headless --export-release "${{ matrix.export-template }}" export/
+          ls -al export/
         working-directory: Godot Project/
 
       - name: Artifact upload
