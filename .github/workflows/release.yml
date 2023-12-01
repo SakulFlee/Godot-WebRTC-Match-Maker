@@ -5,11 +5,6 @@ on:
     tags:
       - "v*"
   workflow_dispatch: 
-    inputs:
-        tag: 
-          description: 'Git Tag to manually run on'
-          required: true
-          type: string
 
 env:
   GODOT_VERSION: 4.2.0
@@ -27,8 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Checkout
-        with:
-          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
       - uses: actions/setup-dotnet@v3
         name: Setup .NET SDK
@@ -84,8 +77,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Checkout
-        with:
-          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
       - name: Install Rust
         run: |
@@ -119,8 +110,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Checkout
-        with:
-          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -134,8 +123,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Checkout
-        with:
-          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -149,8 +136,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Checkout
-        with:
-          ref: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -224,5 +209,5 @@ jobs:
           artifactErrorsFailBuild: true
           makeLatest: true
           artifacts: "*.zip"
-          body: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
-          tag: ${{ (inputs.tag != null) && inputs.tag || github.ref_name }}
+          body: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
