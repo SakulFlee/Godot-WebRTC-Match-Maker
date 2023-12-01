@@ -1,0 +1,213 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: 
+
+env:
+  GODOT_VERSION: 4.2.0
+  RUST_CHANNEL: stable
+
+jobs:
+  export-godot-release:
+    strategy:
+      fail-fast: true
+      matrix:
+        export-template: [windows, linux]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - uses: actions/setup-dotnet@v3
+        name: Setup .NET SDK
+        with:
+          dotnet-version: 8.0.x
+
+      - name: .NET Version
+        run: dotnet --version
+
+      - uses: chickensoft-games/setup-godot@v1
+        name: Setup Godot
+        with:
+          # Version must include major, minor, and patch, and be >= 4.0.0
+          version: ${{ env.GODOT_VERSION }}
+          # Use .NET-enabled version of Godot (the default is also true).
+          use-dotnet: true
+
+      - name: Godot Version
+        run: godot --version
+
+      - name: Restore Dependencies
+        run: dotnet restore
+        working-directory: Godot Project/
+
+      - name: Generate .NET Bindings
+        run: godot --headless --build-solutions --quit || exit 0
+        working-directory: Godot Project/
+
+      - name: Build Projects
+        run: dotnet build
+        working-directory: Godot Project/
+      
+      - name: Godot Export
+        run: |
+          mkdir export/
+          godot --headless --export-release "${{ matrix.export-template }}" "export/${{ matrix.export-template }}${{ (matrix.export-template == 'windows') && '.exe' || '' }}"
+        working-directory: Godot Project/
+
+      - name: Artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: "godot-${{ matrix.export-template }}-release"
+          path: Godot Project/export/
+
+  match-maker-server: 
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - name: Install Rust
+        run: |
+          rustup install ${{ env.RUST_CHANNEL }}
+          rustup show
+          rustup --version
+          cargo +${{ env.RUST_CHANNEL }} --version
+          rustc +${{ env.RUST_CHANNEL }} --version
+        
+      - name: Release Build
+        run: cargo build --release
+        working-directory: Match Maker Server/
+  
+      - name: Upload build artifacts (Linux)
+        uses: actions/upload-artifact@v3
+        with:
+          name: match-maker-server-linux
+          path: Match Maker Server/target/release/match_maker_server
+        if: matrix.os == 'ubuntu-latest'
+  
+      - name: Upload build artifacts (Windows)
+        uses: actions/upload-artifact@v3
+        with:
+          name: match-maker-server-windows
+          path: Match Maker Server/target/release/match_maker_server.exe
+        if: matrix.os == 'windows-latest'
+
+  archive-plugin-webrtc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugin-webrtc
+          path: Godot Project/addons/webrtc_sipsorcery/
+
+  archive-plugin-match-maker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugin-match_maker
+          path: Godot Project/addons/match_maker/
+
+  archive-demo-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: demo_project
+          path: Godot Project/
+
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    needs: 
+      - export-godot-release
+      - match-maker-server
+      - archive-plugin-webrtc
+      - archive-plugin-match-maker
+      - archive-demo-project
+
+    steps:
+      - name: Download Artifact godot-windows-release
+        uses: actions/download-artifact@v3
+        with:
+          name: godot-windows-release
+          path: Godot.Demo.Windows
+      - name: Download Artifact godot-linux-release
+        uses: actions/download-artifact@v3
+        with:
+          name: godot-linux-release
+          path: Godot.Demo.Linux
+      - name: Download Artifact match-maker-server-linux
+        uses: actions/download-artifact@v3
+        with:
+          name: match-maker-server-linux
+          path: MatchMaker.Linux
+      - name: Download Artifact match-maker-server-windows
+        uses: actions/download-artifact@v3
+        with:
+          name: match-maker-server-windows
+          path: MatchMaker.Windows
+      - name: Download Artifact plugin-webrtc
+        uses: actions/download-artifact@v3
+        with:
+          name: plugin-webrtc
+          path: Godot.Plugin.WebRTC
+      - name: Download Artifact plugin-match_maker
+        uses: actions/download-artifact@v3
+        with:
+          name: plugin-match_maker
+          path: Godot.Plugin.MatchMaker
+      - name: Download Artifact demo_project
+        uses: actions/download-artifact@v3
+        with:
+          name: demo_project
+          path: Godot.Demo.Project
+
+      - name: Re-ZIP files
+        run: |
+          zip -r Godot.Demo.Windows.zip Godot.Demo.Windows/
+          zip -r Godot.Demo.Linux.zip Godot.Demo.Linux/
+          zip -r MatchMaker.Linux.zip MatchMaker.Linux/
+          zip -r MatchMaker.Windows.zip MatchMaker.Windows/
+          zip -r Godot.Plugin.WebRTC.zip Godot.Plugin.WebRTC/
+          zip -r Godot.Plugin.MatchMaker.zip Godot.Plugin.MatchMaker/
+          zip -r Godot.Demo.Project.zip Godot.Demo.Project/
+
+      - uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          makeLatest: true
+          artifacts: "*.zip"
+          body: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}

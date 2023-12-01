@@ -7,7 +7,6 @@ public partial class PingPong : Node
 
 	private MatchMaker matchMaker;
 	private bool requestSend = false;
-	private bool initialMessageSend = false;
 
 	private string debugTemplate;
 
@@ -60,6 +59,15 @@ public partial class PingPong : Node
 				iceGatheringState = state;
 			};
 		};
+		GD.Print("######## Registered Channel Listener ########");
+		matchMaker.OnChannelOpen += (peerUUID, channel) =>
+		{
+			if (matchMaker.IsHost)
+			{
+				GD.Print("######## Sending PING ########");
+				matchMaker.SendOnChannelString(peerUUID, channel, "Ping!");
+			}
+		};
 
 		UpdateLabel();
 	}
@@ -73,19 +81,6 @@ public partial class PingPong : Node
 				name = "Test",
 			});
 			requestSend = error == Error.Ok;
-		}
-
-		if (!initialMessageSend)
-		{
-			foreach (var (_, value) in matchMaker.webRTCConnections)
-			{
-				if (value.IsChannelOpen(WebRTCPeer.MAIN_CHANNEL_ID))
-				{
-					value.SendOnChannel(WebRTCPeer.MAIN_CHANNEL_ID, "Ping!");
-
-					initialMessageSend = true;
-				}
-			}
 		}
 
 		UpdateLabel();
