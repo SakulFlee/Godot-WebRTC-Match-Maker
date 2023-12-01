@@ -188,13 +188,10 @@ jobs:
           name: demo_project
           path: Godot.Demo.Project.zip
 
-      - name: DEBUG
-        run: ls -al -R .
-
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
-          artifacts: "*"
+          artifacts: "*.zip"
           body: ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
