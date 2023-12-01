@@ -56,9 +56,7 @@ jobs:
       - name: Godot Export
         run: |
           mkdir export/
-          chmod a+wrx -R export/
-          ls -al .
-          godot --headless --export-release "${{ matrix.export-template }}" export/
+          godot --headless --export-release "${{ matrix.export-template }}" "export/${{ matrix.export-template }}"
           ls -al export/
         working-directory: Godot Project/
 
