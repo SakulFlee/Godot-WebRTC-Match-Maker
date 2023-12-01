@@ -196,5 +196,5 @@ jobs:
           allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: "*"
-          body: ${{ github.ref }}
-          tag: ${{ github.ref }}
+          body: ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
