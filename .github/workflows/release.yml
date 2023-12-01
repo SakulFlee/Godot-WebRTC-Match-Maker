@@ -152,8 +152,41 @@ jobs:
       - archive-demo-project
 
     steps:
-      - name: Download all Artifacts
+      - name: Download Artifact godot-windows-release
         uses: actions/download-artifact@v3
+        with:
+          name: godot-windows-release
+          path: Godot.Demo.Windows.zip
+      - name: Download Artifact godot-linux-release
+        uses: actions/download-artifact@v3
+        with:
+          name: godot-linux-release
+          path: Godot.Demo.Linux.zip
+      - name: Download Artifact match-maker-server-linux
+        uses: actions/download-artifact@v3
+        with:
+          name: match-maker-server-linux
+          path: MatchMaker.Linux.zip
+      - name: Download Artifact match-maker-server-windows
+        uses: actions/download-artifact@v3
+        with:
+          name: match-maker-server-windows
+          path: MatchMaker.Windows.zip
+      - name: Download Artifact plugin-webrtc
+        uses: actions/download-artifact@v3
+        with:
+          name: plugin-webrtc
+          path: Godot.Plugin.WebRTC.zip
+      - name: Download Artifact plugin-match_maker
+        uses: actions/download-artifact@v3
+        with:
+          name: plugin-match_maker
+          path: Godot.Plugin.MatchMaker.zip
+      - name: Download Artifact demo_project
+        uses: actions/download-artifact@v3
+        with:
+          name: demo_project
+          path: Godot.Demo.Project.zip
 
       - name: DEBUG
         run: ls -al -R .
