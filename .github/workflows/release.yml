@@ -125,15 +125,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Archive Match-Maker plugin
-      run: zip -r plugin-match_maker.zip addons/match_maker/
-      working-directory: Godot Project/
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: plugin-match_maker
-        path: Godot Project/plugin-match_maker.zip
+        path: Godot Project/addons/match_maker/
 
   archive-demo-project:
     runs-on: ubuntu-latest
