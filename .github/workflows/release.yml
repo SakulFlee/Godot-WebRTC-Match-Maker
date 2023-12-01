@@ -155,6 +155,9 @@ jobs:
       - name: Download all Artifacts
         uses: actions/download-artifact@v3
 
+      - name: DEBUG
+        run: ls -al -R .
+
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
