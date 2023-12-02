@@ -58,7 +58,8 @@ public partial class HighLevel : Node
 			if (peer == null)
 			{
 				peer = new(matchMaker.webRTCConnections[peerUUID]);
-				GetTree().GetMultiplayer().MultiplayerPeer = peer;
+				var mp = GetTree().GetMultiplayer();
+				mp.MultiplayerPeer = peer;
 				// TODO: More peers?
 			}
 		};

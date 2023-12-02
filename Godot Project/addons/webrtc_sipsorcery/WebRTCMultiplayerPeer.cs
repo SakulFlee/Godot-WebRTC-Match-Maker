@@ -1,11 +1,13 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
 public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 {
     private WebRTCPeer[] webRTCPeers;
+    private int peerID;
 
-    private ConnectionStatus[] connectionStatuses;
+    private ConnectionStatus connectionStatus;
 
     private bool isHost;
 
@@ -38,8 +40,8 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
     }
 
     public WebRTCMultiplayerPeer(WebRTCPeer webRTCPeer)
+    : this([webRTCPeer])
     {
-        webRTCPeers = [webRTCPeer];
     }
 
     public WebRTCMultiplayerPeer(WebRTCPeer[] webRTCPeers)
@@ -49,6 +51,15 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
         // Checks
         setupPeerCountSanityCheck();
         setupHostClientSanityCheck();
+
+        if (isHost)
+        {
+            peerID = 1;
+        }
+        else
+        {
+            peerID = Random.Shared.Next() + 1;
+        }
 
         // Signals
         setupOnMessageSignal();
@@ -107,23 +118,21 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     private void setupOnChannelListener()
     {
-        connectionStatuses = new ConnectionStatus[webRTCPeers.Length];
+        connectionStatus = ConnectionStatus.Connecting;
 
-        uint counter = 1;
         foreach (var peer in webRTCPeers)
         {
-            // Default value
-            connectionStatuses[counter - 1] = ConnectionStatus.Connecting;
-
             peer.OnChannelStateChange += (channel, isOpen) =>
             {
-                var localID = counter;
-
-                var status = isOpen ? ConnectionStatus.Connected : ConnectionStatus.Connecting;
-                connectionStatuses[localID] = status;
+                if (isOpen)
+                {
+                    connectionStatus = ConnectionStatus.Connected;
+                }
+                else
+                {
+                    connectionStatus = ConnectionStatus.Disconnected;
+                }
             };
-
-            counter++;
         }
     }
 
@@ -144,7 +153,7 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override int _GetTransferChannel()
     {
-        return (int)currentIncomingPacket.channelID;
+        return 1;
     }
 
     public override int _GetPacketChannel()
@@ -159,6 +168,8 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override Error _PutPacketScript(byte[] pBuffer)
     {
+        GD.Print($">>> {currentOutgoingPacket.peerID} - {currentOutgoingPacket.channelID} - {pBuffer.GetStringFromUtf8()}");
+
         if (currentOutgoingPacket.peerID == 0)
         {
             return Error.Unconfigured;
@@ -210,17 +221,7 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override ConnectionStatus _GetConnectionStatus()
     {
-        var overallConnectionStatus = ConnectionStatus.Connected;
-
-        foreach (var status in connectionStatuses)
-        {
-            if (status != ConnectionStatus.Connected)
-            {
-                overallConnectionStatus = status;
-            }
-        }
-
-        return overallConnectionStatus;
+        return connectionStatus;
     }
 
     public override int _GetMaxPacketSize()
@@ -245,7 +246,7 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override int _GetUniqueId()
     {
-        return 1; // TODO: ???
+        return peerID;
     }
 
     public override bool _IsRefusingNewConnections()
@@ -256,6 +257,7 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override bool _IsServer()
     {
+        GD.Print($">  Is Host: {isHost}");
         return isHost;
     }
 

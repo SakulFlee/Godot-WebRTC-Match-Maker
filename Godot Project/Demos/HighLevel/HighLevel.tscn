@@ -1,7 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://1t5glognimha"]
+[gd_scene load_steps=5 format=3 uid="uid://1t5glognimha"]
 
 [ext_resource type="Script" path="res://Demos/HighLevel/HighLevel.cs" id="1_7lxk5"]
 [ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_86nxv"]
+[ext_resource type="PackedScene" uid="uid://dnr5ctnr27wsb" path="res://Demos/HighLevel/Player.tscn" id="3_k8xtg"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_1q7qq"]
+properties/0/path = NodePath("Player:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
 
 [node name="HighLevel" type="Node"]
 script = ExtResource("1_7lxk5")
@@ -35,6 +41,7 @@ grow_vertical = 2
 
 [node name="ConnectionLabel" type="Label" parent="Control/Panel/CenterContainer"]
 unique_name_in_owner = true
+z_index = 100
 layout_mode = 2
 text = "Connecting ..."
 
@@ -75,3 +82,8 @@ Peers:
 {7}"
 fit_content = true
 scroll_active = false
+
+[node name="Player" parent="." instance=ExtResource("3_k8xtg")]
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_1q7qq")
