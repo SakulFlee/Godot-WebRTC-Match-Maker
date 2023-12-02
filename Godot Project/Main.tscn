@@ -49,6 +49,19 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Chat"
 
+[node name="MarginContainerHighLevel" type="MarginContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="HighLevelButton" type="Button" parent="HBoxContainer/MarginContainerHighLevel"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "High Level"
+
 [node name="Label" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 10
@@ -61,3 +74,4 @@ horizontal_alignment = 1
 
 [connection signal="pressed" from="HBoxContainer/MarginContainerPingPong/PingPongButton" to="." method="OnPingPongButton"]
 [connection signal="pressed" from="HBoxContainer/MarginContainerChat/ChatButton" to="." method="OnChatButton"]
+[connection signal="pressed" from="HBoxContainer/MarginContainerHighLevel/HighLevelButton" to="." method="OnHighLevelButton"]
