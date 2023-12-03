@@ -54,6 +54,7 @@ impl Handler {
         };
 
         if let Ok(mut lock) = self.queue.lock() {
+            let mut remove = false;
             match lock.get_mut(&request.name) {
                 Some(query) => {
                     // Query exists -> Add peer
@@ -61,6 +62,8 @@ impl Handler {
 
                     // Check if room is full
                     if query.is_filled(slot_requirement) {
+                        remove = true;
+
                         if let Ok(lock) = self.peers.lock() {
                             let host_uuid = query.peers[0].to_string();
 
@@ -98,8 +101,6 @@ impl Handler {
                             }
                         }
                     }
-
-                    return Ok(());
                 }
                 None => {
                     // Query doesn't exist -> Create
@@ -110,6 +111,12 @@ impl Handler {
                     return Ok(());
                 }
             }
+
+            if remove {
+                lock.remove(&request.name);
+            }
+
+            return Ok(());
         }
 
         Err(ws::Error::new(
