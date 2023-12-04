@@ -13,6 +13,6 @@ jobs:
 
     steps:
     - name: Labeler
-      uses: actions/labeler@v4
+      uses: actions/labeler@v5
       with:
         dot: true
