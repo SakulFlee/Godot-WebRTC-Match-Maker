@@ -1,13 +1,16 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
 public partial class Game : Node
 {
 	[Export]
-	private PackedScene playerScene;
+	public PackedScene PlayerScene;
 
-	private CharacterBody2D ownPlayer;
-	private Dictionary<string, CharacterBody2D> players = new();
+	[Export]
+	public float PlayerSpeed = 400.0f;
+
+	private Dictionary<string, Player> players = new();
 
 	private RichTextLabel DebugLabel;
 	private Control ConnectionPanel;
@@ -67,8 +70,10 @@ public partial class Game : Node
 			{
 				if (peerUUID == matchMaker.HostUUID || matchMaker.IsHost)
 				{
-					var packet = GamePacket.MakeAddPlayerPacket(matchMaker.OwnUUID);
-					SendGamePacketToHost(channel, packet);
+					SendGamePacketToHost(channel, new GamePacket(GamePacketType.AddPlayer, new GamePacketAddPlayer()
+					{
+						Label = matchMaker.OwnUUID,
+					}));
 				}
 			};
 		};
@@ -86,14 +91,6 @@ public partial class Game : Node
 			requestSend = error == Error.Ok;
 		}
 		UpdateLabel();
-
-		if (ownPlayer != null && Input.IsAnythingPressed())
-		{
-			var inputDirection = Input.GetVector("Move Left", "Move Right", "Move Forward", "Move Backward");
-
-			ownPlayer.Velocity = inputDirection * 400;
-			ownPlayer.MoveAndSlide();
-		}
 	}
 
 	private void UpdateLabel()
@@ -119,34 +116,6 @@ public partial class Game : Node
 		{
 			ConnectionLabel.Visible = false;
 			ConnectionPanel.Visible = false;
-		}
-	}
-
-	/// <summary>
-	/// Called when a <see cref="GamePacketType.AddPlayer"/> packet is received.
-	/// </summary>
-	/// <param name="gamePacket"></param>
-	private void HandleAddPlayer(string peerUUID, GamePacket gamePacket)
-	{
-		// Instantiate a new player
-		var newPlayer = playerScene.Instantiate<CharacterBody2D>();
-		newPlayer.Name = $"Player#{gamePacket.Inner}";
-
-		// Set the player label to the UUID
-		var idNode = newPlayer.GetNode<RichTextLabel>("VBoxContainer/ID");
-		idNode.Text = $"{{{gamePacket.Inner}}}";
-
-		AddChild(newPlayer);
-
-		// If the peer UUID is our own, add this also as our own player that we can control
-		if (gamePacket.Inner == matchMaker.OwnUUID)
-		{
-			ownPlayer = newPlayer;
-		}
-
-		if (matchMaker.IsHost)
-		{
-			SendGamePacketBroadcast(GamePacket.MakeAddPlayerPacket(peerUUID));
 		}
 	}
 
@@ -206,24 +175,118 @@ public partial class Game : Node
 		SendGamePacketBroadcastIncludingSelf(WebRTCPeer.MAIN_CHANNEL_ID, gamePacket);
 	}
 
+	private void OnChannelMessageReceived(string peerUUID, ushort channel, string json)
+	{
+		var gamePacket = GamePacket.FromJSON(json);
+
+		OnGamePacketReceived(peerUUID, channel, gamePacket);
+	}
+
 	private void OnGamePacketReceived(string peerUUID, ushort channel, GamePacket gamePacket)
 	{
-		GD.Print($"[{peerUUID}@{channel}]: GamePacket -> {gamePacket.Type}: {gamePacket.Inner}");
-
 		switch (gamePacket.Type)
 		{
 			case GamePacketType.AddPlayer:
-				HandleAddPlayer(peerUUID, gamePacket);
+				HandleAddPlayer(peerUUID, gamePacket.InnerAs<GamePacketAddPlayer>());
+				break;
+			case GamePacketType.Input:
+				if (!matchMaker.IsHost)
+				{
+					GD.PrintErr($"[Game] Received {GamePacketType.Input} as non-host!");
+					return;
+				}
+
+				HandleInput(peerUUID, gamePacket.InnerAs<GamePacketInput>());
+				break;
+			case GamePacketType.PlayerMove:
+				HandlePlayerMove(peerUUID, gamePacket.InnerAs<GamePacketPlayerMove>());
 				break;
 			default:
 				break;
 		}
 	}
 
-	private void OnChannelMessageReceived(string peerUUID, ushort channel, string message)
+	/// <summary>
+	/// Called when a <see cref="GamePacketType.AddPlayer"/> packet is received.
+	/// </summary>
+	/// <param name="peerUUID">Where this packet came from</param>
+	/// <param name="packet">The <see cref="GamePacket"/> send</param>
+	private void HandleAddPlayer(string peerUUID, GamePacketAddPlayer packet)
 	{
-		var gamePacket = GamePacket.FromJSON(message);
+		var isUs = packet.Label == matchMaker.OwnUUID;
 
-		OnGamePacketReceived(peerUUID, channel, gamePacket);
+		// Instantiate a new player
+		var newPlayer = PlayerScene.Instantiate<Player>();
+		newPlayer.PeerUUID = packet.Label;
+		newPlayer.IsControlledByUs = isUs;
+		newPlayer.IsHost = matchMaker.IsHost;
+
+		// Randomize spawning position
+		var random = new Random();
+		var x = random.Next(-250, 250);
+		var y = random.Next(-250, 250);
+		newPlayer.Position = new Vector2(x, y);
+
+		// Add listener for input change event
+		// Applies to ALL peers, given it is OUR player.
+		if (isUs)
+		{
+			newPlayer.OnInputChanged += (inputVector) =>
+			{
+				SendGamePacketToHost(new GamePacket(GamePacketType.Input, new GamePacketInput()
+				{
+					InputVector = inputVector,
+				}));
+			};
+		}
+
+		// The host needs to synchronize the position of each player to every peer
+		if (matchMaker.IsHost)
+		{
+			newPlayer.OnPositionChanged += (peerUUID, position) =>
+			{
+				SendGamePacketBroadcast(new GamePacket(GamePacketType.PlayerMove, new GamePacketPlayerMove()
+				{
+					PeerUUID = peerUUID,
+					Position = position,
+				}));
+			};
+		}
+
+		players.Add(packet.Label, newPlayer);
+		AddChild(newPlayer);
+
+		// If we are a host, send the packet to every peer
+		if (matchMaker.IsHost)
+		{
+			SendGamePacketBroadcast(new GamePacket(GamePacketType.AddPlayer, new GamePacketAddPlayer
+			{
+				Label = peerUUID,
+			}));
+			SendGamePacketBroadcast(new GamePacket(GamePacketType.PlayerMove, new GamePacketPlayerMove()
+			{
+				Position = newPlayer.Position,
+			}));
+		}
+	}
+
+	private void HandleInput(string peerUUID, GamePacketInput packet)
+	{
+		var inputVector = packet.InputVector.Clamp(-Vector2.One, Vector2.One);
+
+		var player = players[peerUUID];
+		player.ApplyInputVector(inputVector);
+	}
+
+	private void HandlePlayerMove(string peerUUID, GamePacketPlayerMove packet)
+	{
+		if (peerUUID != matchMaker.HostUUID)
+		{
+			GD.PrintErr($"[Game] {GamePacketType.PlayerMove} received from non-host!");
+			return;
+		}
+
+		var player = players[packet.PeerUUID];
+		player.Position = packet.Position;
 	}
 }

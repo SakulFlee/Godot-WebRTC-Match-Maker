@@ -1,4 +1,6 @@
 public enum GamePacketType
 {
-    AddPlayer
+    AddPlayer,
+    Input,
+    PlayerMove,
 }

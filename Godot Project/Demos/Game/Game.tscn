@@ -1,21 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://fvwqk2aoe0r8"]
+[gd_scene load_steps=5 format=3 uid="uid://fvwqk2aoe0r8"]
 
 [ext_resource type="Script" path="res://Demos/Game/Game.cs" id="1_exnv6"]
 [ext_resource type="PackedScene" uid="uid://dhd4y2rk7sekp" path="res://Demos/Game/Player.tscn" id="2_27xsw"]
 [ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_docdk"]
+[ext_resource type="Texture2D" uid="uid://bp3ugrr6kf44v" path="res://Demos/Game/Background.png" id="4_sx0sq"]
 
 [node name="Game" type="Node"]
 script = ExtResource("1_exnv6")
-playerScene = ExtResource("2_27xsw")
+PlayerScene = ExtResource("2_27xsw")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_docdk")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="Camera2D"]
-
-[node name="Control" type="Control" parent="Camera2D/CanvasLayer"]
+[node name="Control" type="Control" parent="CanvasLayer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +22,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ConnectionPanel" type="Panel" parent="Camera2D/CanvasLayer/Control"]
+[node name="ConnectionPanel" type="Panel" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -32,7 +31,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="Camera2D/CanvasLayer/Control/ConnectionPanel"]
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/Control/ConnectionPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -40,12 +39,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ConnectionLabel" type="Label" parent="Camera2D/CanvasLayer/Control/ConnectionPanel/CenterContainer"]
+[node name="ConnectionLabel" type="Label" parent="CanvasLayer/Control/ConnectionPanel/CenterContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Connecting ..."
 
-[node name="MarginContainer" type="MarginContainer" parent="Camera2D/CanvasLayer/Control"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Control"]
 layout_mode = 2
 offset_right = 384.0
 offset_bottom = 128.0
@@ -54,17 +53,17 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="PanelContainer" type="PanelContainer" parent="Camera2D/CanvasLayer/Control/MarginContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control/MarginContainer"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="Camera2D/CanvasLayer/Control/MarginContainer/PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Control/MarginContainer/PanelContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="DebugLabel" type="RichTextLabel" parent="Camera2D/CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer"]
+[node name="DebugLabel" type="RichTextLabel" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer"]
 unique_name_in_owner = true
 clip_contents = false
 layout_mode = 2
@@ -82,3 +81,8 @@ Peers:
 {7}"
 fit_content = true
 scroll_active = false
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(576, 320)
+scale = Vector2(4, 4)
+texture = ExtResource("4_sx0sq")

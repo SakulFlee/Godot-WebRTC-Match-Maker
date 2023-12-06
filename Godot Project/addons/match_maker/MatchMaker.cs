@@ -175,7 +175,7 @@ public partial class MatchMaker : Node
                 GD.Print("Message: " + message);
 #endif
 
-                var packet = Packet.FromJSON(message);
+                var packet = Packet.FromJSON<Packet>(message);
                 if (packet == null)
                 {
                     GD.PrintErr("[MatchMaker] Invalid JSON received! (parsing failed)");

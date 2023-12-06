@@ -1,50 +1,44 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System;
 
 public class GamePacket
 {
     public GamePacketType Type;
-    public string Inner;
+    public string InnerJSON;
 
-    /// <summary>
-    /// Deserializes (/Parse) from JSON
-    /// </summary>
-    /// <param name="json">The JSON string to parse</param>
-    /// <returns>An instance of this GamePacket class</returns>
+    public GamePacket()
+    { }
+
+    public GamePacket(GamePacketType type, string innerJSON)
+    {
+        Type = type;
+        InnerJSON = innerJSON;
+    }
+
+    public GamePacket(GamePacketType type, object inner)
+    : this(type, PacketSerializer.ToJSON(inner))
+    { }
+
+    public T InnerAs<T>()
+    {
+        return PacketSerializer.FromJSON<T>(InnerJSON);
+    }
+
+    public void SetInner(object inner)
+    {
+        InnerJSON = PacketSerializer.ToJSON(inner);
+    }
+
     public static GamePacket FromJSON(string json)
     {
-        return JsonSerializer.Deserialize<GamePacket>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = {
-                new JsonStringEnumConverter(),
-            },
-        });
+        return PacketSerializer.FromJSON<GamePacket>(json);
     }
 
-    /// <summary>
-    /// Serializes this instance to JSON
-    /// </summary>
-    /// <returns>This GamePacket as JSON</returns>
     public string ToJSON()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = {
-                new JsonStringEnumConverter(),
-            },
-        });
+        return PacketSerializer.ToJSON(this);
     }
-
-    public static GamePacket MakeAddPlayerPacket(string peerUUID)
+    public override string ToString()
     {
-        return new GamePacket
-        {
-            Type = GamePacketType.AddPlayer,
-            Inner = peerUUID,
-        };
+        return $"GamePacket@{Type}";
     }
 }

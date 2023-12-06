@@ -6,7 +6,7 @@ using SIPSorcery.Net;
 /// <summary>
 /// The general packet/package send and received to and from the Match Maker Server.
 /// </summary>
-public class Packet : PacketSerializer<Packet>
+public class Packet
 {
     /// <summary>
     /// Type of the nested JSON
@@ -24,6 +24,16 @@ public class Packet : PacketSerializer<Packet>
     /// The nested JSON data
     /// </summary>
     public string json { get; set; }
+
+    public static T FromJSON<T>(string json)
+    {
+        return PacketSerializer.FromJSON<T>(json);
+    }
+
+    public string ToJSON()
+    {
+        return PacketSerializer.ToJSON(this);
+    }
 
     /// <summary>
     /// Special function to parse the nested value as an ICE Candidate
