@@ -161,6 +161,12 @@ public partial class MatchMaker : Node
 
     public override async void _Process(double delta)
     {
+        if (peer == null)
+        {
+            // No need to poll if the peer is nulled!
+            return;
+        }
+
         // Poll WebSocket (Match Maker Server connection), 
         // process if socket is connected
         peer.Poll();
@@ -323,6 +329,11 @@ public partial class MatchMaker : Node
                 }
             }
         }
+        else if (peer.GetReadyState() == WebSocketPeer.State.Closed)
+        {
+            // Poll until we are closed, then null the peer
+            peer = null;
+        }
     }
     #endregion
 
@@ -379,6 +390,12 @@ public partial class MatchMaker : Node
     private void signalOnChannelOpen(string peerUUID, short channel)
     {
         EmitSignal(SignalName.OnChannelOpen, peerUUID, channel);
+
+        // Once a P2P/WebRTC connection is established AND a channel is opened
+        // (open channel implies a connection is made), we can close the
+        // connection to the match making server.
+        // NOTE: This possibly has to be changed for 2+ peers!
+        peer.Close();
     }
 
     private void signalOnChannelClose(string peerUUID, short channel)
