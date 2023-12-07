@@ -17,6 +17,7 @@ slide_on_ceiling = false
 platform_on_leave = 2
 safe_margin = 0.1
 script = ExtResource("1_q8jgd")
+PositionTimerInterval = 0.001
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = false

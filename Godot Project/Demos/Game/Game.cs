@@ -292,6 +292,6 @@ public partial class Game : Node
 		}
 
 		var player = players[packet.PeerUUID];
-		player.Position = packet.Position;
+		player.ApplyPosition(packet.Position);
 	}
 }
