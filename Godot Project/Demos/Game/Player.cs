@@ -21,12 +21,14 @@ public partial class Player : CharacterBody2D
 	[Export]
 	public float PositionTimerInterval = 0.001f;
 
+	[Export]
+	public float PositionDifferenceAllowed = 1.0f;
+
 	private RichTextLabel idLabel;
 	private Camera2D camera;
 
 	private Vector2 previousInputVector = new();
 	private Vector2 previousPosition = new();
-	private bool ShouldBeMoving = false;
 
 	[Signal]
 	public delegate void OnInputChangedEventHandler(Vector2 inputVector);
@@ -113,7 +115,7 @@ public partial class Player : CharacterBody2D
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (ShouldBeMoving)
+		if (Velocity.X >= 0.1 || Velocity.X <= -0.1 || Velocity.Y >= 0.1 || Velocity.Y <= -0.1)
 		{
 			MoveAndSlide();
 		}
@@ -122,7 +124,20 @@ public partial class Player : CharacterBody2D
 	public void ApplyInputVector(Vector2 inputVector)
 	{
 		Velocity = inputVector * Speed;
+	}
 
-		ShouldBeMoving = Velocity.X >= 0.1 || Velocity.X <= -0.1 || Velocity.Y >= 0.1 || Velocity.Y <= -0.1;
+	public void ApplyPosition(Vector2 positionCorrection)
+	{
+		var difference = Position - positionCorrection;
+
+		var absX = Math.Abs(difference.X);
+		var absY = Math.Abs(difference.Y);
+
+		if (absX >= PositionDifferenceAllowed || absY >= PositionDifferenceAllowed)
+		{
+			// Only correct the position if the difference is too great.
+			// Avoids rubber-banding while decreasing accuracy.
+			Position = positionCorrection;
+		}
 	}
 }
