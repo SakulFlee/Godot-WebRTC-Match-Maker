@@ -19,7 +19,7 @@ public partial class Player : CharacterBody2D
 	public float InputTimerInterval = 0.01f;
 
 	[Export]
-	public float PositionTimerInterval = 0.005f;
+	public float PositionTimerInterval = 0.001f;
 
 	private RichTextLabel idLabel;
 	private Camera2D camera;
@@ -74,6 +74,11 @@ public partial class Player : CharacterBody2D
 				previousInputVector = currentInputVector;
 
 				EmitSignal(SignalName.OnInputChanged, currentInputVector);
+
+				if (IsControlledByUs)
+				{
+					ApplyInputVector(currentInputVector);
+				}
 			}
 		};
 		AddChild(timer);
