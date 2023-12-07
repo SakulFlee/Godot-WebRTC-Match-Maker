@@ -221,14 +221,22 @@ public partial class Game : Node
 		newPlayer.IsControlledByUs = isUs;
 		newPlayer.IsHost = matchMaker.IsHost;
 
-		// Randomize spawning position
-		var random = new Random();
-		var x = random.Next(-250, 250);
-		var y = random.Next(-250, 250);
-		newPlayer.Position = new Vector2(x, y);
+		if (matchMaker.IsHost)
+		{
+			// If host, set a random position
+			var random = new Random();
+			var x = random.Next(-250, 250);
+			var y = random.Next(-250, 250);
+			newPlayer.Position = new Vector2(x, y);
+		}
+		else
+		{
+			// If client, set the location provided
+			newPlayer.Position = packet.Position;
+		}
 
 		// Add listener for input change event
-		// Applies to ALL peers, given it is OUR player.
+		// Applies to ALL peers, given it is OUR (as in controlled by us) player.
 		if (isUs)
 		{
 			newPlayer.OnInputChanged += (inputVector) =>
@@ -262,9 +270,6 @@ public partial class Game : Node
 			SendGamePacketBroadcast(new GamePacket(GamePacketType.AddPlayer, new GamePacketAddPlayer
 			{
 				Label = peerUUID,
-			}));
-			SendGamePacketBroadcast(new GamePacket(GamePacketType.PlayerMove, new GamePacketPlayerMove()
-			{
 				Position = newPlayer.Position,
 			}));
 		}
