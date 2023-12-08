@@ -1,8 +1,11 @@
 Godot:
-  - Godot Project/**
+- changed-files:
+  - any-glob-to-any-file: 'Godot Project/**'
 
 Server:
-  - Match Maker Server/**
+- changed-files:
+  - any-glob-to-any-file: 'Match Maker Server/**'
 
 CI:
-  - .github/**
+- changed-files:
+  - any-glob-to-any-file: '.github/**'
