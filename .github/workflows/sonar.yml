@@ -54,7 +54,7 @@ jobs:
 
           cd Godot Project/
           dotnet restore
-          godot --headless --build-solutions --quit || exit 0
+          godot --headless --build-solutions --quit
           dotnet build
           
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
