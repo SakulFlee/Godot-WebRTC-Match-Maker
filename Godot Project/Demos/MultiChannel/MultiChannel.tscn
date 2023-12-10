@@ -8,6 +8,7 @@ script = ExtResource("1_v3goe")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_lqkpe")
+DataChannels = ["Main", "Test Channel", "Another Channel"]
 
 [node name="Control" type="Control" parent="."]
 z_index = 1
