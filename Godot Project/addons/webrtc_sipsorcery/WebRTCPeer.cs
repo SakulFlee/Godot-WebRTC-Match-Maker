@@ -267,7 +267,7 @@ public partial class WebRTCPeer : Node
         foreach (var future in channelCreations)
         {
             var channelId = await future;
-            GD.Print($"[WebRTC] Channel #{channelId}/'{(DataChannels[channelId])}' got created!");
+            GD.Print($"[WebRTC] Channel #{channelId}/'{DataChannels[channelId]}' got created!");
         }
         #endregion
     }
