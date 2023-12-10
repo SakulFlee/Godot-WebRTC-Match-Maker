@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppConfig {
     /// The address the server should listen on.
-    /// Use 0.0.0.0 (IPv4) or ::1 (IPv6) to listen to 
+    /// Use 0.0.0.0 (IPv4) or ::1 (IPv6) to listen to
     /// all addresses.
     pub listen_address: String,
     /// The port the server should listen on.
@@ -48,7 +48,12 @@ impl AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         let mut slots = HashMap::new();
-        slots.insert(String::from("Test"), 2);
+
+        // Demos:
+        slots.insert(String::from("PingPong"), 2);
+        slots.insert(String::from("Chat"), 2);
+        slots.insert(String::from("Game"), 2);
+        slots.insert(String::from("MultiChannel"), 2);
 
         Self {
             listen_address: String::from("0.0.0.0"),

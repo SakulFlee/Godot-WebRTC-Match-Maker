@@ -86,7 +86,7 @@ public partial class Game : Node
 		{
 			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
 			{
-				name = "Test",
+				name = "Chat",
 			});
 			requestSend = error == Error.Ok;
 		}

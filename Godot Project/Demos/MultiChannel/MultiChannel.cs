@@ -66,7 +66,6 @@ public partial class MultiChannel : Node
 				iceGatheringState = state;
 			};
 		};
-		GD.Print("######## Registered Channel Listener ########");
 		matchMaker.OnChannelOpen += (peerUUID, channelId) =>
 		{
 			channelList.AddItem(matchMaker.webRTCConnections[peerUUID].GetChannelLabel(channelId));
@@ -81,7 +80,7 @@ public partial class MultiChannel : Node
 		{
 			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
 			{
-				name = "Test",
+				name = "MultiChannel",
 			});
 			requestSend = error == Error.Ok;
 		}
@@ -159,10 +158,5 @@ public partial class MultiChannel : Node
 		{
 			logBox.Text = toBeAppended;
 		}
-	}
-
-	private void resetLog()
-	{
-		logBox.Text = "";
 	}
 }

@@ -59,12 +59,11 @@ public partial class PingPong : Node
 				iceGatheringState = state;
 			};
 		};
-		GD.Print("######## Registered Channel Listener ########");
 		matchMaker.OnChannelOpen += (peerUUID, channel) =>
 		{
 			if (matchMaker.IsHost)
 			{
-				GD.Print("######## Sending PING ########");
+				GD.Print("[PingPong] Sending PING ...");
 				matchMaker.SendOnChannelString(peerUUID, channel, "Ping!");
 			}
 		};
@@ -78,7 +77,7 @@ public partial class PingPong : Node
 		{
 			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
 			{
-				name = "Test",
+				name = "PingPong",
 			});
 			requestSend = error == Error.Ok;
 		}

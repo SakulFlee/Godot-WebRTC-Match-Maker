@@ -71,7 +71,7 @@ public partial class Chat : Node
 		{
 			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
 			{
-				name = "Test",
+				name = "Chat",
 			});
 			requestSend = error == Error.Ok;
 		}
