@@ -263,6 +263,8 @@ public partial class WebRTCPeer : Node
         {
             var channelCreationFuture = createChannel(channelName, (ushort)counter);
             channelCreations.Add(channelCreationFuture);
+
+            counter++;
         }
         foreach (var future in channelCreations)
         {
