@@ -9,10 +9,14 @@ public partial class WebRTCPeer : Node
 {
     #region Globals
     /// <summary>
-    /// The, default, "main" channel ID.
-    /// Every peer must have this.
+    /// The main (default) channel ID.
     /// </summary>
     public static readonly ushort MAIN_CHANNEL_ID = 0;
+
+    /// <summary>
+    /// The main (default) channel name.
+    /// </summary>
+    public static readonly string MAIN_CHANNEL_NAME = "main";
     #endregion
 
     #region Exports
@@ -84,6 +88,14 @@ public partial class WebRTCPeer : Node
     /// </summary>
     [Export]
     public bool IsHost = false;
+
+    [Export]
+    public Array ChannelConfiguration = new() {
+        new WebRTCChannelConfig() {
+            ChannelName = "Main",
+            Type = WebRTCChannelType.Data,
+        }
+    };
     #endregion
 
     #region Fields
@@ -91,11 +103,8 @@ public partial class WebRTCPeer : Node
     /// The actual peer connection
     /// </summary>
     private RTCPeerConnection peer;
-    /// <summary>
-    /// The main channel.
-    /// <seealso cref="MAIN_CHANNEL_ID"/>
-    /// </summary>
-    private RTCDataChannel mainChannel;
+
+    private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = new();
     #endregion
 
     #region Signals
@@ -252,34 +261,21 @@ public partial class WebRTCPeer : Node
         GD.Print($"[WebRTC] Peer created!");
         #endregion
 
-        #region Main Channel
-        // Create main channel
-        mainChannel = await peer.createDataChannel("main", new RTCDataChannelInit()
+        #region Channel creation
+        var channelCreations = new List<Task<ushort>>();
+        for (int i = 0; i < ChannelConfiguration.Count; i++)
         {
-            id = MAIN_CHANNEL_ID,
-            negotiated = true,
-        });
-        if (mainChannel == null)
-        {
-            GD.PrintErr("[WebRTC] Main channel creation failed!");
-            return;
+            var channelConfig = (WebRTCChannelConfig)ChannelConfiguration[i];
+
+            var channelCreationFuture = createChannel(channelConfig.ChannelName, (ushort)i);
+            channelCreations.Add(channelCreationFuture);
         }
 
-        // Signals
-        mainChannel.onopen += () =>
+        foreach (var future in channelCreations)
         {
-            CallDeferred("signalOnChannelOpen", MAIN_CHANNEL_ID);
-        };
-        mainChannel.onclose += () =>
-        {
-            CallDeferred("signalOnChannelClose", MAIN_CHANNEL_ID);
-        };
-        mainChannel.onmessage += (channel, protocol, data) =>
-        {
-            CallDeferred("signalOnMessage", channel.id ??= 0, protocol.ToString(), data);
-        };
-
-        GD.Print($"[WebRTC] Main channel created!");
+            var channelId = await future;
+            GD.Print($"[WebRTC] Channel #{channelId}/'{((WebRTCChannelConfig)ChannelConfiguration[channelId]).ChannelName}' got created!");
+        }
         #endregion
     }
     #endregion
@@ -418,7 +414,39 @@ public partial class WebRTCPeer : Node
     }
     #endregion
 
-    #region Methods
+    #region Channel Methods
+    private async Task<ushort> createChannel(string channelName, ushort channelId)
+    {
+        var channel = await peer.createDataChannel(channelName, new RTCDataChannelInit()
+        {
+            id = channelId,
+            negotiated = true,
+        }) ?? throw new InvalidChannelException(channelName, channelId);
+
+        channels.Add(channelId, channel);
+
+        // Signals
+        channel.onopen += () =>
+        {
+            CallDeferred("signalOnChannelOpen", channelId);
+        };
+        channel.onclose += () =>
+        {
+            CallDeferred("signalOnChannelClose", channelId);
+        };
+        channel.onmessage += (channel, protocol, data) =>
+        {
+            CallDeferred("signalOnMessage", channel.id ??= 0, protocol.ToString(), data);
+        };
+
+        return channelId;
+    }
+
+    public bool DoesChannelExist(ushort channelId)
+    {
+        return channels.ContainsKey(channelId);
+    }
+
     /// <summary>
     /// Sends a RAW (= byte[]) message.
     /// 
@@ -428,13 +456,8 @@ public partial class WebRTCPeer : Node
     /// <param name="data">The data to send</param>
     public void SendOnChannelRaw(ushort channelId, byte[] data)
     {
-        if (channelId != 0)
-        {
-            GD.PrintErr("[WebRTC] Invalid channel");
-            return;
-        }
-
-        mainChannel.send(data);
+        var channel = GetChannelByID(channelId);
+        channel.send(data);
     }
 
     /// <summary>
@@ -446,13 +469,7 @@ public partial class WebRTCPeer : Node
     /// <param name="data">The data to send</param>
     public void SendOnChannel(ushort channelId, string message)
     {
-        if (channelId != 0)
-        {
-            GD.PrintErr("[WebRTC] Invalid channel");
-            return;
-        }
-
-        mainChannel.send(message.ToUtf8Buffer());
+        SendOnChannelRaw(channelId, message.ToUtf8Buffer());
     }
 
     /// <summary>
@@ -462,13 +479,61 @@ public partial class WebRTCPeer : Node
     /// <returns>string containing the channel name</returns>
     public string GetChannelLabel(ushort channelId)
     {
-        if (channelId != 0)
+        var channel = GetChannelByID(channelId);
+        return channel.label;
+    }
+
+    /// <summary>
+    /// Retrieves the channel ID by it's label (name).
+    /// If possible, always use the ID of a channel or call this once, 
+    /// then store the ID for future use.
+    /// </summary>
+    /// <param name="channelName">The name of the channel to lookup</param>
+    /// <returns>The channel id of the channel</returns>
+    public ushort GetChannelID(string channelName)
+    {
+        foreach (var (id, channel) in channels)
         {
-            GD.PrintErr("[WebRTC] Invalid channel");
-            return "";
+            if (channel.label == channelName)
+            {
+                return id;
+            }
         }
 
-        return "main";
+        throw new InvalidChannelException(channelName);
+    }
+
+    /// <summary>
+    /// Gets a channel by it's ID.
+    /// Always use this over <see cref="GetChannelByName(string)"/>!
+    /// </summary>
+    /// <param name="channelId">The ID of the channel to lookup.</param>
+    /// <returns>The channel to be found</returns>
+    /// <exception cref="InvalidChannelException">If a channel with that ID isn't found</exception>
+    public RTCDataChannel GetChannelByID(ushort channelId)
+    {
+        RTCDataChannel channel;
+        if (channels.TryGetValue(channelId, out channel))
+        {
+            return channel;
+        }
+        else
+        {
+            throw new InvalidChannelException(channelId);
+        }
+    }
+
+    /// <summary>
+    /// Gets a channel by it's name.
+    /// This is inefficient, always use the channel ID with <see cref="GetChannelByID(ushort)"/> if possible!
+    /// </summary>
+    /// <param name="channelName">The name (label) of the channel to lookup.</param>
+    /// <returns>The channel with that label.</returns>
+    /// <exception cref="InvalidChannelException">If a channel with that name isn't found</exception>
+    public RTCDataChannel GetChannelByName(string channelName)
+    {
+        var channelId = GetChannelID(channelName);
+        return GetChannelByID(channelId);
     }
 
     /// <summary>
@@ -478,15 +543,11 @@ public partial class WebRTCPeer : Node
     /// <returns>true, if the channel is open, false otherwise</returns>
     public bool IsChannelOpen(ushort channelId)
     {
-        if (channelId != 0)
-        {
-            GD.PrintErr("[WebRTC] Invalid channel!");
-            return false;
-        }
-
-        return mainChannel != null && mainChannel.IsOpened;
+        return GetChannelByID(channelId).IsOpened;
     }
+    #endregion
 
+    #region WebRTC
     /// <summary>
     /// Adds an ICE candidate to the peer
     /// </summary>

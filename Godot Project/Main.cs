@@ -31,4 +31,14 @@ public partial class Main : Control
 			return;
 		}
 	}
+
+	public void OnDynamicChannelButton()
+	{
+		var err = GetTree().ChangeSceneToFile("res://Demos/MultiChannel/MultiChannel.tscn");
+		if (err != Error.Ok)
+		{
+			GD.PrintErr($"Failed to switch scene ({err})");
+			return;
+		}
+	}
 }
