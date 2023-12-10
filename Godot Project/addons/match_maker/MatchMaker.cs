@@ -22,7 +22,7 @@ public partial class MatchMaker : Node
     /// Check <see cref="WebRTCPeer.ICEServers"/> for more.
     /// </summary>
     [Export]
-    public Array ICEServers = new() {
+    public Array ICEServers = [
         new Dictionary() {
             {"url", "stun.l.google.com:19302"},
         },
@@ -38,7 +38,7 @@ public partial class MatchMaker : Node
         new Dictionary() {
             {"url", "stun4.l.google.com:19302"},
         }
-    };
+    ];
 
     /// <summary>
     /// ICE Candidates that are allowed and will be parsed through to the <see cref="WebRTCPeer"/>.
@@ -49,12 +49,7 @@ public partial class MatchMaker : Node
     public CandidateFilter AllowedCandidateTypes = CandidateFilter.All;
 
     [Export]
-    public Array ChannelConfiguration = new() {
-        new WebRTCChannelConfig() {
-            ChannelName = "Main",
-            Type = WebRTCChannelType.Data,
-        }
-    };
+    public Array DataChannels = ["Main"];
     #endregion
 
     #region Fields
@@ -68,7 +63,7 @@ public partial class MatchMaker : Node
     /// 
     /// The key is the PeerUUID.
     /// </summary>
-    public Dictionary<string, WebRTCPeer> webRTCConnections { get; private set; } = new();
+    public Dictionary<string, WebRTCPeer> webRTCConnections { get; private set; } = [];
 
     /// <summary>
     /// This Peers own UUID
@@ -221,7 +216,7 @@ public partial class MatchMaker : Node
                                 Name = $"WebRTCConnection#{peerUUID}",
                                 IsHost = IsHost,
                                 ICEServers = ICEServers,
-                                ChannelConfiguration = ChannelConfiguration,
+                                DataChannels = DataChannels,
                             };
 
                             // Add Signal listeners

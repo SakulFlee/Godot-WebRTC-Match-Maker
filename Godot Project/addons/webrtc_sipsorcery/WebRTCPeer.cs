@@ -65,7 +65,7 @@ public partial class WebRTCPeer : Node
     /// which are freely available and hosted by Google.
     /// </summary>
     [Export]
-    public Array ICEServers = new() {
+    public Array ICEServers = [
         new Dictionary() {
             {"url", "stun.l.google.com:19302"},
         },
@@ -81,7 +81,7 @@ public partial class WebRTCPeer : Node
         new Dictionary() {
             {"url", "stun4.l.google.com:19302"},
         }
-    };
+    ];
 
     /// <summary>
     /// Whether the current peer is a host or not
@@ -90,12 +90,7 @@ public partial class WebRTCPeer : Node
     public bool IsHost = false;
 
     [Export]
-    public Array ChannelConfiguration = new() {
-        new WebRTCChannelConfig() {
-            ChannelName = "Main",
-            Type = WebRTCChannelType.Data,
-        }
-    };
+    public Array DataChannels = ["Main"];
     #endregion
 
     #region Fields
@@ -104,7 +99,7 @@ public partial class WebRTCPeer : Node
     /// </summary>
     private RTCPeerConnection peer;
 
-    private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = new();
+    private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = [];
     #endregion
 
     #region Signals
@@ -263,18 +258,16 @@ public partial class WebRTCPeer : Node
 
         #region Channel creation
         var channelCreations = new List<Task<ushort>>();
-        for (int i = 0; i < ChannelConfiguration.Count; i++)
+        var counter = 0;
+        foreach (string channelName in DataChannels)
         {
-            var channelConfig = (WebRTCChannelConfig)ChannelConfiguration[i];
-
-            var channelCreationFuture = createChannel(channelConfig.ChannelName, (ushort)i);
+            var channelCreationFuture = createChannel(channelName, (ushort)counter);
             channelCreations.Add(channelCreationFuture);
         }
-
         foreach (var future in channelCreations)
         {
             var channelId = await future;
-            GD.Print($"[WebRTC] Channel #{channelId}/'{((WebRTCChannelConfig)ChannelConfiguration[channelId]).ChannelName}' got created!");
+            GD.Print($"[WebRTC] Channel #{channelId}/'{(DataChannels[channelId])}' got created!");
         }
         #endregion
     }
@@ -422,7 +415,6 @@ public partial class WebRTCPeer : Node
             id = channelId,
             negotiated = true,
         }) ?? throw new InvalidChannelException(channelName, channelId);
-
         channels.Add(channelId, channel);
 
         // Signals
