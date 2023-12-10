@@ -11,17 +11,26 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_i14hs")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 32.0
-offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
+alignment = 1
 
-[node name="MarginContainerPingPong" type="MarginContainer" parent="HBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Choose a demo:"
+horizontal_alignment = 1
+
+[node name="TopRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainerPingPong" type="MarginContainer" parent="VBoxContainer/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 16
@@ -29,13 +38,13 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="PingPongButton" type="Button" parent="HBoxContainer/MarginContainerPingPong"]
+[node name="PingPongButton" type="Button" parent="VBoxContainer/TopRow/MarginContainerPingPong"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Ping-Pong"
 
-[node name="MarginContainerChat" type="MarginContainer" parent="HBoxContainer"]
+[node name="MarginContainerChat" type="MarginContainer" parent="VBoxContainer/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 16
@@ -43,13 +52,13 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="ChatButton" type="Button" parent="HBoxContainer/MarginContainerChat"]
+[node name="ChatButton" type="Button" parent="VBoxContainer/TopRow/MarginContainerChat"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Chat"
 
-[node name="MarginContainerGame" type="MarginContainer" parent="HBoxContainer"]
+[node name="MarginContainerGame" type="MarginContainer" parent="VBoxContainer/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 16
@@ -57,21 +66,45 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="GameButton" type="Button" parent="HBoxContainer/MarginContainerGame"]
+[node name="GameButton" type="Button" parent="VBoxContainer/TopRow/MarginContainerGame"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Game"
 
-[node name="Label" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 23.0
-grow_horizontal = 2
-theme_override_font_sizes/font_size = 32
-text = "Choose a demo:"
-horizontal_alignment = 1
+[node name="BottomRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
 
-[connection signal="pressed" from="HBoxContainer/MarginContainerPingPong/PingPongButton" to="." method="OnPingPongButton"]
-[connection signal="pressed" from="HBoxContainer/MarginContainerChat/ChatButton" to="." method="OnChatButton"]
-[connection signal="pressed" from="HBoxContainer/MarginContainerGame/GameButton" to="." method="OnGameButton"]
+[node name="MarginContainer0" type="MarginContainer" parent="VBoxContainer/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="MarginContainer1" type="MarginContainer" parent="VBoxContainer/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="DynamicChannelButton" type="Button" parent="VBoxContainer/BottomRow/MarginContainer1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Multi Channel"
+
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerPingPong/PingPongButton" to="." method="OnPingPongButton"]
+[connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerChat/ChatButton" to="." method="OnChatButton"]
+[connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerGame/GameButton" to="." method="OnGameButton"]
+[connection signal="pressed" from="VBoxContainer/BottomRow/MarginContainer1/DynamicChannelButton" to="." method="OnDynamicChannelButton"]

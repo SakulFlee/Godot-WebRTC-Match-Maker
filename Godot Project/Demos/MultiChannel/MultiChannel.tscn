@@ -1,0 +1,191 @@
+[gd_scene load_steps=7 format=3 uid="uid://byuff3ui0my3h"]
+
+[ext_resource type="Script" path="res://Demos/MultiChannel/MultiChannel.cs" id="1_v3goe"]
+[ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_lqkpe"]
+[ext_resource type="Script" path="res://addons/webrtc_sipsorcery/WebRTCChannelConfig.cs" id="3_dwml1"]
+
+[sub_resource type="Resource" id="Resource_yisna"]
+script = ExtResource("3_dwml1")
+ChannelName = "Main"
+Type = 0
+
+[sub_resource type="Resource" id="Resource_u4lsl"]
+script = ExtResource("3_dwml1")
+ChannelName = "Test 1"
+Type = 0
+
+[sub_resource type="Resource" id="Resource_h62vc"]
+script = ExtResource("3_dwml1")
+ChannelName = "Test 2"
+Type = 0
+
+[node name="MultiChannel" type="Node"]
+script = ExtResource("1_v3goe")
+
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("2_lqkpe")
+ChannelConfiguration = [SubResource("Resource_yisna"), SubResource("Resource_u4lsl"), SubResource("Resource_h62vc")]
+
+[node name="Control" type="Control" parent="."]
+z_index = 1
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ConnectionLabelPanel" type="Panel" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="Control/ConnectionLabelPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ConnectionLabel" type="Label" parent="Control/ConnectionLabelPanel/CenterContainer"]
+layout_mode = 2
+text = "Connecting ..."
+
+[node name="MarginContainer" type="MarginContainer" parent="Control"]
+layout_mode = 2
+offset_right = 384.0
+offset_bottom = 128.0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PanelContainer" type="PanelContainer" parent="Control/MarginContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="DebugLabel" type="RichTextLabel" parent="Control/MarginContainer/PanelContainer/MarginContainer"]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 2
+bbcode_enabled = true
+text = "Signaling State: {0}
+Connection State: {1}
+ICE Connection State: {2}
+ICE Gathering State: {3}
+
+Own UUID: {4}
+Host UUID: {5}
+Is Host: {6}
+
+Peers:
+{7}"
+fit_content = true
+scroll_active = false
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GuidePanel" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -285.0
+offset_right = 384.0
+grow_vertical = 0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PanelContainer" type="PanelContainer" parent="Panel/GuidePanel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/GuidePanel/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="InfoLabel" type="RichTextLabel" parent="Panel/GuidePanel/PanelContainer/MarginContainer"]
+clip_contents = false
+layout_mode = 2
+bbcode_enabled = true
+text = "[b]Guide:[/b]
+[b]1.[/b] Select a channel.
+At the start there will be only a single channel.
+
+[b]2.[/b] Now watch the log to the right.
+A message will be automatically send and the other peer should be responding to it."
+fit_content = true
+scroll_active = false
+
+[node name="ChannelAndLog" type="HBoxContainer" parent="Panel"]
+clip_contents = true
+custom_minimum_size = Vector2(768, 0)
+layout_mode = 2
+offset_left = 384.0
+offset_right = 1152.0
+offset_bottom = 648.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 2
+
+[node name="LeftVBox" type="VBoxContainer" parent="Panel/ChannelAndLog"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Panel/ChannelAndLog/LeftVBox"]
+layout_mode = 2
+text = "Channel:"
+
+[node name="ChannelList" type="ItemList" parent="Panel/ChannelAndLog/LeftVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RightVBox" type="VBoxContainer" parent="Panel/ChannelAndLog"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Panel/ChannelAndLog/RightVBox"]
+layout_mode = 2
+text = "Log:"
+
+[node name="Panel" type="Panel" parent="Panel/ChannelAndLog/RightVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogBox" type="RichTextLabel" parent="Panel/ChannelAndLog/RightVBox/Panel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
+[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/ChannelList" to="." method="OnChannelSelected"]

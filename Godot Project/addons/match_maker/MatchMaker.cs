@@ -48,6 +48,13 @@ public partial class MatchMaker : Node
     [Export]
     public CandidateFilter AllowedCandidateTypes = CandidateFilter.All;
 
+    [Export]
+    public Array ChannelConfiguration = new() {
+        new WebRTCChannelConfig() {
+            ChannelName = "Main",
+            Type = WebRTCChannelType.Data,
+        }
+    };
     #endregion
 
     #region Fields
@@ -81,7 +88,6 @@ public partial class MatchMaker : Node
     {
         get { return OwnUUID != null && HostUUID != null && HostUUID == OwnUUID; }
     }
-
     #endregion
 
     #region Signals
@@ -215,6 +221,7 @@ public partial class MatchMaker : Node
                                 Name = $"WebRTCConnection#{peerUUID}",
                                 IsHost = IsHost,
                                 ICEServers = ICEServers,
+                                ChannelConfiguration = ChannelConfiguration,
                             };
 
                             // Add Signal listeners
@@ -346,6 +353,12 @@ public partial class MatchMaker : Node
     /// <param name="json">ICE Candidate in JSON form</param>
     private void signalOnICECandidate(string peerUUID, string json)
     {
+        if (peer == null)
+        {
+            GD.Print($"[Match Maker] Got more ICE candidates, but peer connection seems to be already closed!\nSkipping: {json}");
+            return;
+        }
+
         var packet = new Packet()
         {
             type = PacketType.ICECandidate,
