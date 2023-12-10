@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
+env:
+  GODOT_VERSION: 4.2.0
   
 jobs:
   build:
@@ -43,6 +46,17 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+
+      - uses: chickensoft-games/setup-godot@v1
+        name: Setup Godot
+        with:
+          # Version must include major, minor, and patch, and be >= 4.0.0
+          version: ${{ env.GODOT_VERSION }}
+          # Use .NET-enabled version of Godot (the default is also true).
+          use-dotnet: true
+
+      - name: Godot Version
+        run: godot --version
           
       - name: Build and analyze
         env:
