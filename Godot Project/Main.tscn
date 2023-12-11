@@ -98,10 +98,7 @@ theme_override_constants/margin_bottom = 16
 
 [node name="Button" type="Button" parent="VBoxContainer/BottomRow/MarginContainer1"]
 layout_mode = 2
-disabled = true
-text = "Audio/Video Channel
-
-(comming soon!)"
+text = "Audio/Video"
 
 [node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer/BottomRow"]
 layout_mode = 2
@@ -122,3 +119,4 @@ text = "High-Level Multiplayer
 [connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerChat/ChatButton" to="." method="OnChatButton"]
 [connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerGame/GameButton" to="." method="OnGameButton"]
 [connection signal="pressed" from="VBoxContainer/BottomRow/MarginContainer0/MultiChannel" to="." method="OnDynamicChannelButton"]
+[connection signal="pressed" from="VBoxContainer/BottomRow/MarginContainer1/Button" to="." method="OnVideoAudioButton"]

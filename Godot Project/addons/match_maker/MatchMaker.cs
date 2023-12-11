@@ -6,6 +6,9 @@ using TinyJson;
 public partial class MatchMaker : Node
 {
     #region Exports
+    [Export]
+    public bool AutoInitializeWebRTC = true;
+
     /// <summary>
     /// The connection string to the Match Maker server.
     /// This should be in the format of:
@@ -146,6 +149,9 @@ public partial class MatchMaker : Node
     /// <param name="isOpen">Whether the channel opened or closed</param>
     [Signal]
     public delegate void OnChannelStateChangeEventHandler(string peerUUID, ushort channel, bool isOpen);
+
+    [Signal]
+    public delegate void OnNewWebRTCPeerEventHandler(string peerUUID);
     #endregion
 
     #region Godot 
@@ -217,7 +223,13 @@ public partial class MatchMaker : Node
                                 IsHost = IsHost,
                                 ICEServers = ICEServers,
                                 DataChannels = DataChannels,
+                                AutoInitialize = AutoInitializeWebRTC,
                             };
+                            webRTCConnections.Add(peerUUID, connection);
+                            AddChild(connection);
+
+                            // Signal
+                            EmitSignal(SignalName.OnNewWebRTCPeer, peerUUID);
 
                             // Add Signal listeners
                             // Small hack: Calling another function deferred which then emits the Signal fixes an async issue with how WebRTCPeer handles events
@@ -249,9 +261,6 @@ public partial class MatchMaker : Node
                             {
                                 CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
                             };
-
-                            webRTCConnections.Add(peerUUID, connection);
-                            AddChild(connection);
 
                             // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
                             // If we are a host, do that.
