@@ -62,7 +62,7 @@ We are aiming to add this at some later point, probably around milestone v3.0.0.
 Related issue: [#79](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/79)
 
 1. Android support is limited at best.  
-While the project builds and exports fine for Android and even starts, upon selecting any Demo will crash the App.
+The project builds, exports and opens on the target device, but selecting any demo will crash the app.
 The cause for this is as of writing this still unknown but seems to be a .NET issue, rather than a Godot issue.
 Either way, Android support in Godot 4 is (as of writing this) new and experimental.
 Furthermore, there seem to be an issue with 32-bit-based builds. 64-bit-based builds properly!  
@@ -70,7 +70,7 @@ Related issue: [#106](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issu
 
 1. iOS support is unknown.  
 I currently don't have any way of testing iOS (and partially macOS) builds.  
-**Help is very welcome!**  
+**We require testers to validate this limitation. It may just work fine. Come find out and tell us about it!**  
 Related issue: [#107](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/107)
 
 1. Web isn't supported (yet).  
