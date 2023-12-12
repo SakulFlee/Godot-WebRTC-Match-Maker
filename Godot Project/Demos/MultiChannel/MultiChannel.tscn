@@ -1,30 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://byuff3ui0my3h"]
+[gd_scene load_steps=3 format=3 uid="uid://byuff3ui0my3h"]
 
 [ext_resource type="Script" path="res://Demos/MultiChannel/MultiChannel.cs" id="1_v3goe"]
 [ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_lqkpe"]
-[ext_resource type="Script" path="res://addons/webrtc_sipsorcery/WebRTCChannelConfig.cs" id="3_dwml1"]
-
-[sub_resource type="Resource" id="Resource_yisna"]
-script = ExtResource("3_dwml1")
-ChannelName = "Main"
-Type = 0
-
-[sub_resource type="Resource" id="Resource_u4lsl"]
-script = ExtResource("3_dwml1")
-ChannelName = "Test 1"
-Type = 0
-
-[sub_resource type="Resource" id="Resource_h62vc"]
-script = ExtResource("3_dwml1")
-ChannelName = "Test 2"
-Type = 0
 
 [node name="MultiChannel" type="Node"]
 script = ExtResource("1_v3goe")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_lqkpe")
-ChannelConfiguration = [SubResource("Resource_yisna"), SubResource("Resource_u4lsl"), SubResource("Resource_h62vc")]
+DataChannels = ["Main", "Test Channel", "Another Channel"]
 
 [node name="Control" type="Control" parent="."]
 z_index = 1

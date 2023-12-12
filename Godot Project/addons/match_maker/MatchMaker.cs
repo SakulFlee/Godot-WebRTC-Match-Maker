@@ -6,6 +6,9 @@ using TinyJson;
 public partial class MatchMaker : Node
 {
     #region Exports
+    [Export]
+    public bool AutoInitializeWebRTC = true;
+
     /// <summary>
     /// The connection string to the Match Maker server.
     /// This should be in the format of:
@@ -22,7 +25,7 @@ public partial class MatchMaker : Node
     /// Check <see cref="WebRTCPeer.ICEServers"/> for more.
     /// </summary>
     [Export]
-    public Array ICEServers = new() {
+    public Array ICEServers = [
         new Dictionary() {
             {"url", "stun.l.google.com:19302"},
         },
@@ -38,7 +41,7 @@ public partial class MatchMaker : Node
         new Dictionary() {
             {"url", "stun4.l.google.com:19302"},
         }
-    };
+    ];
 
     /// <summary>
     /// ICE Candidates that are allowed and will be parsed through to the <see cref="WebRTCPeer"/>.
@@ -49,12 +52,7 @@ public partial class MatchMaker : Node
     public CandidateFilter AllowedCandidateTypes = CandidateFilter.All;
 
     [Export]
-    public Array ChannelConfiguration = new() {
-        new WebRTCChannelConfig() {
-            ChannelName = "Main",
-            Type = WebRTCChannelType.Data,
-        }
-    };
+    public Array DataChannels = ["Main"];
     #endregion
 
     #region Fields
@@ -68,7 +66,7 @@ public partial class MatchMaker : Node
     /// 
     /// The key is the PeerUUID.
     /// </summary>
-    public Dictionary<string, WebRTCPeer> webRTCConnections { get; private set; } = new();
+    public Dictionary<string, WebRTCPeer> webRTCConnections { get; private set; } = [];
 
     /// <summary>
     /// This Peers own UUID
@@ -151,6 +149,9 @@ public partial class MatchMaker : Node
     /// <param name="isOpen">Whether the channel opened or closed</param>
     [Signal]
     public delegate void OnChannelStateChangeEventHandler(string peerUUID, ushort channel, bool isOpen);
+
+    [Signal]
+    public delegate void OnNewWebRTCPeerEventHandler(string peerUUID);
     #endregion
 
     #region Godot 
@@ -221,8 +222,14 @@ public partial class MatchMaker : Node
                                 Name = $"WebRTCConnection#{peerUUID}",
                                 IsHost = IsHost,
                                 ICEServers = ICEServers,
-                                ChannelConfiguration = ChannelConfiguration,
+                                DataChannels = DataChannels,
+                                AutoInitialize = AutoInitializeWebRTC,
                             };
+                            webRTCConnections.Add(peerUUID, connection);
+                            AddChild(connection);
+
+                            // Signal
+                            EmitSignal(SignalName.OnNewWebRTCPeer, peerUUID);
 
                             // Add Signal listeners
                             // Small hack: Calling another function deferred which then emits the Signal fixes an async issue with how WebRTCPeer handles events
@@ -254,9 +261,6 @@ public partial class MatchMaker : Node
                             {
                                 CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
                             };
-
-                            webRTCConnections.Add(peerUUID, connection);
-                            AddChild(connection);
 
                             // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
                             // If we are a host, do that.

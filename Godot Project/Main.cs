@@ -41,4 +41,14 @@ public partial class Main : Control
 			return;
 		}
 	}
+
+	public void OnVideoAudioButton()
+	{
+		var err = GetTree().ChangeSceneToFile("res://Demos/VideoAudio/VideoAudio.tscn");
+		if (err != Error.Ok)
+		{
+			GD.PrintErr($"Failed to switch scene ({err})");
+			return;
+		}
+	}
 }

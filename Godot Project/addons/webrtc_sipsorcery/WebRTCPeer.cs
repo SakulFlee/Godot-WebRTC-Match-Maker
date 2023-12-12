@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
+using Org.BouncyCastle.Crypto.Prng;
 using SIPSorcery.Net;
 
 [GlobalClass]
@@ -20,6 +22,9 @@ public partial class WebRTCPeer : Node
     #endregion
 
     #region Exports
+    [Export]
+    public bool AutoInitialize = true;
+
     /// <summary>
     /// List of ICE Servers.
     /// This can be STUN or TURN servers.
@@ -65,7 +70,7 @@ public partial class WebRTCPeer : Node
     /// which are freely available and hosted by Google.
     /// </summary>
     [Export]
-    public Array ICEServers = new() {
+    public Array ICEServers = [
         new Dictionary() {
             {"url", "stun.l.google.com:19302"},
         },
@@ -81,7 +86,7 @@ public partial class WebRTCPeer : Node
         new Dictionary() {
             {"url", "stun4.l.google.com:19302"},
         }
-    };
+    ];
 
     /// <summary>
     /// Whether the current peer is a host or not
@@ -90,12 +95,7 @@ public partial class WebRTCPeer : Node
     public bool IsHost = false;
 
     [Export]
-    public Array ChannelConfiguration = new() {
-        new WebRTCChannelConfig() {
-            ChannelName = "Main",
-            Type = WebRTCChannelType.Data,
-        }
-    };
+    public Array DataChannels = ["Main"];
     #endregion
 
     #region Fields
@@ -104,7 +104,10 @@ public partial class WebRTCPeer : Node
     /// </summary>
     private RTCPeerConnection peer;
 
-    private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = new();
+    private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = [];
+
+    public List<SIPSorceryMedia.Abstractions.VideoFormat> NegotiatedVideoFormats { get; private set; }
+    public List<SIPSorceryMedia.Abstractions.AudioFormat> NegotiatedAudioFormats { get; private set; }
     #endregion
 
     #region Signals
@@ -190,10 +193,42 @@ public partial class WebRTCPeer : Node
     /// <param name="channelId">The channel that opened</param>
     [Signal]
     public delegate void OnChannelStateChangeEventHandler(ushort channelId, bool open);
+
+    /// <summary>
+    /// Gets called when the video formats have been negotiated and need to be processed.
+    /// The actual format cannot be passed here as it it's any of Godot's supported Variant types.
+    /// Call the <see cref="NegotiatedVideoFormats"/> getter upon receiving this!
+    /// </summary>
+    [Signal]
+    public delegate void OnVideoFormatsNegotiatedEventHandler();
+
+    /// <summary>
+    /// Gets called when the audio formats have been negotiated and need to be processed.
+    /// The actual format cannot be passed here as it it's any of Godot's supported Variant types.
+    /// Call the <see cref="NegotiatedAudioFormats"/> getter upon receiving this!
+    /// </summary>
+    [Signal]
+    public delegate void OnAudioFormatsNegotiatedEventHandler();
     #endregion
 
     #region Godot Functions
     public override async void _Ready()
+    {
+        var config = parseConfiguration();
+        peer = makePeer(config);
+
+        if (AutoInitialize)
+        {
+            await Initialize();
+        }
+    }
+
+    public async Task Initialize()
+    {
+        await createDataChannels();
+    }
+
+    private RTCConfiguration parseConfiguration()
     {
         // Parse ICE Server config
         var rtcIceServers = new List<RTCIceServer>();
@@ -227,66 +262,100 @@ public partial class WebRTCPeer : Node
 
             rtcIceServers.Add(rtcIceServer);
         }
-        var config = new RTCConfiguration()
+
+        return new RTCConfiguration()
         {
             iceServers = rtcIceServers,
         };
+    }
 
-        #region Peer
+    private RTCPeerConnection makePeer(RTCConfiguration config)
+    {
         // Create a new peer with the config
-        peer = new RTCPeerConnection(config);
+        var p = new RTCPeerConnection(config);
 
         // Signals
-        peer.onicecandidate += (candidate) =>
+        p.onicecandidate += (candidate) =>
         {
-            CallDeferred("signalEmitterOnICECandidate", candidate.toJSON());
+            CallDeferred("signalOnICECandidate", candidate.toJSON());
         };
-        peer.oniceconnectionstatechange += (state) =>
+        p.oniceconnectionstatechange += (state) =>
         {
             CallDeferred("signalOnICEConnectionStateChangeEventHandler", state.ToString());
         };
-        peer.onsignalingstatechange += () =>
+        p.onsignalingstatechange += () =>
         {
-            CallDeferred("signalOnSignalingStateChangeEventHandler", peer.signalingState.ToString());
+            CallDeferred("signalOnSignalingStateChangeEventHandler", p.signalingState.ToString());
         };
-        peer.onconnectionstatechange += (state) =>
+        p.onconnectionstatechange += (state) =>
         {
             CallDeferred("signalOnConnectionStateChangeEventHandler", state.ToString());
         };
-        peer.onicegatheringstatechange += (state) =>
+        p.onicegatheringstatechange += (state) =>
         {
             CallDeferred("signalOnGatheringStateChangeEventHandler", state.ToString());
         };
+        p.OnVideoFormatsNegotiated += formats =>
+        {
+            NegotiatedVideoFormats = formats;
+
+            CallDeferred("signalOnVideoFormatNegotiated");
+        };
+        p.OnAudioFormatsNegotiated += formats =>
+        {
+            NegotiatedAudioFormats = formats;
+
+            CallDeferred("signalOnAudioFormatNegotiated");
+        };
 
         GD.Print($"[WebRTC] Peer created!");
-        #endregion
+        return p;
+    }
 
-        #region Channel creation
+    private async Task createDataChannels()
+    {
         var channelCreations = new List<Task<ushort>>();
-        for (int i = 0; i < ChannelConfiguration.Count; i++)
+        var counter = 0;
+        foreach (string channelName in DataChannels)
         {
-            var channelConfig = (WebRTCChannelConfig)ChannelConfiguration[i];
-
-            var channelCreationFuture = createChannel(channelConfig.ChannelName, (ushort)i);
+            var channelCreationFuture = createChannel(channelName, (ushort)counter);
             channelCreations.Add(channelCreationFuture);
-        }
 
+            counter++;
+        }
         foreach (var future in channelCreations)
         {
             var channelId = await future;
-            GD.Print($"[WebRTC] Channel #{channelId}/'{((WebRTCChannelConfig)ChannelConfiguration[channelId]).ChannelName}' got created!");
+            GD.Print($"[WebRTC] Channel #{channelId}/'{DataChannels[channelId]}' got created!");
         }
-        #endregion
     }
     #endregion
 
     #region Signal Methods
+    private void signalOnVideoFormatNegotiated()
+    {
+#if DEBUG
+        GD.Print($"[WebRTC] Video format negotiated!");
+#endif
+
+        EmitSignal(SignalName.OnVideoFormatsNegotiated);
+    }
+
+    private void signalOnAudioFormatNegotiated()
+    {
+#if DEBUG
+        GD.Print($"[WebRTC] Audio format negotiated!");
+#endif
+
+        EmitSignal(SignalName.OnAudioFormatsNegotiated);
+    }
+
     /// <summary>
     /// ⚠️ Workaround: Must be called deferred.
     /// 
     /// Will emit the <see cref="OnICECandidateJSON"/> signal.
     /// <param name="json">ICE Candidate as JSON</param>
-    private void signalEmitterOnICECandidate(string json)
+    private void signalOnICECandidate(string json)
     {
 #if DEBUG
         GD.Print($"[WebRTC] ICE Candidate: {json}");
@@ -415,6 +484,25 @@ public partial class WebRTCPeer : Node
     #endregion
 
     #region Channel Methods
+    public void SendVideo(uint durationRtpUnits, byte[] sample)
+    {
+        peer.SendVideo(durationRtpUnits, sample);
+    }
+
+    public void SendAudio(uint durationRtpUnits, byte[] sample)
+    {
+        peer.SendAudio(durationRtpUnits, sample);
+    }
+
+    /// <summary>
+    /// ⚠️ This must be called before <see cref="Initialize"/> and will only work if <see cref="AutoInitialize"/> is set to false!
+    /// </summary>
+    /// <param name="track">The media track to add</param>
+    public void AddMediaStreamTrack(MediaStreamTrack track)
+    {
+        peer.addTrack(track);
+    }
+
     private async Task<ushort> createChannel(string channelName, ushort channelId)
     {
         var channel = await peer.createDataChannel(channelName, new RTCDataChannelInit()
@@ -422,7 +510,6 @@ public partial class WebRTCPeer : Node
             id = channelId,
             negotiated = true,
         }) ?? throw new InvalidChannelException(channelName, channelId);
-
         channels.Add(channelId, channel);
 
         // Signals

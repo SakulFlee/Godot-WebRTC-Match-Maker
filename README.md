@@ -48,15 +48,47 @@ Check _[how to use this](#how-to-use-this)_ for more information on both approac
 
 ## Current Limitations
 
-Currently, only a connection between **two** peers is possible.  
-Once we reach Milestone 2.0.0, we will support more than wo peers.
+This project (and any part of it) are still WIP (work-in-progress).  
+They are useable, but some limitations need to be known:
 
-Android, possibly iOS, builds seem to be broken as for now.  
-However, this seems to be a .NET issue rather than a Godot issue.
-With future updates to .NET and Godot this should start working.
+1. Only a connection between **two** peers is possible at this moment.  
+There are still a lot of issues with more than two peers and most, if not all, demo projects will not work straight away with more than two peers.  
+Currently, we think around milestone v2.0.0 this limitation should be removed.  
+Related issue: [#17](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/17)
 
-Web builds are currently not possible with Godot either.  
-Until they re-add Web-Builds this can't be tested.
+1. Only low-level networking is possible at this moment.  
+This should be fine for most, but if you are expecting to use Godot's high-level multiplayer classes (like `MultiplayerSpawner` & `MultiplayerSynchronizer`) **this is currently not possible.**  
+We are aiming to add this at some later point, probably around milestone v3.0.0.  
+Related issue: [#79](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/79)
+
+1. Android support is limited at best.  
+The project builds, exports and opens on the target device, but selecting any demo will crash the app.
+The cause for this is as of writing this still unknown but seems to be a .NET issue, rather than a Godot issue.
+Either way, Android support in Godot 4 is (as of writing this) new and experimental.
+Furthermore, there seem to be an issue with 32-bit-based builds. 64-bit-based builds properly!  
+Related issue: [#106](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/106)
+
+1. iOS support is unknown.  
+I currently don't have any way of testing iOS (and partially macOS) builds.  
+**We require testers to validate this limitation. It may just work fine. Come find out and tell us about it!**  
+Related issue: [#107](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/107)
+
+1. Web isn't supported (yet).  
+While Godot 4 can export to the web, it cannot export C# projects to the web.  
+This whole project is using C# and there is now way around it.  
+Thus, until Godot 4 supports exporting to the Web with C#, this won't work on the web.  
+**However! Godot 4 has an official WebRTC client _exclusively for Web exports_ build in!**  
+Related issue: [#108](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/108) | Godot Docs: [Godot WebRTC Networking](https://docs.godotengine.org/en/stable/tutorials/networking/webrtc.html#using-webrtc-in-godot)
+
+1. Audio/Video demo being broken.  
+The Audio/Video demo is using parts of SIPSorcery which are still in a pre-release phase.
+Thus, stuff may break and in-fact seems to break on most systems.
+To get the demo fully working you will have to build your own `vpxmd` library for your specific platform and include it in the project.  
+This should be resolved once SIPSorcery finalizes and actually releases their library.  
+**For this reason, the demo is incomplete as of now as it doesn't properly stream the test file and doesn't display that inside Godot.**  
+In the meantime/Alternatively, all it's doing is utilizing a data channel with some extra events.
+You can very easily send or stream any audio/video file over a normal data channel.  
+Related issue: [#109](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/109)
 
 ## How to use this?
 

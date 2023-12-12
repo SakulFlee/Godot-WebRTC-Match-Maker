@@ -10,7 +10,7 @@ public partial class Game : Node
 	[Export]
 	public float PlayerSpeed = 400.0f;
 
-	private Dictionary<string, Player> players = new();
+	private Dictionary<string, Player> players = [];
 
 	private RichTextLabel DebugLabel;
 	private Control ConnectionPanel;
