@@ -11,6 +11,7 @@ use match_maker_server::{
     AppConfig, MatchMakingQueue, MatchMakingRequest, MatchMakingResponse, MatchMakingUpdate,
     Packet, PacketType,
 };
+use simple_logger::SimpleLogger;
 use uuid::Uuid;
 use ws::Sender;
 
@@ -221,7 +222,7 @@ impl ws::Handler for Handler {
         let packet = Packet::from_json(msg.as_text()?).map_err(|e| {
             ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
         })?;
-        println!("Packet: {:?}", packet);
+        log::debug!("Packet: {:?}", packet);
 
         if packet.ty == PacketType::MatchMakerRequest {
             // Match Maker request!
@@ -284,11 +285,18 @@ impl ws::Handler for Handler {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    SimpleLogger::new()
+        .with_level(log::LevelFilter::Info)
+        .env()
+        .init()
+        .unwrap();
+    log::info!("Logging level is set to {}!", log::max_level());
+
     let app_config = Arc::new(AppConfig::load()?);
     let queue = Arc::new(Mutex::new(HashMap::new()));
     let peers = Arc::new(Mutex::new(HashMap::new()));
 
-    println!("Match Maker Server listening on 0.0.0.0:33333 ...");
+    log::info!("Match Maker Server listening on 0.0.0.0:33333 ...");
     ws::listen(app_config.listen_string(), |sender| Handler {
         local_sender: sender,
         local_uuid: Uuid::new_v4(),
