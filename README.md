@@ -248,6 +248,10 @@ The server should be running now!
 **Head back to your Godot project and add the connection string.**  
 If the server is running locally on the same device add `ws://127.0.0.1:33333` as the connection string.
 
+> ![TIP]
+> The default logging level is set to `info`.  
+> If you want more insights into what packages are received set it to `debug` via the `RUST_LOG` environment variable (`RUST_LOG=debug cargo run`).
+
 However, _at least for released games_, it is highly recommended to actually host this server somewhere.  
 As a quick and free server you can check out [Oracle Cloud Free-Tier].  
 Simply follow the same steps of installing [Rust], compiling as release and run it.

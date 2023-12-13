@@ -10,6 +10,9 @@
                 "program": "${workspaceFolder}/Match Maker Server/target/debug/match_maker_server.exe",
             },
             "args": [],
+            "env": {
+                "RUST_LOG": "debug",
+            },
             "console": "integratedTerminal",
             "preLaunchTask": "[Match Maker] Build Server (Debug)",
         },
