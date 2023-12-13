@@ -152,6 +152,9 @@ public partial class MatchMaker : Node
 
     [Signal]
     public delegate void OnNewWebRTCPeerEventHandler(string peerUUID);
+
+    [Signal]
+    public delegate void OnMatchMakingUpdateEventHandler(uint currentPeerCount, uint requiredPeerCount);
     #endregion
 
     #region Godot 
@@ -198,6 +201,12 @@ public partial class MatchMaker : Node
 
                 switch (packet.type)
                 {
+                    case PacketType.MatchMakerUpdate:
+                        var matchMakingUpdate = packet.ParseMatchMakingUpdate();
+
+                        EmitSignal(SignalName.OnMatchMakingUpdate, matchMakingUpdate.currentPeerCount, matchMakingUpdate.requiredPeerCount);
+
+                        break;
                     case PacketType.MatchMakerResponse:
                         var matchMakerResponse = packet.ParseMatchMakingResponse();
                         OwnUUID = packet.to;

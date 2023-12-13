@@ -124,4 +124,26 @@ public class Packet
         });
         return result;
     }
+
+    /// <summary>
+    /// Special function to parse the nested value as a Match Making Update
+    /// 
+    /// ⚠️ Make sure the 'type' is correct!
+    /// </summary>
+    /// <returns>The parsed Match Making Update</returns>
+    public MatchMakingUpdate ParseMatchMakingUpdate()
+    {
+        if (type != PacketType.MatchMakerUpdate)
+        {
+            GD.PrintErr($"Attempting to parse Match Maker Update from wrong type ({type})");
+            return null;
+        }
+
+        var result = JsonSerializer.Deserialize<MatchMakingUpdate>(json, new JsonSerializerOptions()
+        {
+            IncludeFields = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        });
+        return result;
+    }
 }

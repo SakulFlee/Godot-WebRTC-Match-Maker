@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 public partial class PingPong : Node
@@ -35,6 +36,7 @@ public partial class PingPong : Node
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
+		matchMaker.OnMatchMakingUpdate += OnMatchMakingUpdate;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
 			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
@@ -69,6 +71,12 @@ public partial class PingPong : Node
 		};
 
 		UpdateLabel();
+	}
+
+	private void OnMatchMakingUpdate(uint currentPeerCount, uint requiredPeerCount)
+	{
+		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
+		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
 	}
 
 	public override void _Process(double delta)

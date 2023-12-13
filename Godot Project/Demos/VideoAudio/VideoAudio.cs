@@ -47,6 +47,7 @@ public partial class VideoAudio : Node
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
+		matchMaker.OnMatchMakingUpdate += OnMatchMakingUpdate;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
 			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
@@ -121,6 +122,12 @@ public partial class VideoAudio : Node
 		{
 			ConnectionLabel.Hide();
 		}
+	}
+
+	private void OnMatchMakingUpdate(uint currentPeerCount, uint requiredPeerCount)
+	{
+		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
+		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
 	}
 
 	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)

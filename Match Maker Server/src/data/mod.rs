@@ -14,6 +14,10 @@ pub use match_making_response::*;
 mod match_making_queue;
 pub use match_making_queue::*;
 
+/// Match Making Update (Outgoing packet)
+mod match_making_update;
+pub use match_making_update::*;
+
 /// Internal structure for Peers
 mod peer;
 pub use peer::*;

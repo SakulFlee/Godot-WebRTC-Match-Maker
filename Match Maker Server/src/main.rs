@@ -8,7 +8,8 @@ use std::{
 };
 
 use match_maker_server::{
-    AppConfig, MatchMakingQueue, MatchMakingRequest, MatchMakingResponse, Packet, PacketType,
+    AppConfig, MatchMakingQueue, MatchMakingRequest, MatchMakingResponse, MatchMakingUpdate,
+    Packet, PacketType,
 };
 use simple_logger::SimpleLogger;
 use uuid::Uuid;
@@ -61,11 +62,39 @@ impl Handler {
                     // Query exists -> Add peer
                     query.add_peer(self.local_uuid);
 
-                    // Check if room is full
-                    if query.is_filled(slot_requirement) {
-                        remove = true;
+                    if let Ok(lock) = self.peers.lock() {
+                        // Send update packet
+                        for peer_uuid in &query.peers {
+                            let _ = &lock[&peer_uuid].send(
+                                Packet {
+                                    ty: PacketType::MatchMakerUpdate,
+                                    from: String::from("MatchMaker"),
+                                    to: peer_uuid.to_string(),
+                                    json: serde_json::to_string(&MatchMakingUpdate {
+                                        current_peer_count: query.peers.len() as u8,
+                                        required_player_count: slot_requirement as u8,
+                                    })
+                                    .map_err(|e| {
+                                        ws::Error::new(
+                                            ws::ErrorKind::Protocol,
+                                            format!("Invalid request: {}", e),
+                                        )
+                                    })?,
+                                }
+                                .to_json()
+                                .map_err(|e| {
+                                    ws::Error::new(
+                                        ws::ErrorKind::Protocol,
+                                        format!("Invalid request: {}", e),
+                                    )
+                                })?,
+                            )?;
+                        }
 
-                        if let Ok(lock) = self.peers.lock() {
+                        // Check if room is full
+                        if query.is_filled(slot_requirement) {
+                            remove = true;
+
                             let host_uuid = query.peers[0].to_string();
 
                             // For each peer, send a Response packet
@@ -108,6 +137,31 @@ impl Handler {
                     let mut query: MatchMakingQueue = request.clone().into();
                     query.add_peer(self.local_uuid);
                     lock.insert(query.name.clone(), query);
+
+                    let _ = self.local_sender.send(
+                        Packet {
+                            ty: PacketType::MatchMakerUpdate,
+                            from: String::from("MatchMaker"),
+                            to: self.local_uuid.to_string(),
+                            json: serde_json::to_string(&MatchMakingUpdate {
+                                current_peer_count: 1u8,
+                                required_player_count: slot_requirement as u8,
+                            })
+                            .map_err(|e| {
+                                ws::Error::new(
+                                    ws::ErrorKind::Protocol,
+                                    format!("Invalid request: {}", e),
+                                )
+                            })?,
+                        }
+                        .to_json()
+                        .map_err(|e| {
+                            ws::Error::new(
+                                ws::ErrorKind::Protocol,
+                                format!("Invalid request: {}", e),
+                            )
+                        })?,
+                    )?;
 
                     return Ok(());
                 }

@@ -37,6 +37,7 @@ public partial class Chat : Node
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
+		matchMaker.OnMatchMakingUpdate += OnMatchMakingUpdate;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
 			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
@@ -77,6 +78,12 @@ public partial class Chat : Node
 		}
 
 		UpdateLabel();
+	}
+
+	private void OnMatchMakingUpdate(uint currentPeerCount, uint requiredPeerCount)
+	{
+		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
+		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
 	}
 
 	private void UpdateLabel()

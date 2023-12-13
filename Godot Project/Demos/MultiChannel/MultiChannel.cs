@@ -7,6 +7,7 @@ public partial class MultiChannel : Node
 	public string PayloadMessage = "Hello, World!";
 
 	private RichTextLabel DebugLabel;
+	private Label ConnectionLabel;
 	private Panel ConnectionLabelPanel;
 
 	private MatchMaker matchMaker;
@@ -27,6 +28,7 @@ public partial class MultiChannel : Node
 	public override void _EnterTree()
 	{
 		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
+		ConnectionLabel = GetNode<Label>("Control/ConnectionLabelPanel/CenterContainer/ConnectionLabel");
 		ConnectionLabelPanel = GetNode<Panel>("Control/ConnectionLabelPanel");
 
 		debugTemplate = DebugLabel.Text;
@@ -42,6 +44,7 @@ public partial class MultiChannel : Node
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
+		matchMaker.OnMatchMakingUpdate += OnMatchMakingUpdate;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
 			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
@@ -86,6 +89,12 @@ public partial class MultiChannel : Node
 		}
 
 		UpdateLabel();
+	}
+
+	private void OnMatchMakingUpdate(uint currentPeerCount, uint requiredPeerCount)
+	{
+		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
+		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
 	}
 
 	private void UpdateLabel()
