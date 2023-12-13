@@ -137,6 +137,31 @@ impl Handler {
                     query.add_peer(self.local_uuid);
                     lock.insert(query.name.clone(), query);
 
+                    let _ = self.local_sender.send(
+                        Packet {
+                            ty: PacketType::MatchMakerUpdate,
+                            from: String::from("MatchMaker"),
+                            to: self.local_uuid.to_string(),
+                            json: serde_json::to_string(&MatchMakingUpdate {
+                                current_peer_count: 1u8,
+                                required_player_count: slot_requirement as u8,
+                            })
+                            .map_err(|e| {
+                                ws::Error::new(
+                                    ws::ErrorKind::Protocol,
+                                    format!("Invalid request: {}", e),
+                                )
+                            })?,
+                        }
+                        .to_json()
+                        .map_err(|e| {
+                            ws::Error::new(
+                                ws::ErrorKind::Protocol,
+                                format!("Invalid request: {}", e),
+                            )
+                        })?,
+                    )?;
+
                     return Ok(());
                 }
             }
