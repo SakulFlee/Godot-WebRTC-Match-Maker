@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Internal data packet used to signal an outgoing Match Making response.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MatchMakingUpdate {
+pub struct MatchMakerUpdate {
     /// Count of players that currently are waiting in queue
     #[serde(rename = "currentPeerCount")]
     pub current_peer_count: u8,

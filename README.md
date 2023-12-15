@@ -169,7 +169,7 @@ public partial class Multiplayer : Node
         if (!requestSend && matchMaker.IsReady())
         {
             // (4)
-            var error = matchMaker.SendRequest(new MatchMakingRequest()
+            var error = matchMaker.SendRequest(new MatchMakerRequest()
             {
                 name = "Test",
             });
@@ -185,7 +185,7 @@ The above will do:
 1. Get the node `MatchMaker` we added to the scene tree
 2. If we haven't send a request yet:
 3. Check if the `MatchMaker` is ready, if so:
-4. Attempt sending our request (`MatchMakingRequest`)
+4. Attempt sending our request (`MatchMakerRequest`)
 5. Check for the `Error`. If it failed to send the procedure is repeated. Otherwise, mark the request as send.
 
 Continue at _[back to Godot](#back-to-godot)_.
@@ -301,15 +301,15 @@ There are more details hidden, but let's focus on the important bits:
 > Both are named `peer` here.
 
 First, a peer connects to the Match Maker via a WebSocket.  
-Once a connection is opened, the peer will send a `MatchMakingRequest` to the server.
+Once a connection is opened, the peer will send a `MatchMakerRequest` to the server.
 
-This `MatchMakingRequest` contains some basic information about the game.
+This `MatchMakerRequest` contains some basic information about the game.
 Such as, what map/level/scene is being attempted to play.
 
 The peer now waits until the room is full.  
 In the meantime, another peer connects, following the same procedure, and fills the room.
 
-Both clients now receive a `MatchMakingResponse`.  
+Both clients now receive a `MatchMakerResponse`.  
 This response includes whether the given peer is assigned as a Host (typically the first to create/join the room) or a Client, as well as a list of peers to connect to.
 
 Each peer now initializes the [WebRTC] backend.  
@@ -342,8 +342,8 @@ Signals, for example, can probably be exchanged for Async-Tasks.
 Follow the existing implementation in Godot:
 
 1. Open a WebSocket connection to the Match Making server
-2. Send a `MatchMakingRequest`
-3. Wait for `MatchMakingResponse` and parse it
+2. Send a `MatchMakerRequest`
+3. Wait for `MatchMakerResponse` and parse it
 4. Create a WebRTC peer for each peer listed
 5. _Session part_
    1. If host: Create Offer, set it as local session & send it to the other peer

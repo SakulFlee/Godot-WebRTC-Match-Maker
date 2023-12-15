@@ -154,7 +154,7 @@ public partial class MatchMaker : Node
     public delegate void OnNewWebRTCPeerEventHandler(string peerUUID);
 
     [Signal]
-    public delegate void OnMatchMakingUpdateEventHandler(uint currentPeerCount, uint requiredPeerCount);
+    public delegate void OnMatchMakerUpdateEventHandler(uint currentPeerCount, uint requiredPeerCount);
     #endregion
 
     #region Godot 
@@ -202,13 +202,13 @@ public partial class MatchMaker : Node
                 switch (packet.type)
                 {
                     case PacketType.MatchMakerUpdate:
-                        var matchMakingUpdate = packet.ParseMatchMakingUpdate();
+                        var MatchMakerUpdate = packet.ParseMatchMakerUpdate();
 
-                        EmitSignal(SignalName.OnMatchMakingUpdate, matchMakingUpdate.currentPeerCount, matchMakingUpdate.requiredPeerCount);
+                        EmitSignal(SignalName.OnMatchMakerUpdate, MatchMakerUpdate.currentPeerCount, MatchMakerUpdate.requiredPeerCount);
 
                         break;
                     case PacketType.MatchMakerResponse:
-                        var matchMakerResponse = packet.ParseMatchMakingResponse();
+                        var matchMakerResponse = packet.ParseMatchMakerResponse();
                         OwnUUID = packet.to;
                         GD.Print($"[MatchMaker] Own UUID: {OwnUUID}");
 
@@ -446,20 +446,20 @@ public partial class MatchMaker : Node
     }
 
     /// <summary>
-    /// Used to send a <see cref="MatchMakingRequest"/> to the Match Maker Server.
+    /// Used to send a <see cref="MatchMakerRequest"/> to the Match Maker Server.
     /// 
     /// Make sure to check if the connection is ready first via <see cref="IsReady"/>.
     /// </summary>
-    /// <param name="matchMaking">The request to be made</param>
+    /// <param name="MatchMaker">The request to be made</param>
     /// <returns>An <see cref="Error"/> if the connection is not open or an error ocurred.</returns>
-    public Error SendMatchMakingRequest(MatchMakingRequest matchMaking)
+    public Error SendMatchMakerRequest(MatchMakerRequest MatchMaker)
     {
         if (peer.GetReadyState() != WebSocketPeer.State.Open)
         {
             return Error.Failed;
         }
 
-        var json = matchMaking.ToJson();
+        var json = MatchMaker.ToJson();
         return SendPacket(PacketType.MatchMakerRequest, "MatchMaker", "UNKNOWN", json);
     }
 
