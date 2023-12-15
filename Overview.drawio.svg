@@ -745,13 +745,13 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 80px; margin-left: 290px;">
                         <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
                             <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: none; white-space: nowrap;">
-                                MatchMakingRequest
+                                MatchMakerRequest
                             </div>
                         </div>
                     </div>
                 </foreignObject>
                 <text x="290" y="83" fill="#FFFFFF" font-family="Helvetica" font-size="11px" text-anchor="middle">
-                    MatchMakingRequest
+                    MatchMakerRequest
                 </text>
             </switch>
         </g>
@@ -763,13 +763,13 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 80px; margin-left: 560px;">
                         <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
                             <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: none; white-space: nowrap;">
-                                MatchMakingRequest
+                                MatchMakerRequest
                             </div>
                         </div>
                     </div>
                 </foreignObject>
                 <text x="560" y="83" fill="#FFFFFF" font-family="Helvetica" font-size="11px" text-anchor="middle">
-                    MatchMakingRequest
+                    MatchMakerRequest
                 </text>
             </switch>
         </g>
@@ -781,13 +781,13 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 240px; margin-left: 340px;">
                         <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
                             <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: none; white-space: nowrap;">
-                                MatchMakingResponse
+                                MatchMakerResponse
                             </div>
                         </div>
                     </div>
                 </foreignObject>
                 <text x="340" y="243" fill="#FFFFFF" font-family="Helvetica" font-size="11px" text-anchor="middle">
-                    MatchMakingResponse
+                    MatchMakerResponse
                 </text>
             </switch>
         </g>
@@ -799,13 +799,13 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 240px; margin-left: 510px;">
                         <div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
                             <div style="display: inline-block; font-size: 11px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: none; white-space: nowrap;">
-                                MatchMakingResponse
+                                MatchMakerResponse
                             </div>
                         </div>
                     </div>
                 </foreignObject>
                 <text x="510" y="243" fill="#FFFFFF" font-family="Helvetica" font-size="11px" text-anchor="middle">
-                    MatchMakingResponse
+                    MatchMakerResponse
                 </text>
             </switch>
         </g>

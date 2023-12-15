@@ -36,7 +36,7 @@ public partial class PingPong : Node
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
-		matchMaker.OnMatchMakingUpdate += OnMatchMakingUpdate;
+		matchMaker.OnMatchMakerUpdate += OnMatchMakerUpdate;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
 			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
@@ -73,7 +73,7 @@ public partial class PingPong : Node
 		UpdateLabel();
 	}
 
-	private void OnMatchMakingUpdate(uint currentPeerCount, uint requiredPeerCount)
+	private void OnMatchMakerUpdate(uint currentPeerCount, uint requiredPeerCount)
 	{
 		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
 		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
@@ -83,7 +83,7 @@ public partial class PingPong : Node
 	{
 		if (!requestSend && matchMaker.IsReady())
 		{
-			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
+			var error = matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
 			{
 				name = "PingPong",
 			});

@@ -1,19 +1,19 @@
 use uuid::Uuid;
 
-use super::match_making_request::MatchMakingRequest;
+use super::match_maker_request::MatchMakerRequest;
 
 /// Query for Match Maker.
 ///
 /// Holds information about the current on-going queue.
 #[derive(Debug, Clone)]
-pub struct MatchMakingQueue {
+pub struct MatchMakerQueue {
     /// Name of the queue
     pub name: String,
     /// List of peers
     pub peers: Vec<Uuid>,
 }
 
-impl MatchMakingQueue {
+impl MatchMakerQueue {
     /// Adds a peer to the queue
     pub fn add_peer(&mut self, uuid: Uuid) {
         self.peers.push(uuid);
@@ -41,8 +41,8 @@ impl MatchMakingQueue {
     }
 }
 
-impl From<MatchMakingRequest> for MatchMakingQueue {
-    fn from(value: MatchMakingRequest) -> Self {
+impl From<MatchMakerRequest> for MatchMakerQueue {
+    fn from(value: MatchMakerRequest) -> Self {
         Self {
             name: value.name,
             peers: Vec::new(),

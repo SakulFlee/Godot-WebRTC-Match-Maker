@@ -3,8 +3,8 @@
 use match_maker_server::{
     app_config::AppConfig,
     data::packet::{
-        match_making_queue::MatchMakingQueue, match_making_request::MatchMakingRequest,
-        match_making_response::MatchMakingResponse, match_making_update::MatchMakingUpdate,
+        match_maker_queue::MatchMakerQueue, match_maker_request::MatchMakerRequest,
+        match_maker_response::MatchMakerResponse, match_maker_update::MatchMakerUpdate,
         packet_type::PacketType, Packet,
     },
 };
@@ -27,7 +27,7 @@ pub struct Handler {
     /// App configuration, mostly for queue filling
     app_config: Arc<AppConfig>,
     /// Queue lookup-table
-    queue: Arc<Mutex<HashMap<String, MatchMakingQueue>>>,
+    queue: Arc<Mutex<HashMap<String, MatchMakerQueue>>>,
     /// Peer lookup-table
     peers: Arc<Mutex<HashMap<Uuid, Sender>>>,
 }
@@ -45,7 +45,7 @@ impl Handler {
     /// 5. If filled: Send a response packet back to each peer,
     /// containing all information needed to connect
     /// to each other.
-    fn handle_match_making(&mut self, request: MatchMakingRequest) -> ws::Result<()> {
+    fn handle_match_maker(&mut self, request: MatchMakerRequest) -> ws::Result<()> {
         let slot_requirement = match self.app_config.slots.get(&request.name) {
             Some(slot) => *slot as usize,
             None => {
@@ -73,7 +73,7 @@ impl Handler {
                                     ty: PacketType::MatchMakerUpdate,
                                     from: String::from("MatchMaker"),
                                     to: peer_uuid.to_string(),
-                                    json: serde_json::to_string(&MatchMakingUpdate {
+                                    json: serde_json::to_string(&MatchMakerUpdate {
                                         current_peer_count: query.peers.len() as u8,
                                         required_player_count: slot_requirement as u8,
                                     })
@@ -107,7 +107,7 @@ impl Handler {
                                         ty: PacketType::MatchMakerResponse,
                                         from: String::from("MatchMaker"),
                                         to: peer.to_string(),
-                                        json: serde_json::to_string(&MatchMakingResponse {
+                                        json: serde_json::to_string(&MatchMakerResponse {
                                             own_uuid: peer.to_string(),
                                             host_uuid: host_uuid.clone(),
                                             peers: query
@@ -137,7 +137,7 @@ impl Handler {
                 }
                 None => {
                     // Query doesn't exist -> Create
-                    let mut query: MatchMakingQueue = request.clone().into();
+                    let mut query: MatchMakerQueue = request.clone().into();
                     query.add_peer(self.local_uuid);
                     lock.insert(query.name.clone(), query);
 
@@ -146,7 +146,7 @@ impl Handler {
                             ty: PacketType::MatchMakerUpdate,
                             from: String::from("MatchMaker"),
                             to: self.local_uuid.to_string(),
-                            json: serde_json::to_string(&MatchMakingUpdate {
+                            json: serde_json::to_string(&MatchMakerUpdate {
                                 current_peer_count: 1u8,
                                 required_player_count: slot_requirement as u8,
                             })
@@ -232,19 +232,19 @@ impl ws::Handler for Handler {
             // Validate and send it to the MatchMaker handler
 
             if packet.from != "UNKNOWN" {
-                return Err(ws::Error::new(ws::ErrorKind::Protocol, format!("Initial MatchMakingRequest packet with known PeerUUID is impossible! (from: 'MatchMaker' != from: '{}')", packet.from)));
+                return Err(ws::Error::new(ws::ErrorKind::Protocol, format!("Initial MatchMakerRequest packet with known PeerUUID is impossible! (from: 'MatchMaker' != from: '{}')", packet.from)));
             }
 
             if packet.to != "MatchMaker" {
-                return Err(ws::Error::new(ws::ErrorKind::Protocol, format!("Initial MatchMakingRequest packet without addressing it to MatchMaker (to: 'MatchMaker' != to: '{}')", packet.to)));
+                return Err(ws::Error::new(ws::ErrorKind::Protocol, format!("Initial MatchMakerRequest packet without addressing it to MatchMaker (to: 'MatchMaker' != to: '{}')", packet.to)));
             }
 
-            let match_maker_request: MatchMakingRequest = serde_json::from_str(&packet.json)
+            let match_maker_request: MatchMakerRequest = serde_json::from_str(&packet.json)
                 .map_err(|e| {
                     ws::Error::new(ws::ErrorKind::Protocol, format!("Invalid request: {}", e))
                 })?;
 
-            self.handle_match_making(match_maker_request)?;
+            self.handle_match_maker(match_maker_request)?;
         } else if packet.ty == PacketType::MatchMakerResponse {
             // Very invalid package ... Seriously why send this?
 

@@ -2,21 +2,21 @@
 pub mod packet_type;
 
 /// Match Making Request (Incoming packet)
-pub mod match_making_request;
+pub mod match_maker_request;
 
 /// Match Making Response (Outgoing packet)
-pub mod match_making_response;
+pub mod match_maker_response;
 
 /// Match Making Queue (Internal queue)
-pub mod match_making_queue;
+pub mod match_maker_queue;
 
 /// Match Making Update (Outgoing packet)
-pub mod match_making_update;
+pub mod match_maker_update;
 
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
-use self::{match_making_request::MatchMakingRequest, packet_type::PacketType};
+use self::{match_maker_request::MatchMakerRequest, packet_type::PacketType};
 
 /// Incoming or outgoing packet received or send by the server
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -39,19 +39,19 @@ impl Packet {
         serde_json::to_string(&self)
     }
 
-    /// Parses the internally nested [`MatchMakingRequest`].
+    /// Parses the internally nested [`MatchMakerRequest`].
     ///
     /// **Only** works, if the internally nested JSON
-    /// actually IS a [`MatchMakingRequest`].
-    pub fn parse_match_making_request(&self) -> Result<MatchMakingRequest, Box<dyn Error>> {
+    /// actually IS a [`MatchMakerRequest`].
+    pub fn parse_match_maker_request(&self) -> Result<MatchMakerRequest, Box<dyn Error>> {
         if self.ty != PacketType::MatchMakerRequest {
             return Err(format!(
-                "Trying to parse MatchMakingRequest with invalid type ({:?})",
+                "Trying to parse MatchMakerRequest with invalid type ({:?})",
                 &self.ty
             )
             .into());
         }
 
-        Ok(serde_json::from_str::<MatchMakingRequest>(&self.json)?)
+        Ok(serde_json::from_str::<MatchMakerRequest>(&self.json)?)
     }
 }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Internal data packet used to signal an outgoing Match Making response.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MatchMakingResponse {
+pub struct MatchMakerResponse {
     /// UUID of the current connected peer
     #[serde(rename = "ownUUID")]
     pub own_uuid: String,

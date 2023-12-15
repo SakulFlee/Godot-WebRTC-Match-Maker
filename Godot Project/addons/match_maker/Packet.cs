@@ -87,7 +87,7 @@ public class Packet
     /// ⚠️ Make sure the 'type' is correct!
     /// </summary>
     /// <returns>The parsed Match Making Request</returns>
-    public MatchMakingRequest ParseMatchMakingRequest()
+    public MatchMakerRequest ParseMatchMakerRequest()
     {
         if (type != PacketType.MatchMakerRequest)
         {
@@ -95,7 +95,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakingRequest>(json, new JsonSerializerOptions()
+        var result = JsonSerializer.Deserialize<MatchMakerRequest>(json, new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -109,7 +109,7 @@ public class Packet
     /// ⚠️ Make sure the 'type' is correct!
     /// </summary>
     /// <returns>The parsed Match Making Response</returns>
-    public MatchMakingResponse ParseMatchMakingResponse()
+    public MatchMakerResponse ParseMatchMakerResponse()
     {
         if (type != PacketType.MatchMakerResponse)
         {
@@ -117,7 +117,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakingResponse>(json, new JsonSerializerOptions()
+        var result = JsonSerializer.Deserialize<MatchMakerResponse>(json, new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -131,7 +131,7 @@ public class Packet
     /// ⚠️ Make sure the 'type' is correct!
     /// </summary>
     /// <returns>The parsed Match Making Update</returns>
-    public MatchMakingUpdate ParseMatchMakingUpdate()
+    public MatchMakerUpdate ParseMatchMakerUpdate()
     {
         if (type != PacketType.MatchMakerUpdate)
         {
@@ -139,7 +139,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakingUpdate>(json, new JsonSerializerOptions()
+        var result = JsonSerializer.Deserialize<MatchMakerUpdate>(json, new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
