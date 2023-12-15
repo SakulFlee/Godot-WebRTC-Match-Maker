@@ -1,12 +1,22 @@
-use std::error::Error;
+/// Packet Types
+pub mod packet_type;
+
+/// Match Making Request (Incoming packet)
+pub mod match_making_request;
+
+/// Match Making Response (Outgoing packet)
+pub mod match_making_response;
+
+/// Match Making Queue (Internal queue)
+pub mod match_making_queue;
+
+/// Match Making Update (Outgoing packet)
+pub mod match_making_update;
 
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 
-use crate::MatchMakingRequest;
-
-/// Packet Types
-mod packet_type;
-pub use packet_type::*;
+use self::{match_making_request::MatchMakingRequest, packet_type::PacketType};
 
 /// Incoming or outgoing packet received or send by the server
 #[derive(Debug, Clone, Deserialize, Serialize)]

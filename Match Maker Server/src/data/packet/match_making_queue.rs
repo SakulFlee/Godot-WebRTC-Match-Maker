@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::MatchMakingRequest;
+use super::match_making_request::MatchMakingRequest;
 
 /// Query for Match Maker.
 ///
@@ -34,7 +34,7 @@ impl MatchMakingQueue {
         });
     }
 
-    /// Returns `true` if the queue is fulfilling the 
+    /// Returns `true` if the queue is fulfilling the
     /// set requirement, false otherwise.
     pub fn is_filled(&self, requirement: usize) -> bool {
         self.peers.len() >= requirement
