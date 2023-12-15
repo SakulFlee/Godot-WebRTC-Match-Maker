@@ -1,17 +1,20 @@
 #![allow(clippy::result_large_err)] // WS-RS issue
 
+use match_maker_server::{
+    app_config::AppConfig,
+    data::packet::{
+        match_making_queue::MatchMakingQueue, match_making_request::MatchMakingRequest,
+        match_making_response::MatchMakingResponse, match_making_update::MatchMakingUpdate,
+        packet_type::PacketType, Packet,
+    },
+};
+use simple_logger::SimpleLogger;
 use std::{
     collections::HashMap,
     error::Error,
     str::FromStr,
     sync::{Arc, Mutex},
 };
-
-use match_maker_server::{
-    AppConfig, MatchMakingQueue, MatchMakingRequest, MatchMakingResponse, MatchMakingUpdate,
-    Packet, PacketType,
-};
-use simple_logger::SimpleLogger;
 use uuid::Uuid;
 use ws::Sender;
 
