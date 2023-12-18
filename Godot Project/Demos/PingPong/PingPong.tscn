@@ -79,7 +79,9 @@ horizontal_alignment = 2
 vertical_alignment = 2
 
 [node name="DebugPanel" parent="." instance=ExtResource("3_vl38l")]
+unique_name_in_owner = true
 visible = false
 
 [node name="ConnectionPanel" parent="." instance=ExtResource("4_cvayv")]
+unique_name_in_owner = true
 visible = false

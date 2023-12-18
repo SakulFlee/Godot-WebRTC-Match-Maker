@@ -21,8 +21,8 @@ public partial class PingPong : Node
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 
-		GetNode<DebugPanel>("DebugPanel").matchMaker = matchMaker;
-		GetNode<ConnectionPanel>("ConnectionPanel").matchMaker = matchMaker;
+		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
 
 		sendPingLabel = GetNode<Label>("%SendPingLabel");
 		sendPongLabel = GetNode<Label>("%SendPongLabel");
