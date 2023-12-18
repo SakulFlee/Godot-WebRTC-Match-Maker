@@ -447,7 +447,7 @@ public partial class MatchMaker : Node
     /// <returns>true, if a connection exists, false otherwise</returns>
     public bool IsReady()
     {
-        return peer.GetReadyState() == WebSocketPeer.State.Open;
+        return peer != null && peer.GetReadyState() == WebSocketPeer.State.Open;
     }
 
     /// <summary>
