@@ -11,8 +11,8 @@ public partial class Chat : Node
 	{
 		matchMaker = GetNode<MatchMaker>("MatchMaker");
 
-		GetNode<DebugPanel>("DebugPanel").matchMaker = matchMaker;
-		GetNode<ConnectionPanel>("ConnectionPanel").matchMaker = matchMaker;
+		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
 
 		chatBox = GetNode<RichTextLabel>("%ChatBox");
 		chatMessageField = GetNode<TextEdit>("%ChatMessageField");
