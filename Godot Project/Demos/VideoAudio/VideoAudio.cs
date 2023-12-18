@@ -6,18 +6,7 @@ using SIPSorceryMedia.Encoders;
 
 public partial class VideoAudio : Node
 {
-	private RichTextLabel DebugLabel;
-	private Label ConnectionLabel;
-
 	private MatchMaker matchMaker;
-	private bool requestSend = false;
-
-	private string debugTemplate;
-
-	private string signalingState = "None";
-	private string connectionState = "None";
-	private string iceConnectionState = "None";
-	private string iceGatheringState = "None";
 
 	private VideoTestPatternSource testPatternSource = new();
 	private VideoEncoderEndPoint videoEncoderEndpoint = new();
@@ -30,12 +19,6 @@ public partial class VideoAudio : Node
 
 	public override void _EnterTree()
 	{
-		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
-		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
-
-		debugTemplate = DebugLabel.Text;
-		DebugLabel.Text = "";
-
 		videoTrack = new(videoEncoderEndpoint.GetVideoSourceFormats(), MediaStreamStatusEnum.SendRecv);
 		audioTrack = new(audioSource.GetAudioSourceFormats(), MediaStreamStatusEnum.SendRecv);
 
@@ -50,14 +33,8 @@ public partial class VideoAudio : Node
 		matchMaker.OnMatchMakerUpdate += OnMatchMakerUpdate;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
-			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
-			{
-				signalingState = state;
-			};
 			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += async (state) =>
 			{
-				connectionState = state;
-
 				if (state == "connected")
 				{
 					connected = true;
@@ -70,14 +47,6 @@ public partial class VideoAudio : Node
 					await testPatternSource.CloseVideo();
 					await audioSource.CloseAudio();
 				}
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEConnectionStateChange += (state) =>
-			{
-				iceConnectionState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEGatheringStateChange += (state) =>
-			{
-				iceGatheringState = state;
 			};
 		};
 		matchMaker.OnNewWebRTCPeer += async peerUUID =>
@@ -109,25 +78,13 @@ public partial class VideoAudio : Node
 
 	public override void _Process(double delta)
 	{
-		if (!requestSend && matchMaker.IsReady())
+		if (matchMaker.IsReady() && !matchMaker.RequestSend)
 		{
-			var error = matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
+			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
 			{
 				name = "PingPong",
 			});
-			requestSend = error == Error.Ok;
 		}
-
-		if (connected && !ConnectionLabel.Visible)
-		{
-			ConnectionLabel.Hide();
-		}
-	}
-
-	private void OnMatchMakerUpdate(uint currentPeerCount, uint requiredPeerCount)
-	{
-		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
-		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
 	}
 
 	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
