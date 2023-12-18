@@ -19,6 +19,11 @@ public partial class VideoAudio : Node
 
 	public override void _EnterTree()
 	{
+		matchMaker = GetNode<MatchMaker>("MatchMaker");
+
+		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
+
 		videoTrack = new(videoEncoderEndpoint.GetVideoSourceFormats(), MediaStreamStatusEnum.SendRecv);
 		audioTrack = new(audioSource.GetAudioSourceFormats(), MediaStreamStatusEnum.SendRecv);
 
@@ -28,9 +33,7 @@ public partial class VideoAudio : Node
 
 	public override void _Ready()
 	{
-		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
-		matchMaker.OnMatchMakerUpdate += OnMatchMakerUpdate;
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
 			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += async (state) =>
