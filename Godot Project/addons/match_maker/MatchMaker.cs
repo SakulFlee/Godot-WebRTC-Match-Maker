@@ -86,6 +86,11 @@ public partial class MatchMaker : Node
     {
         get { return OwnUUID != null && HostUUID != null && HostUUID == OwnUUID; }
     }
+
+    /// <summary>
+    /// Indicates if a request to the Match Maker server was send or not
+    /// </summary>
+    public bool RequestSend { get; private set; } = false;
     #endregion
 
     #region Signals
@@ -442,7 +447,7 @@ public partial class MatchMaker : Node
     /// <returns>true, if a connection exists, false otherwise</returns>
     public bool IsReady()
     {
-        return peer.GetReadyState() == WebSocketPeer.State.Open;
+        return peer != null && peer.GetReadyState() == WebSocketPeer.State.Open;
     }
 
     /// <summary>
@@ -459,8 +464,20 @@ public partial class MatchMaker : Node
             return Error.Failed;
         }
 
+        if (RequestSend)
+        {
+            return Error.AlreadyExists;
+        }
+
         var json = MatchMaker.ToJson();
-        return SendPacket(PacketType.MatchMakerRequest, "MatchMaker", "UNKNOWN", json);
+        var error = SendPacket(PacketType.MatchMakerRequest, "MatchMaker", "UNKNOWN", json);
+
+        if (error == Error.Ok)
+        {
+            RequestSend = true;
+        }
+
+        return error;
     }
 
     /// <summary>

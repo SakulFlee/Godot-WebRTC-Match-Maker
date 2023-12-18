@@ -6,119 +6,40 @@ public partial class MultiChannel : Node
 	[Export]
 	public string PayloadMessage = "Hello, World!";
 
-	private RichTextLabel DebugLabel;
-	private Label ConnectionLabel;
-	private Panel ConnectionLabelPanel;
-
 	private MatchMaker matchMaker;
-	private bool requestSend = false;
-
-	private string debugTemplate;
-
-	private string signalingState = "None";
-	private string connectionState = "None";
-	private string iceConnectionState = "None";
-	private string iceGatheringState = "None";
-
-	private bool connected = false;
 
 	private ItemList channelList;
 	private RichTextLabel logBox;
 
 	public override void _EnterTree()
 	{
-		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
-		ConnectionLabel = GetNode<Label>("Control/ConnectionLabelPanel/CenterContainer/ConnectionLabel");
-		ConnectionLabelPanel = GetNode<Panel>("Control/ConnectionLabelPanel");
+		matchMaker = GetNode<MatchMaker>("MatchMaker");
 
-		debugTemplate = DebugLabel.Text;
-		DebugLabel.Text = "";
+		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
 
-		// ---
-
-		channelList = GetNode<ItemList>("Panel/ChannelAndLog/LeftVBox/ChannelList");
-		logBox = GetNode<RichTextLabel>("Panel/ChannelAndLog/RightVBox/Panel/LogBox");
+		channelList = GetNode<ItemList>("%ChannelList");
+		logBox = GetNode<RichTextLabel>("%LogBox");
 	}
 
 	public override void _Ready()
 	{
-		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += ChannelMessageReceived;
-		matchMaker.OnMatchMakerUpdate += OnMatchMakerUpdate;
-		matchMaker.OnNewConnection += (peerUUID) =>
-		{
-			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
-			{
-				signalingState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += (state) =>
-			{
-				connectionState = state;
 
-				if (state == "connected")
-				{
-					connected = true;
-				}
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEConnectionStateChange += (state) =>
-			{
-				iceConnectionState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEGatheringStateChange += (state) =>
-			{
-				iceGatheringState = state;
-			};
-		};
 		matchMaker.OnChannelOpen += (peerUUID, channelId) =>
 		{
 			channelList.AddItem(matchMaker.webRTCConnections[peerUUID].GetChannelLabel(channelId));
 		};
-
-		UpdateLabel();
 	}
 
 	public override void _Process(double delta)
 	{
-		if (!requestSend && matchMaker.IsReady())
+		if (matchMaker.IsReady() && !matchMaker.RequestSend)
 		{
-			var error = matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
+			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
 			{
 				name = "MultiChannel",
 			});
-			requestSend = error == Error.Ok;
-		}
-
-		UpdateLabel();
-	}
-
-	private void OnMatchMakerUpdate(uint currentPeerCount, uint requiredPeerCount)
-	{
-		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
-		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
-	}
-
-	private void UpdateLabel()
-	{
-		var peersString = "";
-		foreach (var (peerUUID, _) in matchMaker.webRTCConnections)
-		{
-			peersString += $"- {peerUUID}";
-		}
-
-		DebugLabel.Text = string.Format(debugTemplate, new[] {
-			signalingState,
-			connectionState,
-			iceConnectionState,
-			iceGatheringState,
-			matchMaker.OwnUUID,
-			matchMaker.HostUUID,
-			matchMaker.IsHost ? "yes" : "no",
-			peersString
-		});
-
-		if (connected && ConnectionLabelPanel.Visible)
-		{
-			ConnectionLabelPanel.Hide();
 		}
 	}
 
