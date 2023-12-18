@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://6g75efppoade"]
+[gd_scene load_steps=5 format=3 uid="uid://6g75efppoade"]
 
 [ext_resource type="Script" path="res://Demos/PingPong/PingPong.cs" id="1_r6cp2"]
 [ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="3_hps7x"]
+[ext_resource type="PackedScene" uid="uid://dfrhaa6ime1jf" path="res://DebugPanel/DebugPanel.tscn" id="3_vl38l"]
+[ext_resource type="PackedScene" uid="uid://cenjhm83f2riu" path="res://ConnectionPanel/ConnectionPanel.tscn" id="4_cvayv"]
 
 [node name="PingPong" type="Node"]
 script = ExtResource("1_r6cp2")
@@ -9,71 +11,73 @@ script = ExtResource("1_r6cp2")
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("3_hps7x")
 
-[node name="Control" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+[node name="DebugPanel" parent="." instance=ExtResource("3_vl38l")]
+
+[node name="GridContainer" type="GridContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -77.5
+offset_top = -38.5
+offset_right = 77.5
+offset_bottom = 38.5
 grow_horizontal = 2
 grow_vertical = 2
+columns = 3
 
-[node name="Panel" type="Panel" parent="Control"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="EmptyLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="Control/Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="SendLabe" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Send"
+vertical_alignment = 2
 
-[node name="ConnectionLabel" type="Label" parent="Control/Panel/CenterContainer"]
+[node name="ReceivedLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Received"
+vertical_alignment = 2
+
+[node name="PingLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Ping"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="SendPingLabel" type="Label" parent="GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Connecting ..."
-horizontal_alignment = 1
-vertical_alignment = 1
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="Control"]
-layout_mode = 2
-offset_right = 384.0
-offset_bottom = 128.0
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="PanelContainer" type="PanelContainer" parent="Control/MarginContainer"]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="Control/MarginContainer/PanelContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="DebugLabel" type="RichTextLabel" parent="Control/MarginContainer/PanelContainer/MarginContainer"]
+[node name="ReceivedPingLabel" type="Label" parent="GridContainer"]
 unique_name_in_owner = true
-clip_contents = false
 layout_mode = 2
-bbcode_enabled = true
-text = "Signaling State: {0}
-Connection State: {1}
-ICE Connection State: {2}
-ICE Gathering State: {3}
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-Own UUID: {4}
-Host UUID: {5}
-Is Host: {6}
+[node name="PongLabel" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Pong"
+horizontal_alignment = 2
+vertical_alignment = 2
 
-Peers:
-{7}"
-fit_content = true
-scroll_active = false
+[node name="SendPongLabel" type="Label" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="ReceivedPongLabel" type="Label" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="ConnectionPanel" parent="." instance=ExtResource("4_cvayv")]

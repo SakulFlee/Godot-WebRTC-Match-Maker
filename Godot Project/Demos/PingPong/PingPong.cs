@@ -1,125 +1,67 @@
-using System;
 using Godot;
 
 public partial class PingPong : Node
 {
-	private RichTextLabel DebugLabel;
-	private Label ConnectionLabel;
-
 	private MatchMaker matchMaker;
-	private bool requestSend = false;
 
-	private string debugTemplate;
-
-	private string signalingState = "None";
-	private string connectionState = "None";
-	private string iceConnectionState = "None";
-	private string iceGatheringState = "None";
-
-	private bool connected = false;
-	private bool connectionLabelChanged = false;
+	private Label sendPingLabel;
 	private uint sendPingCounter = 0;
+
+	private Label sendPongLabel;
 	private uint sendPongCounter = 0;
+
+	private Label receivedPingLabel;
 	private uint receivedPingCounter = 0;
+
+	private Label receivedPongLabel;
 	private uint receivedPongCounter = 0;
+
 
 	public override void _EnterTree()
 	{
-		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
-		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
+		matchMaker = GetNode<MatchMaker>("MatchMaker");
 
-		debugTemplate = DebugLabel.Text;
-		DebugLabel.Text = "";
+		GetNode<DebugPanel>("DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("ConnectionPanel").matchMaker = matchMaker;
+
+		sendPingLabel = GetNode<Label>("%SendPingLabel");
+		sendPongLabel = GetNode<Label>("%SendPongLabel");
+		receivedPingLabel = GetNode<Label>("%ReceivedPingLabel");
+		receivedPongLabel = GetNode<Label>("%ReceivedPongLabel");
 	}
 
 	public override void _Ready()
 	{
-		matchMaker = GetNode<MatchMaker>("MatchMaker");
-		matchMaker.OnMessageString += ChannelMessageReceived;
-		matchMaker.OnMatchMakerUpdate += OnMatchMakerUpdate;
-		matchMaker.OnNewConnection += (peerUUID) =>
-		{
-			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
-			{
-				signalingState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += (state) =>
-			{
-				connectionState = state;
+		matchMaker.OnMessageString += OnChannelMessageReceived;
 
-				if (state == "connected")
-				{
-					connected = true;
-				}
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEConnectionStateChange += (state) =>
-			{
-				iceConnectionState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEGatheringStateChange += (state) =>
-			{
-				iceGatheringState = state;
-			};
-		};
+		// If we are a host, wait for a channel to open and send an initial message
 		matchMaker.OnChannelOpen += (peerUUID, channel) =>
 		{
 			if (matchMaker.IsHost)
 			{
-				GD.Print("[PingPong] Sending PING ...");
+				GD.Print("[PingPong] Channel opened! Sending initial message ...");
 				matchMaker.SendOnChannelString(peerUUID, channel, "Ping!");
 			}
 		};
-
-		UpdateLabel();
-	}
-
-	private void OnMatchMakerUpdate(uint currentPeerCount, uint requiredPeerCount)
-	{
-		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
-		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
 	}
 
 	public override void _Process(double delta)
 	{
-		if (!requestSend && matchMaker.IsReady())
+		if (matchMaker.IsReady() && !matchMaker.RequestSend)
 		{
-			var error = matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
+			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
 			{
 				name = "PingPong",
 			});
-			requestSend = error == Error.Ok;
 		}
 
-		UpdateLabel();
+		sendPingLabel.Text = sendPingCounter.ToString();
+		sendPongLabel.Text = sendPongCounter.ToString();
+		receivedPingLabel.Text = receivedPingCounter.ToString();
+		receivedPongLabel.Text = receivedPongCounter.ToString();
 	}
 
-	private void UpdateLabel()
-	{
-		var peersString = "";
-		foreach (var (peerUUID, _) in matchMaker.webRTCConnections)
-		{
-			peersString += $"- {peerUUID}";
-		}
-
-		DebugLabel.Text = string.Format(debugTemplate, new[] {
-			signalingState,
-			connectionState,
-			iceConnectionState,
-			iceGatheringState,
-			matchMaker.OwnUUID,
-			matchMaker.HostUUID,
-			matchMaker.IsHost ? "yes" : "no",
-			peersString
-		});
-
-		if (connected)
-		{
-			ConnectionLabel.Text = $@"Send           Pings: {sendPingCounter} | Pongs: {sendPongCounter}
-Received    Pings: {receivedPingCounter} | Pongs: {receivedPongCounter}";
-		}
-	}
-
-	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
+	private void OnChannelMessageReceived(string peerUUID, ushort channel, string message)
 	{
 		// Send back Pings and Pongs!
 		if (message == "Ping!")
@@ -135,10 +77,6 @@ Received    Pings: {receivedPingCounter} | Pongs: {receivedPongCounter}";
 
 			receivedPongCounter++;
 			sendPingCounter++;
-		}
-		else
-		{
-			GD.PrintErr("Invalid ping/pong received!");
-		}
+		}   // Everything else will be invalid so we don't need to care about that! :)
 	}
 }
