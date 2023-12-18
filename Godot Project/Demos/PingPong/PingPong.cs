@@ -77,6 +77,10 @@ public partial class PingPong : Node
 
 			receivedPongCounter++;
 			sendPingCounter++;
-		}   // Everything else will be invalid so we don't need to care about that! :)
+		}
+		else
+		{
+			GD.Print($"[PingPong] Invalid message '{message}' received!");
+		}
 	}
 }
