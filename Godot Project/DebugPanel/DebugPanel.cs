@@ -18,6 +18,8 @@ public partial class DebugPanel : PanelContainer
 	{
 		debugLabel = GetNode<RichTextLabel>("MarginContainer/DebugLabel");
 		debugTemplateText = debugLabel.Text;
+
+		Show();
 	}
 
 	public override void _Ready()

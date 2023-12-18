@@ -7,10 +7,15 @@ public partial class ConnectionPanel : Control
 
 	private Label label;
 
-	public override void _Ready()
+	public override void _EnterTree()
 	{
 		label = GetNode<Label>("Label");
 
+		Show();
+	}
+
+	public override void _Ready()
+	{
 		matchMaker.OnNewConnection += (peerUUID) =>
 				{
 					matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += (state) =>
