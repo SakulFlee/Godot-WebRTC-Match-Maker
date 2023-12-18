@@ -4,69 +4,35 @@ using Godot;
 
 public partial class Game : Node
 {
+	#region Exports
 	[Export]
 	public PackedScene PlayerScene;
 
 	[Export]
 	public float PlayerSpeed = 400.0f;
+	#endregion
+
+	#region Variables
+	private MatchMaker matchMaker;
 
 	private Dictionary<string, Player> players = [];
-
-	private RichTextLabel DebugLabel;
-	private Control ConnectionPanel;
-	private Label ConnectionLabel;
-
-	private MatchMaker matchMaker;
-	private bool requestSend = false;
-
-	private string debugTemplate;
-
-	private string signalingState = "None";
-	private string connectionState = "None";
-	private string iceConnectionState = "None";
-	private string iceGatheringState = "None";
-
-	private bool connected = false;
-	private bool addPlayerPacketSend = false;
+	#endregion
 
 	public override void _EnterTree()
 	{
-		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
-		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
-		ConnectionPanel = GetNode<Control>("%ConnectionPanel");
+		matchMaker = GetNode<MatchMaker>("MatchMaker");
 
-		debugTemplate = DebugLabel.Text;
-		DebugLabel.Text = "";
+		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
 	}
 
 	public override void _Ready()
 	{
-		matchMaker = GetNode<MatchMaker>("MatchMaker");
 		matchMaker.OnMessageString += OnChannelMessageReceived;
-		matchMaker.OnMatchMakerUpdate += OnMatchMakerUpdate;
+
+
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
-			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
-			{
-				signalingState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += (state) =>
-			{
-				connectionState = state;
-
-				if (state == "connected")
-				{
-					connected = true;
-				}
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEConnectionStateChange += (state) =>
-			{
-				iceConnectionState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEGatheringStateChange += (state) =>
-			{
-				iceGatheringState = state;
-			};
 			matchMaker.OnChannelOpen += (peerUUID, channel) =>
 			{
 				if (peerUUID == matchMaker.HostUUID || matchMaker.IsHost)
@@ -78,51 +44,16 @@ public partial class Game : Node
 				}
 			};
 		};
-		UpdateLabel();
 	}
 
 	public override void _Process(double delta)
 	{
-		if (!requestSend && matchMaker.IsReady())
+		if (matchMaker.IsReady() && !matchMaker.RequestSend)
 		{
-			var error = matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
+			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
 			{
-				name = "Chat",
+				name = "Game",
 			});
-			requestSend = error == Error.Ok;
-		}
-		UpdateLabel();
-	}
-
-	private void OnMatchMakerUpdate(uint currentPeerCount, uint requiredPeerCount)
-	{
-		GD.Print($"Status: {currentPeerCount}/{requiredPeerCount}");
-		ConnectionLabel.Text = $"Waiting for players ...\n{currentPeerCount}/{requiredPeerCount}";
-	}
-
-	private void UpdateLabel()
-	{
-		var peersString = "";
-		foreach (var (peerUUID, _) in matchMaker.webRTCConnections)
-		{
-			peersString += $"- {peerUUID}";
-		}
-
-		DebugLabel.Text = string.Format(debugTemplate, new[] {
-			signalingState,
-			connectionState,
-			iceConnectionState,
-			iceGatheringState,
-			matchMaker.OwnUUID,
-			matchMaker.HostUUID,
-			matchMaker.IsHost ? "yes" : "no",
-			peersString
-		});
-
-		if (connected && (ConnectionLabel.Visible || ConnectionPanel.Visible))
-		{
-			ConnectionLabel.Visible = false;
-			ConnectionPanel.Visible = false;
 		}
 	}
 
