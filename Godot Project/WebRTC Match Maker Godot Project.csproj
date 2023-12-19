@@ -6,8 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SIPSorcery" Version="6.0.12" />
-    <PackageReference Include="SIPSorceryMedia" Version="3.0.2" />
-    <PackageReference Include="SIPSorceryMedia.Encoders" Version="0.0.12-pre" />
     <Content Include="...">
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
