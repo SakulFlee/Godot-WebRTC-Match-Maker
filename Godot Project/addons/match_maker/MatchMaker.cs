@@ -6,9 +6,6 @@ using TinyJson;
 public partial class MatchMaker : Node
 {
     #region Exports
-    [Export]
-    public bool AutoInitializeWebRTC = true;
-
     /// <summary>
     /// The connection string to the Match Maker server.
     /// This should be in the format of:
@@ -237,7 +234,6 @@ public partial class MatchMaker : Node
                                 IsHost = IsHost,
                                 ICEServers = ICEServers,
                                 DataChannels = DataChannels,
-                                AutoInitialize = AutoInitializeWebRTC,
                             };
                             webRTCConnections.Add(peerUUID, connection);
                             AddChild(connection);
