@@ -61,7 +61,7 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -104.0
+offset_left = -292.0
 grow_horizontal = 0
 grow_vertical = 2
 size_flags_horizontal = 3
@@ -89,20 +89,23 @@ alignment = 2
 
 [node name="Label" type="Label" parent="Panel/ChannelAndLog/RightVBox"]
 layout_mode = 2
+size_flags_vertical = 1
 text = "Log:"
 
 [node name="Panel" type="Panel" parent="Panel/ChannelAndLog/RightVBox"]
+custom_minimum_size = Vector2(384, 0)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="LogBox" type="RichTextLabel" parent="Panel/ChannelAndLog/RightVBox/Panel"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(384, 0)
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -1.0
-offset_right = 479.0
 grow_horizontal = 0
 grow_vertical = 2
 size_flags_vertical = 3
