@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class Main : Control
+public partial class Main : Panel
 {
 	public void OnPingPongButton()
 	{
@@ -22,17 +22,7 @@ public partial class Main : Control
 		}
 	}
 
-	public void OnGameButton()
-	{
-		var err = GetTree().ChangeSceneToFile("res://Demos/Game/Game.tscn");
-		if (err != Error.Ok)
-		{
-			GD.PrintErr($"Failed to switch scene ({err})");
-			return;
-		}
-	}
-
-	public void OnDynamicChannelButton()
+	public void OnMultiChannelButton()
 	{
 		var err = GetTree().ChangeSceneToFile("res://Demos/MultiChannel/MultiChannel.tscn");
 		if (err != Error.Ok)
@@ -42,9 +32,9 @@ public partial class Main : Control
 		}
 	}
 
-	public void OnVideoAudioButton()
+	public void OnGameButton()
 	{
-		var err = GetTree().ChangeSceneToFile("res://Demos/VideoAudio/VideoAudio.tscn");
+		var err = GetTree().ChangeSceneToFile("res://Demos/Game/Game.tscn");
 		if (err != Error.Ok)
 		{
 			GD.PrintErr($"Failed to switch scene ({err})");

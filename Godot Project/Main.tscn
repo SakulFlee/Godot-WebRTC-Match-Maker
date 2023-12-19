@@ -2,8 +2,7 @@
 
 [ext_resource type="Script" path="res://Main.cs" id="2_i14hs"]
 
-[node name="Main" type="Control"]
-layout_mode = 3
+[node name="Main" type="Panel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -11,113 +10,66 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_i14hs")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = "Choose a demo:"
+text = "Godot WebRTC Demo Project"
 horizontal_alignment = 1
 
-[node name="TopRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/margin_left = 64
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 64
+theme_override_constants/margin_bottom = 64
 
-[node name="MarginContainerPingPong" type="MarginContainer" parent="VBoxContainer/TopRow"]
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="PingPongButton" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="PingPongButton" type="Button" parent="VBoxContainer/TopRow/MarginContainerPingPong"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 3
 text = "Ping Pong"
 
-[node name="MarginContainerChat" type="MarginContainer" parent="VBoxContainer/TopRow"]
+[node name="ChatButton" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="ChatButton" type="Button" parent="VBoxContainer/TopRow/MarginContainerChat"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 3
 text = "Chat"
 
-[node name="MarginContainerGame" type="MarginContainer" parent="VBoxContainer/TopRow"]
+[node name="MultiChannel" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="GameButton" type="Button" parent="VBoxContainer/TopRow/MarginContainerGame"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Game"
-
-[node name="BottomRow" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
 size_flags_vertical = 3
-
-[node name="MarginContainer0" type="MarginContainer" parent="VBoxContainer/BottomRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="MultiChannel" type="Button" parent="VBoxContainer/BottomRow/MarginContainer0"]
-layout_mode = 2
-size_flags_horizontal = 3
 text = "Multi Channel"
 
-[node name="MarginContainer1" type="MarginContainer" parent="VBoxContainer/BottomRow"]
+[node name="GameButton" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+size_flags_vertical = 3
+text = "Game"
 
-[node name="Button" type="Button" parent="VBoxContainer/BottomRow/MarginContainer1"]
-layout_mode = 2
-text = "Audio/Video
-(WIP)"
-
-[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer/BottomRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="Button" type="Button" parent="VBoxContainer/BottomRow/MarginContainer2"]
-layout_mode = 2
-disabled = true
-text = "High-Level Multiplayer
-
-(comming soon!)"
-
-[connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerPingPong/PingPongButton" to="." method="OnPingPongButton"]
-[connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerChat/ChatButton" to="." method="OnChatButton"]
-[connection signal="pressed" from="VBoxContainer/TopRow/MarginContainerGame/GameButton" to="." method="OnGameButton"]
-[connection signal="pressed" from="VBoxContainer/BottomRow/MarginContainer0/MultiChannel" to="." method="OnDynamicChannelButton"]
-[connection signal="pressed" from="VBoxContainer/BottomRow/MarginContainer1/Button" to="." method="OnVideoAudioButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/PingPongButton" to="." method="OnPingPongButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ChatButton" to="." method="OnChatButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/MultiChannel" to="." method="OnMultiChannelButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/GameButton" to="." method="OnGameButton"]
