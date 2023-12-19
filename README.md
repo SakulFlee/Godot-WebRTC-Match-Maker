@@ -80,15 +80,14 @@ Thus, until Godot 4 supports exporting to the Web with C#, this won't work on th
 **However! Godot 4 has an official WebRTC client _exclusively for Web exports_ build in!**  
 Related issue: [#108](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/108) | Godot Docs: [Godot WebRTC Networking](https://docs.godotengine.org/en/stable/tutorials/networking/webrtc.html#using-webrtc-in-godot)
 
-1. Audio/Video demo being broken.  
-The Audio/Video demo is using parts of SIPSorcery which are still in a pre-release phase.
-Thus, stuff may break and in-fact seems to break on most systems.
-To get the demo fully working you will have to build your own `vpxmd` library for your specific platform and include it in the project.  
-This should be resolved once SIPSorcery finalizes and actually releases their library.  
-**For this reason, the demo is incomplete as of now as it doesn't properly stream the test file and doesn't display that inside Godot.**  
-In the meantime/Alternatively, all it's doing is utilizing a data channel with some extra events.
-You can very easily send or stream any audio/video file over a normal data channel.  
-Related issue: [#109](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/109)
+1. Audio/Video support is limited.  
+We used to have a Audio/Video demo, but it had too many limitations and wasn't working for multiple reasons.
+WebRTC is a communication technology and does support Video/Audio by design, but current existing implementations for C# all have breaking factors.
+It is definitely possible, but you will have to find the best solution for yourself.  
+Check the related issue for more: [#109](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/109)
+
+> Íf you think a proper solution has been found, please reopen the issue and share it!  
+> We would love to integrate this as a feature & demo.
 
 ## How to use this?
 
