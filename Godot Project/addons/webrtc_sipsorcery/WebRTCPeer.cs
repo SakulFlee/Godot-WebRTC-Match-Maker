@@ -9,22 +9,7 @@ using SIPSorcery.Net;
 [GlobalClass]
 public partial class WebRTCPeer : Node
 {
-    #region Globals
-    /// <summary>
-    /// The main (default) channel ID.
-    /// </summary>
-    public static readonly ushort MAIN_CHANNEL_ID = 0;
-
-    /// <summary>
-    /// The main (default) channel name.
-    /// </summary>
-    public static readonly string MAIN_CHANNEL_NAME = "main";
-    #endregion
-
     #region Exports
-    [Export]
-    public bool AutoInitialize = true;
-
     /// <summary>
     /// List of ICE Servers.
     /// This can be STUN or TURN servers.
