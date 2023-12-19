@@ -62,12 +62,12 @@ public partial class DebugPanel : PanelContainer
 
 	private string makePeerString()
 	{
-		var peersString = "";
+		var s = "";
 		foreach (var (peerUUID, _) in matchMaker.webRTCConnections)
 		{
-			peersString += $"- {peerUUID}";
+			s += $"- {peerUUID}\n";
 		}
-		return peersString;
+		return s.Remove(s.Length);
 	}
 
 	private string makeChannelString()
@@ -88,7 +88,6 @@ public partial class DebugPanel : PanelContainer
 		{
 			s += $"- {channel}\n";
 		}
-		;
 		return s.Remove(s.Length);
 	}
 }
