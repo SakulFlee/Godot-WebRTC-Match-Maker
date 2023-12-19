@@ -12,11 +12,6 @@ public partial class WebRTCPeer : Node
     /// The main (default) channel ID.
     /// </summary>
     public static readonly ushort MAIN_CHANNEL_ID = 0;
-
-    /// <summary>
-    /// The main (default) channel name.
-    /// </summary>
-    public static readonly string MAIN_CHANNEL_NAME = "main";
     #endregion
 
     #region Exports
