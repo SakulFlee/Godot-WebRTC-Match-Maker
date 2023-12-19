@@ -88,9 +88,6 @@ public partial class WebRTCPeer : Node
     private RTCPeerConnection peer;
 
     private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = [];
-
-    public List<SIPSorceryMedia.Abstractions.VideoFormat> NegotiatedVideoFormats { get; private set; }
-    public List<SIPSorceryMedia.Abstractions.AudioFormat> NegotiatedAudioFormats { get; private set; }
     #endregion
 
     #region Signals
@@ -176,22 +173,6 @@ public partial class WebRTCPeer : Node
     /// <param name="channelId">The channel that opened</param>
     [Signal]
     public delegate void OnChannelStateChangeEventHandler(ushort channelId, bool open);
-
-    /// <summary>
-    /// Gets called when the video formats have been negotiated and need to be processed.
-    /// The actual format cannot be passed here as it it's any of Godot's supported Variant types.
-    /// Call the <see cref="NegotiatedVideoFormats"/> getter upon receiving this!
-    /// </summary>
-    [Signal]
-    public delegate void OnVideoFormatsNegotiatedEventHandler();
-
-    /// <summary>
-    /// Gets called when the audio formats have been negotiated and need to be processed.
-    /// The actual format cannot be passed here as it it's any of Godot's supported Variant types.
-    /// Call the <see cref="NegotiatedAudioFormats"/> getter upon receiving this!
-    /// </summary>
-    [Signal]
-    public delegate void OnAudioFormatsNegotiatedEventHandler();
     #endregion
 
     #region Godot Functions
@@ -200,10 +181,7 @@ public partial class WebRTCPeer : Node
         var config = parseConfiguration();
         peer = makePeer(config);
 
-        if (AutoInitialize)
-        {
-            await Initialize();
-        }
+        await Initialize();
     }
 
     public async Task Initialize()
@@ -278,18 +256,6 @@ public partial class WebRTCPeer : Node
         {
             CallDeferred("signalOnGatheringStateChangeEventHandler", state.ToString());
         };
-        p.OnVideoFormatsNegotiated += formats =>
-        {
-            NegotiatedVideoFormats = formats;
-
-            CallDeferred("signalOnVideoFormatNegotiated");
-        };
-        p.OnAudioFormatsNegotiated += formats =>
-        {
-            NegotiatedAudioFormats = formats;
-
-            CallDeferred("signalOnAudioFormatNegotiated");
-        };
 
         GD.Print($"[WebRTC] Peer created!");
         return p;
@@ -315,24 +281,6 @@ public partial class WebRTCPeer : Node
     #endregion
 
     #region Signal Methods
-    private void signalOnVideoFormatNegotiated()
-    {
-#if DEBUG
-        GD.Print($"[WebRTC] Video format negotiated!");
-#endif
-
-        EmitSignal(SignalName.OnVideoFormatsNegotiated);
-    }
-
-    private void signalOnAudioFormatNegotiated()
-    {
-#if DEBUG
-        GD.Print($"[WebRTC] Audio format negotiated!");
-#endif
-
-        EmitSignal(SignalName.OnAudioFormatsNegotiated);
-    }
-
     /// <summary>
     /// ⚠️ Workaround: Must be called deferred.
     /// 
@@ -475,15 +423,6 @@ public partial class WebRTCPeer : Node
     public void SendAudio(uint durationRtpUnits, byte[] sample)
     {
         peer.SendAudio(durationRtpUnits, sample);
-    }
-
-    /// <summary>
-    /// ⚠️ This must be called before <see cref="Initialize"/> and will only work if <see cref="AutoInitialize"/> is set to false!
-    /// </summary>
-    /// <param name="track">The media track to add</param>
-    public void AddMediaStreamTrack(MediaStreamTrack track)
-    {
-        peer.addTrack(track);
     }
 
     private async Task<ushort> createChannel(string channelName, ushort channelId)
