@@ -61,9 +61,8 @@ public partial class Chat : Node
 		if (text.Length > 0)
 		{
 			SendMessage(text);
+			chatMessageField.Text = "";
 		}
-
-		chatMessageField.Text = "";
 	}
 
 	private void OnChatTextEditChanged()
