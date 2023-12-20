@@ -138,5 +138,5 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
-[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/PeerBox/PeerList" to="." method="OnChannelSelected"]
+[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/PeerBox/PeerList" to="." method="OnPeerSelected"]
 [connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/ChannelBox/ChannelList" to="." method="OnChannelSelected"]

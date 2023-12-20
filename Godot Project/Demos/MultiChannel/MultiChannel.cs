@@ -8,6 +8,9 @@ public partial class MultiChannel : Node
 
 	private MatchMaker matchMaker;
 
+	private ItemList peerList;
+	private string selectedPeer;
+
 	private ItemList channelList;
 	private RichTextLabel logBox;
 
@@ -18,6 +21,7 @@ public partial class MultiChannel : Node
 		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
 		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
 
+		peerList = GetNode<ItemList>("%PeerList");
 		channelList = GetNode<ItemList>("%ChannelList");
 		logBox = GetNode<RichTextLabel>("%LogBox");
 	}
@@ -26,9 +30,14 @@ public partial class MultiChannel : Node
 	{
 		matchMaker.OnMessageString += ChannelMessageReceived;
 
-		matchMaker.OnChannelOpen += (peerUUID, channelId) =>
+		matchMaker.OnNewConnection += (peerUUID) =>
 		{
-			channelList.AddItem(matchMaker.webRTCConnections[peerUUID].GetChannelLabel(channelId));
+			peerList.AddItem(peerUUID);
+		};
+
+		matchMaker.OnChannelOpen += (peerUUID, channel) =>
+		{
+			GD.Print($"!!! {peerUUID} @ {channel} opened!");
 		};
 	}
 
@@ -57,6 +66,21 @@ public partial class MultiChannel : Node
 		}
 	}
 
+	public void OnPeerSelected(int index)
+	{
+		var clickedPeer = peerList.GetItemText(index);
+		selectedPeer = clickedPeer;
+
+		// Clear the channel list
+		channelList.Clear();
+
+		var peer = matchMaker.webRTCConnections[clickedPeer];
+		foreach (string channelName in peer.DataChannels)
+		{
+			channelList.AddItem(channelName);
+		}
+	}
+
 	public void OnChannelSelected(int index)
 	{
 		if (logBox.Text.Length > 0)
@@ -64,16 +88,18 @@ public partial class MultiChannel : Node
 			appendLog("[center]---[/center]");
 		}
 
+		appendLog($"[b]Peer selected:[/b] {selectedPeer}");
+
 		var clickedChannel = channelList.GetItemText(index);
 		appendLog($"[b]Channel selected:[/b] {clickedChannel}");
 
-		var firstPeer = matchMaker.webRTCConnections.First().Value;
+		var peer = matchMaker.webRTCConnections[selectedPeer];
 
-		var channelId = firstPeer.GetChannelID(clickedChannel);
+		var channelId = peer.GetChannelID(clickedChannel);
 		appendLog($"[b]Internal channel ID:[/b] {channelId}");
 
 		appendLog($"[b]Sending message:[/b] {PayloadMessage}");
-		firstPeer.SendOnChannel(channelId, PayloadMessage);
+		peer.SendOnChannel(channelId, PayloadMessage);
 		appendLog("[b]Message send![/b]");
 		appendLog("[b]Awaiting response ...[/b]");
 	}
