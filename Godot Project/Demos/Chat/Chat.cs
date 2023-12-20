@@ -36,12 +36,23 @@ public partial class Chat : Node
 
 	private void SendMessage(string message)
 	{
-		foreach (var (_, value) in matchMaker.webRTCConnections)
+		var packet = new ChatMessagePacket
 		{
-			value.SendOnChannel(WebRTCPeer.MAIN_CHANNEL_ID, message);
-		}
+			fromUUID = matchMaker.OwnUUID,
+			channel = WebRTCPeer.MAIN_CHANNEL_ID,
+			messsage = message,
+		};
+		var json = packet.ToJSON();
 
-		ChannelMessageReceived(matchMaker.OwnUUID, WebRTCPeer.MAIN_CHANNEL_ID, message);
+		if (matchMaker.IsHost)
+		{
+			// The message came from us. Add it directly.
+			ChannelMessageReceived(matchMaker.OwnUUID, WebRTCPeer.MAIN_CHANNEL_ID, json);
+		}
+		else
+		{
+			matchMaker.SendOnChannelString(matchMaker.HostUUID, WebRTCPeer.MAIN_CHANNEL_ID, json);
+		}
 	}
 
 	private void OnSendButtonPressed()
@@ -69,13 +80,22 @@ public partial class Chat : Node
 
 	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
 	{
-		var pre = "";
-		if (chatBox.Text != "")
-		{
-			pre = "\n";
-		}
+		var messagePacket = ChatMessagePacket.FromJSON(message);
 
-		var color = peerUUID == matchMaker.OwnUUID ? "greenyellow" : "aqua";
-		chatBox.Text += $"{pre}[[b][color={color}]{peerUUID}[/color]@[color=blue]{channel}[/color][/b]] {message}";
+		var color = messagePacket.fromUUID == matchMaker.OwnUUID ? "greenyellow" : "aqua";
+		chatBox.Text += $"\n[[b][color={color}]{messagePacket.fromUUID}[/color]@[color=blue]{messagePacket.channel}[/color][/b]] {messagePacket.messsage}";
+
+		// If we are the host, send the message to everyone
+		if (matchMaker.IsHost)
+		{
+			foreach (var (id, peer) in matchMaker.webRTCConnections)
+			{
+				// Ignore host, we already got that message ...
+				if (id != matchMaker.HostUUID)
+				{
+					peer.SendOnChannel(channel, message);
+				}
+			}
+		}
 	}
 }
