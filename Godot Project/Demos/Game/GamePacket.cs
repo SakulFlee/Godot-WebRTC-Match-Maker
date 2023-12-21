@@ -37,6 +37,7 @@ public class GamePacket
     {
         return PacketSerializer.ToJSON(this);
     }
+    
     public override string ToString()
     {
         return $"GamePacket@{Type}";
