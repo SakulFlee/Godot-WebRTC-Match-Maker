@@ -216,76 +216,43 @@ public partial class MatchMaker : Node
 
                         HostUUID = matchMakerResponse.hostUUID;
                         GD.Print($"[MatchMaker] Host UUID: {OwnUUID}");
-
                         GD.Print($"[MatchMaker] Is Host: {IsHost}");
 
-                        foreach (var peerUUID in matchMakerResponse.peers)
+                        if (IsHost)
                         {
-                            if (peerUUID == OwnUUID)
-                            {
-                                // Skip if it's our own peer UUID
-                                continue;
-                            }
+                            // Hosts connect to every client
 
-                            // Create connection
-                            var connection = new WebRTCPeer()
+                            foreach (var peerUUID in matchMakerResponse.peers)
                             {
-                                Name = $"WebRTCConnection#{peerUUID}",
-                                IsHost = IsHost,
-                                ICEServers = ICEServers,
-                                DataChannels = DataChannels,
-                            };
-                            webRTCConnections.Add(peerUUID, connection);
-                            AddChild(connection);
+                                if (peerUUID == OwnUUID)
+                                {
+                                    // Skip if it's our own peer UUID
+                                    continue;
+                                }
 
-                            // Signal
-                            EmitSignal(SignalName.OnNewWebRTCPeer, peerUUID);
+                                var connection = makeWebRTCPeer(peerUUID);
 
-                            // Add Signal listeners
-                            // Small hack: Calling another function deferred which then emits the Signal fixes an async issue with how WebRTCPeer handles events
-                            connection.OnICECandidateJSON += (json) =>
-                            {
-                                CallDeferred("signalOnICECandidate", peerUUID, json);
-                            };
-                            connection.OnMessageRaw += (channelId, data) =>
-                            {
-                                CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
-                            };
-                            connection.OnMessageRaw += (channelId, data) =>
-                            {
-                                CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
-                            };
-                            connection.OnMessageString += (channelId, message) =>
-                            {
-                                CallDeferred("signalOnMessageString", peerUUID, channelId, message);
-                            };
-                            connection.OnChannelOpen += (channel) =>
-                            {
-                                CallDeferred("signalOnChannelOpen", peerUUID, channel);
-                            };
-                            connection.OnChannelClose += (channel) =>
-                            {
-                                CallDeferred("signalOnChannelClose", peerUUID, channel);
-                            };
-                            connection.OnChannelStateChange += (channel, isOpen) =>
-                            {
-                                CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
-                            };
-
-                            // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
-                            // If we are a host, do that.
-                            // This also sets the 'local' session description.
-                            if (IsHost)
-                            {
+                                // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
+                                // If we are a host, do that.
+                                // This also sets the 'local' session description.
                                 var session = connection.CreateOffer();
                                 await connection.SetLocalDescription(session);
 
                                 var json = session.toJSON();
                                 SendPacket(PacketType.SessionDescription, peerUUID, json);
+
+
+                                // Signal new connection opened
+                                EmitSignal(SignalName.OnNewConnection, peerUUID);
                             }
+                        }
+                        else
+                        {
+                            // Clients only connect to the host
+                            var connection = makeWebRTCPeer(matchMakerResponse.hostUUID);
 
                             // Signal new connection opened
-                            EmitSignal(SignalName.OnNewConnection, peerUUID);
+                            EmitSignal(SignalName.OnNewConnection, matchMakerResponse.hostUUID);
                         }
 
                         break;
@@ -355,6 +322,56 @@ public partial class MatchMaker : Node
             // Poll until we are closed, then null the peer
             peer = null;
         }
+    }
+
+    private WebRTCPeer makeWebRTCPeer(string peerUUID)
+    {
+        // Create connection
+        var connection = new WebRTCPeer()
+        {
+            Name = $"WebRTCConnection#{peerUUID}",
+            IsHost = IsHost,
+            ICEServers = ICEServers,
+            DataChannels = DataChannels,
+        };
+        webRTCConnections.Add(peerUUID, connection);
+        AddChild(connection);
+
+        // Signal
+        EmitSignal(SignalName.OnNewWebRTCPeer, peerUUID);
+
+        // Add Signal listeners
+        // Small hack: Calling another function deferred which then emits the Signal fixes an async issue with how WebRTCPeer handles events
+        connection.OnICECandidateJSON += (json) =>
+        {
+            CallDeferred("signalOnICECandidate", peerUUID, json);
+        };
+        connection.OnMessageRaw += (channelId, data) =>
+        {
+            CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
+        };
+        connection.OnMessageRaw += (channelId, data) =>
+        {
+            CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
+        };
+        connection.OnMessageString += (channelId, message) =>
+        {
+            CallDeferred("signalOnMessageString", peerUUID, channelId, message);
+        };
+        connection.OnChannelOpen += (channel) =>
+        {
+            CallDeferred("signalOnChannelOpen", peerUUID, channel);
+        };
+        connection.OnChannelClose += (channel) =>
+        {
+            CallDeferred("signalOnChannelClose", peerUUID, channel);
+        };
+        connection.OnChannelStateChange += (channel, isOpen) =>
+        {
+            CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
+        };
+
+        return connection;
     }
     #endregion
 
