@@ -15,9 +15,6 @@ public partial class WebRTCPeer : Node
     #endregion
 
     #region Exports
-    [Export]
-    public bool AutoInitialize = true;
-
     /// <summary>
     /// List of ICE Servers.
     /// This can be STUN or TURN servers.
