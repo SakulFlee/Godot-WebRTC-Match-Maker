@@ -95,6 +95,16 @@ public partial class WebRTCPeer : Node
     private RTCPeerConnection peer;
 
     private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = [];
+
+    private Array openChannels = new();
+
+    public bool IsReady
+    {
+        get
+        {
+            return openChannels.Count > 0;
+        }
+    }
     #endregion
 
     #region Signals
@@ -396,6 +406,8 @@ public partial class WebRTCPeer : Node
         GD.Print($"[WebRTC] Channel #{channel}/{channelLabel} opened!");
 #endif
 
+        openChannels.Add(channel);
+
         EmitSignal(SignalName.OnChannelOpen, channel);
         EmitSignal(SignalName.OnChannelStateChange, channel, true);
     }
@@ -415,6 +427,8 @@ public partial class WebRTCPeer : Node
         var channelLabel = GetChannelLabel(channel);
         GD.Print($"[WebRTC] Channel #{channel}/{channelLabel} closed!");
 #endif
+
+        openChannels.Remove(channel);
 
         EmitSignal(SignalName.OnChannelClose, channel);
         EmitSignal(SignalName.OnChannelStateChange, channel, false);

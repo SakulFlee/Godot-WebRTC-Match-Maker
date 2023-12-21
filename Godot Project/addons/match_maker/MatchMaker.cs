@@ -439,7 +439,22 @@ public partial class MatchMaker : Node
         // (open channel implies a connection is made), we can close the
         // connection to the match making server.
         // NOTE: This possibly has to be changed for 2+ peers!
-        peer.Close();
+        if (peer != null)
+        {
+            var closeConnection = true;
+            foreach (var (_, peer) in webRTCConnections)
+            {
+                if (!peer.IsReady)
+                {
+                    closeConnection = false;
+                }
+            }
+
+            if (closeConnection)
+            {
+                peer.Close();
+            }
+        }
     }
 
     private void signalOnChannelClose(string peerUUID, short channel)

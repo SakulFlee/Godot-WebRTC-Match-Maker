@@ -72,11 +72,47 @@ alignment = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="Panel/ChannelAndLog/LeftVBox"]
+[node name="PeerBox" type="VBoxContainer" parent="Panel/ChannelAndLog/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="Panel/ChannelAndLog/LeftVBox/PeerBox"]
+layout_mode = 2
+text = "Peer:"
+
+[node name="PeerList" type="ItemList" parent="Panel/ChannelAndLog/LeftVBox/PeerBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NonHostWarningLabel" type="Label" parent="Panel/ChannelAndLog/LeftVBox/PeerBox/PeerList"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Only hosts can choose a peer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ChannelBox" type="VBoxContainer" parent="Panel/ChannelAndLog/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="Panel/ChannelAndLog/LeftVBox/ChannelBox"]
 layout_mode = 2
 text = "Channel:"
 
-[node name="ChannelList" type="ItemList" parent="Panel/ChannelAndLog/LeftVBox"]
+[node name="ChannelList" type="ItemList" parent="Panel/ChannelAndLog/LeftVBox/ChannelBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
@@ -120,4 +156,5 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
-[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/ChannelList" to="." method="OnChannelSelected"]
+[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/PeerBox/PeerList" to="." method="OnPeerSelected"]
+[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/ChannelBox/ChannelList" to="." method="OnChannelSelected"]
