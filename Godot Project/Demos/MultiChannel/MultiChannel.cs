@@ -9,6 +9,7 @@ public partial class MultiChannel : Node
 	private MatchMaker matchMaker;
 
 	private ItemList peerList;
+	private Label nonHostWarningLabel;
 	private string selectedPeer;
 
 	private ItemList channelList;
@@ -22,6 +23,7 @@ public partial class MultiChannel : Node
 		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
 
 		peerList = GetNode<ItemList>("%PeerList");
+		nonHostWarningLabel = GetNode<Label>("%NonHostWarningLabel");
 		channelList = GetNode<ItemList>("%ChannelList");
 		logBox = GetNode<RichTextLabel>("%LogBox");
 	}
@@ -32,12 +34,16 @@ public partial class MultiChannel : Node
 
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
-			peerList.AddItem(peerUUID);
-		};
-
-		matchMaker.OnChannelOpen += (peerUUID, channel) =>
-		{
-			GD.Print($"!!! {peerUUID} @ {channel} opened!");
+			if (matchMaker.IsHost)
+			{
+				nonHostWarningLabel.Hide();
+				peerList.AddItem(peerUUID);
+			}
+			else
+			{
+				selectedPeer = peerUUID;
+				populateChannelList();
+			}
 		};
 	}
 
@@ -71,10 +77,15 @@ public partial class MultiChannel : Node
 		var clickedPeer = peerList.GetItemText(index);
 		selectedPeer = clickedPeer;
 
+		populateChannelList();
+	}
+
+	private void populateChannelList()
+	{
 		// Clear the channel list
 		channelList.Clear();
 
-		var peer = matchMaker.webRTCConnections[clickedPeer];
+		var peer = matchMaker.webRTCConnections[selectedPeer];
 		foreach (string channelName in peer.DataChannels)
 		{
 			channelList.AddItem(channelName);
