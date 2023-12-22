@@ -16,10 +16,10 @@ public partial class Player : CharacterBody2D
 	public float Speed = 400f;
 
 	[Export]
-	public float InputTimerInterval = 0.01f;
+	public float InputTimerInterval = 0.01f; // 10x times per second
 
 	[Export]
-	public float PositionTimerInterval = 0.001f;
+	public float PositionTimerInterval = 0.0016f; // 60x times per second
 
 	[Export]
 	public float PositionDifferenceAllowed = 1.0f;
