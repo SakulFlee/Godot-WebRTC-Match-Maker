@@ -32,13 +32,14 @@ public partial class Game : Node
 
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
-			matchMaker.OnChannelOpen += (peerUUID, channel) =>
+			matchMaker.webRTCConnections[peerUUID].OnChannelOpen += (channel) =>
 			{
 				if (matchMaker.IsHost)
 				{
 					// If the player list is empty, spawn ourself first
 					if (players.Count == 0)
 					{
+						// GD.Print("Created Host player");
 						var _ = spawnPlayerRandomLocation(matchMaker.HostUUID);
 					}
 

@@ -3,6 +3,7 @@ using Godot;
 
 public partial class Player : CharacterBody2D
 {
+	#region Exports
 	[Export]
 	public string PeerUUID;
 
@@ -14,111 +15,97 @@ public partial class Player : CharacterBody2D
 
 	[Export]
 	public float Speed = 400f;
+	#endregion
 
-	[Export]
-	public float InputTimerInterval = 0.01f; // 10x times per second
-
-	[Export]
-	public float PositionTimerInterval = 0.0016f; // 60x times per second
-
-	[Export]
-	public float PositionDifferenceAllowed = 1.0f;
-
+	#region Nodes
 	private RichTextLabel idLabel;
 	private Camera2D camera;
+	#endregion
 
+	#region Value trackers
 	private Vector2 previousInputVector = new();
 	private Vector2 previousPosition = new();
+	#endregion
 
+	#region Signals
 	[Signal]
 	public delegate void OnInputChangedEventHandler(Vector2 inputVector);
 
 	[Signal]
 	public delegate void OnPositionChangedEventHandler(string peerUUID, Vector2 position);
+	#endregion
+
+	public override void _EnterTree()
+	{
+		idLabel = GetNode<RichTextLabel>("IDLabel");
+		camera = GetNode<Camera2D>("Camera2D");
+	}
 
 	public override void _Ready()
 	{
 		Name = $"Player#{PeerUUID}";
-
-		idLabel = GetNode<RichTextLabel>("IDLabel");
 		idLabel.Text = $"{{{PeerUUID}}}";
-
-		camera = GetNode<Camera2D>("Camera2D");
 		camera.Enabled = IsControlledByUs;
-
-		setupInputTimer();
-
-		if (IsHost)
-		{
-			setupPositionTimer();
-		}
-	}
-
-	private void setupInputTimer()
-	{
-		var timer = new Timer()
-		{
-			Name = "Multiplayer P2P Input Vector Sync",
-			WaitTime = InputTimerInterval,
-			OneShot = false,
-			Autostart = true,
-		};
-		timer.Timeout += () =>
-		{
-			var currentInputVector = Input.GetVector("Move Left", "Move Right", "Move Forward", "Move Backward");
-
-			var xDiff = Math.Abs(previousInputVector.X - currentInputVector.X);
-			var yDiff = Math.Abs(previousInputVector.Y - currentInputVector.Y);
-			const float epsilon = 0.01f;
-
-			if (xDiff >= epsilon || yDiff >= epsilon)
-			{
-				previousInputVector = currentInputVector;
-
-				EmitSignal(SignalName.OnInputChanged, currentInputVector);
-
-				if (IsControlledByUs)
-				{
-					ApplyInputVector(currentInputVector);
-				}
-			}
-		};
-		AddChild(timer);
-	}
-
-	private void setupPositionTimer()
-	{
-		var timer = new Timer()
-		{
-			Name = "Multiplayer H2C Position Sync",
-			WaitTime = PositionTimerInterval,
-			OneShot = false,
-			Autostart = true,
-		};
-		timer.Timeout += () =>
-		{
-			var currentPosition = Position;
-
-			var xDiff = Math.Abs(previousPosition.X - currentPosition.X);
-			var yDiff = Math.Abs(previousPosition.Y - currentPosition.Y);
-			const float epsilon = 0.01f;
-
-			if (xDiff >= epsilon || yDiff >= epsilon)
-			{
-				previousPosition = currentPosition;
-
-				EmitSignal(SignalName.OnPositionChanged, PeerUUID, currentPosition);
-			}
-		};
-		AddChild(timer);
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (Velocity.X >= 0.1 || Velocity.X <= -0.1 || Velocity.Y >= 0.1 || Velocity.Y <= -0.1)
+		handleInputs();
+
+		if (checkVectorThreshold(Velocity, 0.1f))
 		{
 			MoveAndSlide();
 		}
+
+		if (IsHost)
+		{
+			signalPositionChange();
+		}
+	}
+
+	private void handleInputs()
+	{
+		var currentInputVector = Input.GetVector("Move Left", "Move Right", "Move Forward", "Move Backward");
+
+		var xDiff = Math.Abs(previousInputVector.X - currentInputVector.X);
+		var yDiff = Math.Abs(previousInputVector.Y - currentInputVector.Y);
+		const float epsilon = 0.01f;
+
+		if (xDiff >= epsilon || yDiff >= epsilon)
+		{
+			previousInputVector = currentInputVector;
+
+			if (IsControlledByUs)
+			{
+				ApplyInputVector(currentInputVector);
+			}
+
+			EmitSignal(SignalName.OnInputChanged, currentInputVector);
+		}
+	}
+
+	private void signalPositionChange()
+	{
+		if (checkVectorDifference(previousPosition, Position, 0.01f))
+		{
+			previousPosition = Position;
+			EmitSignal(SignalName.OnPositionChanged, PeerUUID, Position);
+		}
+	}
+
+	private bool checkVectorDifference(Vector2 a, Vector2 b, float epsilon)
+	{
+		var xDiff = Math.Abs(a.X - b.X);
+		var yDiff = Math.Abs(a.Y - b.Y);
+
+		return xDiff >= epsilon || yDiff >= epsilon;
+	}
+
+	private bool checkVectorThreshold(Vector2 v, float threshold)
+	{
+		var _v = v.Abs();
+		var _t = Math.Abs(threshold);
+		return _v.X >= _t || _v.Y >= _t;
 	}
 
 	public void ApplyInputVector(Vector2 inputVector)
@@ -128,16 +115,6 @@ public partial class Player : CharacterBody2D
 
 	public void ApplyPosition(Vector2 positionCorrection)
 	{
-		var difference = Position - positionCorrection;
-
-		var absX = Math.Abs(difference.X);
-		var absY = Math.Abs(difference.Y);
-
-		if (absX >= PositionDifferenceAllowed || absY >= PositionDifferenceAllowed)
-		{
-			// Only correct the position if the difference is too great.
-			// Avoids rubber-banding while decreasing accuracy.
-			Position = positionCorrection;
-		}
+		Position = positionCorrection;
 	}
 }
