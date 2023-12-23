@@ -225,6 +225,12 @@ public partial class Game : Node
 
 	private void HandleInputGamePacket(string peerUUID, GamePacketInput packet)
 	{
+		if (peerUUID == matchMaker.HostUUID)
+		{
+			GD.PrintErr($"[Game] Received game packet '{GamePacketType.Input}' from host! Skipping ...");
+			return;
+		}
+
 		var inputVector = packet.InputVector.Clamp(-Vector2.One, Vector2.One);
 
 		var player = players[peerUUID];
@@ -235,7 +241,7 @@ public partial class Game : Node
 	{
 		if (peerUUID != matchMaker.HostUUID)
 		{
-			GD.PrintErr($"[Game] Received game packet '{GamePacketType.Player}' from non-host!");
+			GD.PrintErr($"[Game] Received game packet '{GamePacketType.Player}' from non-host! Skipping ...");
 			return;
 		}
 
