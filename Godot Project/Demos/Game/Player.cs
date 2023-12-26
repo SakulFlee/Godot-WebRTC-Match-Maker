@@ -15,6 +15,9 @@ public partial class Player : CharacterBody2D
 
 	[Export]
 	public float Speed = 400f;
+
+	[Export]
+	public float PositionErrorThreshold = 1.0f;
 	#endregion
 
 	#region Nodes
@@ -67,11 +70,7 @@ public partial class Player : CharacterBody2D
 	{
 		var currentInputVector = Input.GetVector("Move Left", "Move Right", "Move Forward", "Move Backward");
 
-		var xDiff = Math.Abs(previousInputVector.X - currentInputVector.X);
-		var yDiff = Math.Abs(previousInputVector.Y - currentInputVector.Y);
-		const float epsilon = 0.01f;
-
-		if (xDiff >= epsilon || yDiff >= epsilon)
+		if (checkVectorDifference(previousInputVector, currentInputVector, 0.01f))
 		{
 			previousInputVector = currentInputVector;
 
@@ -115,6 +114,9 @@ public partial class Player : CharacterBody2D
 
 	public void ApplyPosition(Vector2 positionCorrection)
 	{
-		Position = positionCorrection;
+		if (checkVectorThreshold(positionCorrection, PositionErrorThreshold))
+		{
+			Position = positionCorrection;
+		}
 	}
 }
