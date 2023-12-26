@@ -1,5 +1,3 @@
-using System;
-
 public class GamePacket
 {
     public GamePacketType Type;
@@ -21,11 +19,6 @@ public class GamePacket
     public T InnerAs<T>()
     {
         return PacketSerializer.FromJSON<T>(InnerJSON);
-    }
-
-    public void SetInner(object inner)
-    {
-        InnerJSON = PacketSerializer.ToJSON(inner);
     }
 
     public static GamePacket FromJSON(string json)
