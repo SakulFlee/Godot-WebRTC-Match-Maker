@@ -43,12 +43,12 @@ This server will be utilized for _Match Making_ and as a peer relay.
 Additionally, an example project exists with multiple demos that can be trialed and build upon.  
 Currently, the available demos are:
 
-| Demo Name     | Short Description                                                                 | Detailed Description                                   |
-| ------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Ping-Pong     | The most simple demo. Sends "Pings!" and "Pongs!" back and forth and counts them. | [link](./Godot%20Project/Demos/PingPong/README.md)     |
-| Chat          | A (very basic) chat demo.                                                         | [link](./Godot%20Project/Demos/Chat/README.md)         |
-| Multi-Channel | Shows example usage of multiple channels.                                         | [link](./Godot%20Project/Demos/MultiChannel/README.md) |
-| Game          | An actual game where sprites can move around the screen freely.                   | [link](./Godot%20Project/Demos/Game/README.md)         |
+| Demo Name     | Short Description                                                                 | Detailed Description                            |
+| ------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Ping-Pong     | The most simple demo. Sends "Pings!" and "Pongs!" back and forth and counts them. | [link](./Godot%20Project/Demos/PingPong.md)     |
+| Chat          | A (very basic) chat demo.                                                         | [link](./Godot%20Project/Demos/Chat.md)         |
+| Multi-Channel | Shows example usage of multiple channels.                                         | [link](./Godot%20Project/Demos/MultiChannel.md) |
+| Game          | An actual game where sprites can move around the screen freely.                   | [link](./Godot%20Project/Demos/Game.md)         |
 
 ## Platform support
 
