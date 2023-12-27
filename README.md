@@ -4,6 +4,9 @@
 [![Rust - 1.63.0+](https://img.shields.io/badge/Rust-1.63.0+-e43716?style=for-the-badge&logo=Rust&logoColor=FFFFFF)](https://www.rust-lang.org/)
 [![.NET - 8.0](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=csharp)](https://www.rust-lang.org/)
 [![WebRTC](https://img.shields.io/badge/WebRTC-0943a2?style=for-the-badge&logo=webrtc)](https://webrtc.org)
+[![License - MIT](https://img.shields.io/badge/License-MIT-2ea44f?style=for-the-badge)](https://choosealicense.com/licenses/mit/)  
+[![Rust Build](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-rust.yml/badge.svg?branch=main)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-rust.yml)
+[![Godot Build](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-godot.yml/badge.svg?branch=main)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-godot.yml)
 
 - [Godot WebRTC Match Maker | WebRTC P2P Match Maker for Godot](#godot-webrtc-match-maker--webrtc-p2p-match-maker-for-godot)
   - [What is this?](#what-is-this)
