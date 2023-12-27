@@ -77,3 +77,20 @@ A `Input` packet contains just one field:
 1. The input vector
 
 The host clamps this value, then applies it to the peer player.
+
+## Extending this demo
+
+> ![TIP]  
+> Read the above section first to follow this best!
+
+The current setup of this demo seems to be complicated and over-engineered.  
+While true, there is a reason for this: **Extendability**.  
+You can use this Demo for your own project and simply add your own packages to this with only minimally more code!
+
+To add your own packages, simply:
+
+1. Go to `GamePacketType.cs` and add a new type to the enum.
+2. Define a new `GamePacket<Name>.cs` class (if needed).
+3. Go to `Game.cs` and find `OnGamePacketReceived`.  
+   This function handles any incoming `GamePacket.cs`.  
+   Add your new type in there, cast to your new class, then handle whatever needs to be done :)
