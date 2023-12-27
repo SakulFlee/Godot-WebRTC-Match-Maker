@@ -1,9 +1,10 @@
 using Godot;
 
-public class GamePacketPlayerMove
+public class GamePacketPlayer
 {
-    public string PeerUUID;
+    public string PlayerUUID;
     public Vector2 Position;
+    
     public override string ToString()
     {
         return $"GamePacketPlayerMove :: Position: {Position}";

@@ -30,17 +30,31 @@ public partial class Game : Node
 	{
 		matchMaker.OnMessageString += OnChannelMessageReceived;
 
-
 		matchMaker.OnNewConnection += (peerUUID) =>
 		{
-			matchMaker.OnChannelOpen += (peerUUID, channel) =>
+			matchMaker.webRTCConnections[peerUUID].OnChannelOpen += (channel) =>
 			{
-				if (peerUUID == matchMaker.HostUUID || matchMaker.IsHost)
+				if (matchMaker.IsHost)
 				{
-					SendGamePacketToHost(channel, new GamePacket(GamePacketType.AddPlayer, new GamePacketAddPlayer()
+					// If the player list is empty, spawn ourself first
+					if (players.Count == 0)
 					{
-						Label = matchMaker.OwnUUID,
-					}));
+						// GD.Print("Created Host player");
+						var _ = spawnPlayerRandomLocation(matchMaker.HostUUID);
+					}
+
+					// Create new player
+					var newPlayer = spawnPlayerRandomLocation(peerUUID);
+
+					// Send any existing players
+					foreach (var (playerUUID, player) in players)
+					{
+						SendGamePacketToPeer(peerUUID, new GamePacket(GamePacketType.Player, new GamePacketPlayer()
+						{
+							PlayerUUID = playerUUID,
+							Position = player.Position,
+						}));
+					}
 				}
 			};
 		};
@@ -120,12 +134,12 @@ public partial class Game : Node
 		OnGamePacketReceived(peerUUID, channel, gamePacket);
 	}
 
-	private void OnGamePacketReceived(string peerUUID, ushort channel, GamePacket gamePacket)
+	private void OnGamePacketReceived(string peerUUID, ushort _, GamePacket gamePacket)
 	{
 		switch (gamePacket.Type)
 		{
-			case GamePacketType.AddPlayer:
-				HandleAddPlayer(peerUUID, gamePacket.InnerAs<GamePacketAddPlayer>());
+			case GamePacketType.Player:
+				HandlePlayerGamePacket(peerUUID, gamePacket.InnerAs<GamePacketPlayer>());
 				break;
 			case GamePacketType.Input:
 				if (!matchMaker.IsHost)
@@ -134,14 +148,21 @@ public partial class Game : Node
 					return;
 				}
 
-				HandleInput(peerUUID, gamePacket.InnerAs<GamePacketInput>());
-				break;
-			case GamePacketType.PlayerMove:
-				HandlePlayerMove(peerUUID, gamePacket.InnerAs<GamePacketPlayerMove>());
+				HandleInputGamePacket(peerUUID, gamePacket.InnerAs<GamePacketInput>());
 				break;
 			default:
 				break;
 		}
+	}
+
+	private Player spawnPlayerRandomLocation(string playerUUID)
+	{
+		var random = new Random();
+		var x = random.Next(-250, 250);
+		var y = random.Next(-250, 250);
+		var position = new Vector2(x, y);
+
+		return spawnPlayer(playerUUID, position);
 	}
 
 	/// <summary>
@@ -149,29 +170,16 @@ public partial class Game : Node
 	/// </summary>
 	/// <param name="peerUUID">Where this packet came from</param>
 	/// <param name="packet">The <see cref="GamePacket"/> send</param>
-	private void HandleAddPlayer(string peerUUID, GamePacketAddPlayer packet)
+	private Player spawnPlayer(string peerUUID, Vector2 position)
 	{
-		var isUs = packet.Label == matchMaker.OwnUUID;
+		var isUs = peerUUID == matchMaker.OwnUUID;
 
 		// Instantiate a new player
 		var newPlayer = PlayerScene.Instantiate<Player>();
-		newPlayer.PeerUUID = packet.Label;
+		newPlayer.PeerUUID = peerUUID;
 		newPlayer.IsControlledByUs = isUs;
 		newPlayer.IsHost = matchMaker.IsHost;
-
-		if (matchMaker.IsHost)
-		{
-			// If host, set a random position
-			var random = new Random();
-			var x = random.Next(-250, 250);
-			var y = random.Next(-250, 250);
-			newPlayer.Position = new Vector2(x, y);
-		}
-		else
-		{
-			// If client, set the location provided
-			newPlayer.Position = packet.Position;
-		}
+		newPlayer.Position = position;
 
 		// Add listener for input change event
 		// Applies to ALL peers, given it is OUR (as in controlled by us) player.
@@ -191,45 +199,59 @@ public partial class Game : Node
 		{
 			newPlayer.OnPositionChanged += (peerUUID, position) =>
 			{
-				SendGamePacketBroadcast(new GamePacket(GamePacketType.PlayerMove, new GamePacketPlayerMove()
+				SendGamePacketBroadcast(new GamePacket(GamePacketType.Player, new GamePacketPlayer()
 				{
-					PeerUUID = peerUUID,
+					PlayerUUID = peerUUID,
 					Position = position,
 				}));
 			};
 		}
 
-		players.Add(packet.Label, newPlayer);
+		players.Add(peerUUID, newPlayer);
 		AddChild(newPlayer);
 
 		// If we are a host, send the packet to every peer
 		if (matchMaker.IsHost)
 		{
-			SendGamePacketBroadcast(new GamePacket(GamePacketType.AddPlayer, new GamePacketAddPlayer
+			SendGamePacketBroadcast(new GamePacket(GamePacketType.Player, new GamePacketPlayer()
 			{
-				Label = peerUUID,
+				PlayerUUID = peerUUID,
 				Position = newPlayer.Position,
 			}));
 		}
+
+		return newPlayer;
 	}
 
-	private void HandleInput(string peerUUID, GamePacketInput packet)
+	private void HandleInputGamePacket(string peerUUID, GamePacketInput packet)
 	{
+		if (peerUUID == matchMaker.HostUUID)
+		{
+			GD.PrintErr($"[Game] Received game packet '{GamePacketType.Input}' from host! Skipping ...");
+			return;
+		}
+
 		var inputVector = packet.InputVector.Clamp(-Vector2.One, Vector2.One);
 
 		var player = players[peerUUID];
 		player.ApplyInputVector(inputVector);
 	}
 
-	private void HandlePlayerMove(string peerUUID, GamePacketPlayerMove packet)
+	private void HandlePlayerGamePacket(string peerUUID, GamePacketPlayer packet)
 	{
 		if (peerUUID != matchMaker.HostUUID)
 		{
-			GD.PrintErr($"[Game] {GamePacketType.PlayerMove} received from non-host!");
+			GD.PrintErr($"[Game] Received game packet '{GamePacketType.Player}' from non-host! Skipping ...");
 			return;
 		}
 
-		var player = players[packet.PeerUUID];
+		Player player;
+		if (!players.TryGetValue(packet.PlayerUUID, out player))
+		{
+			// Spawn player as it doesn't exist
+			player = spawnPlayer(packet.PlayerUUID, packet.Position);
+		}
+
 		player.ApplyPosition(packet.Position);
 	}
 }
