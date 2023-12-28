@@ -263,19 +263,12 @@ public partial class MatchMaker : Node
 
                 var json = session.toJSON();
                 SendPacket(PacketType.SessionDescription, peerUUID, json);
-
-
-                // Signal new connection opened
-                EmitSignal(SignalName.OnNewConnection, peerUUID);
             }
         }
         else
         {
             // Clients only connect to the host
-            var connection = makeWebRTCPeer(matchMakerResponse.hostUUID);
-
-            // Signal new connection opened
-            EmitSignal(SignalName.OnNewConnection, matchMakerResponse.hostUUID);
+            var _ = makeWebRTCPeer(matchMakerResponse.hostUUID);
         }
     }
 
