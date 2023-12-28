@@ -153,9 +153,6 @@ public partial class MatchMaker : Node
     public delegate void OnChannelStateChangeEventHandler(string peerUUID, ushort channel, bool isOpen);
 
     [Signal]
-    public delegate void OnNewWebRTCPeerEventHandler(string peerUUID);
-
-    [Signal]
     public delegate void OnMatchMakerUpdateEventHandler(uint currentPeerCount, uint requiredPeerCount);
     #endregion
 
@@ -240,19 +237,12 @@ public partial class MatchMaker : Node
 
                                 var json = session.toJSON();
                                 SendPacket(PacketType.SessionDescription, peerUUID, json);
-
-
-                                // Signal new connection opened
-                                EmitSignal(SignalName.OnNewConnection, peerUUID);
                             }
                         }
                         else
                         {
                             // Clients only connect to the host
-                            var connection = makeWebRTCPeer(matchMakerResponse.hostUUID);
-
-                            // Signal new connection opened
-                            EmitSignal(SignalName.OnNewConnection, matchMakerResponse.hostUUID);
+                            var _ = makeWebRTCPeer(matchMakerResponse.hostUUID);
                         }
 
                         break;
@@ -326,7 +316,7 @@ public partial class MatchMaker : Node
 
     private WebRTCPeer makeWebRTCPeer(string peerUUID)
     {
-        // Create connection
+        // Create connection and add it to our local collection and scene
         var connection = new WebRTCPeer()
         {
             Name = $"WebRTCConnection#{peerUUID}",
@@ -336,9 +326,6 @@ public partial class MatchMaker : Node
         };
         webRTCConnections.Add(peerUUID, connection);
         AddChild(connection);
-
-        // Signal
-        EmitSignal(SignalName.OnNewWebRTCPeer, peerUUID);
 
         // Add Signal listeners
         // Small hack: Calling another function deferred which then emits the Signal fixes an async issue with how WebRTCPeer handles events
@@ -370,6 +357,9 @@ public partial class MatchMaker : Node
         {
             CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
         };
+
+        // Emit signal about a new peer connection being made
+        EmitSignal(SignalName.OnNewConnection, peerUUID);
 
         return connection;
     }
