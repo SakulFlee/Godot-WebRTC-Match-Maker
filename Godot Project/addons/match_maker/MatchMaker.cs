@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
+using SIPSorcery.Net;
 using TinyJson;
 
 [GlobalClass]
@@ -170,14 +172,13 @@ public partial class MatchMaker : Node
 
     public override async void _Process(double delta)
     {
+        // No need to poll if the peer is nulled!
         if (peer == null)
         {
-            // No need to poll if the peer is nulled!
             return;
         }
 
-        // Poll WebSocket (Match Maker Server connection), 
-        // process if socket is connected
+        // Poll the websocket connection and process packets if available
         peer.Poll();
         if (peer.GetReadyState() == WebSocketPeer.State.Open)
         {
@@ -186,120 +187,26 @@ public partial class MatchMaker : Node
             {
                 var message = peer.GetPacket().GetStringFromUtf8();
 
-#if DEBUG
-                GD.Print("Message: " + message);
-#endif
-
                 var packet = Packet.FromJSON<Packet>(message);
                 if (packet == null)
                 {
                     GD.PrintErr("[MatchMaker] Invalid JSON received! (parsing failed)");
-                    GetTree().Quit();
                     return;
                 }
 
                 switch (packet.type)
                 {
                     case PacketType.MatchMakerUpdate:
-                        var MatchMakerUpdate = packet.ParseMatchMakerUpdate();
-
-                        EmitSignal(SignalName.OnMatchMakerUpdate, MatchMakerUpdate.currentPeerCount, MatchMakerUpdate.requiredPeerCount);
-
+                        HandleMatchMakerUpdate(packet);
                         break;
                     case PacketType.MatchMakerResponse:
-                        var matchMakerResponse = packet.ParseMatchMakerResponse();
-                        OwnUUID = packet.to;
-                        GD.Print($"[MatchMaker] Own UUID: {OwnUUID}");
-
-                        HostUUID = matchMakerResponse.hostUUID;
-                        GD.Print($"[MatchMaker] Host UUID: {OwnUUID}");
-                        GD.Print($"[MatchMaker] Is Host: {IsHost}");
-
-                        if (IsHost)
-                        {
-                            // Hosts connect to every client
-
-                            foreach (var peerUUID in matchMakerResponse.peers)
-                            {
-                                if (peerUUID == OwnUUID)
-                                {
-                                    // Skip if it's our own peer UUID
-                                    continue;
-                                }
-
-                                var connection = makeWebRTCPeer(peerUUID);
-
-                                // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
-                                // If we are a host, do that.
-                                // This also sets the 'local' session description.
-                                var session = connection.CreateOffer();
-                                await connection.SetLocalDescription(session);
-
-                                var json = session.toJSON();
-                                SendPacket(PacketType.SessionDescription, peerUUID, json);
-                            }
-                        }
-                        else
-                        {
-                            // Clients only connect to the host
-                            var _ = makeWebRTCPeer(matchMakerResponse.hostUUID);
-                        }
-
+                        await HandleMatchMakerResponse(packet);
                         break;
                     case PacketType.SessionDescription:
-                        var sessionDescription = packet.ParseSessionDescription();
-
-                        // Set the session description we received.
-                        // This always will be the 'remote' session description.
-                        var sessionConnection = webRTCConnections[packet.from];
-                        sessionConnection.SetRemoteDescription(sessionDescription);
-
-                        // Clients are expected to create an 'answer' once an 'offer' is received and set.
-                        // If we are a client, do that.
-                        // This also sets the 'local' session description.
-                        if (!IsHost)
-                        {
-                            var session = sessionConnection.CreateAnswer();
-                            await sessionConnection.SetLocalDescription(session);
-
-                            var json = session.toJSON();
-                            SendPacket(PacketType.SessionDescription, packet.from, json);
-                        }
-
+                        await HandleSessionDescription(packet);
                         break;
                     case PacketType.ICECandidate:
-                        var iceCandidate = packet.ParseICECandidate();
-
-                        // Filter the ICE Candidate we received based on the CandidateFilter
-                        if (
-                            // All are allowed
-                            AllowedCandidateTypes == CandidateFilter.All
-                        || (
-                            // Or: Relay is allowed
-                            AllowedCandidateTypes == CandidateFilter.Relay
-                            && iceCandidate.candidate.Contains("relay")
-                            )
-                        || (
-                            // Or: Host is allowed
-                            AllowedCandidateTypes == CandidateFilter.Host
-                            && iceCandidate.candidate.Contains("host")
-                            )
-                        || (
-                            // Or: Server Reflexiv is allowed
-                            AllowedCandidateTypes == CandidateFilter.ServerReflexiv
-                            && iceCandidate.candidate.Contains("srflx")
-                            )
-                        || (
-                            // Or: Peer Reflexiv is allowed
-                            AllowedCandidateTypes == CandidateFilter.PeerReflexiv
-                            && iceCandidate.candidate.Contains("prflx")
-                            )
-                        )
-                        {
-                            // If it passed the filter: Add it!
-                            webRTCConnections[packet.from].AddICECandidate(iceCandidate);
-                        }
-
+                        HandleICECandidate(packet);
                         break;
                     default:
                         GD.PrintErr("[MatchMaker] Invalid or unrecognized package received from Server!");
@@ -311,6 +218,111 @@ public partial class MatchMaker : Node
         {
             // Poll until we are closed, then null the peer
             peer = null;
+        }
+    }
+
+    private void HandleMatchMakerUpdate(Packet packet)
+    {
+        var matchMakerUpdate = packet.ParseMatchMakerUpdate();
+
+        EmitSignal(SignalName.OnMatchMakerUpdate, matchMakerUpdate.currentPeerCount, matchMakerUpdate.requiredPeerCount);
+    }
+
+    private async Task HandleMatchMakerResponse(Packet packet)
+    {
+        var matchMakerResponse = packet.ParseMatchMakerResponse();
+        OwnUUID = packet.to;
+        GD.Print($"[MatchMaker] Own UUID: {OwnUUID}");
+
+        HostUUID = matchMakerResponse.hostUUID;
+        GD.Print($"[MatchMaker] Host UUID: {OwnUUID}");
+        GD.Print($"[MatchMaker] Is Host: {IsHost}");
+
+        if (IsHost)
+        {
+            // Hosts connect to every client
+
+            foreach (var peerUUID in matchMakerResponse.peers)
+            {
+                if (peerUUID == OwnUUID)
+                {
+                    // Skip if it's our own peer UUID
+                    continue;
+                }
+
+                var connection = makeWebRTCPeer(peerUUID);
+
+                // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
+                // If we are a host, do that.
+                // This also sets the 'local' session description.
+                var session = connection.CreateOffer();
+                await connection.SetLocalDescription(session);
+
+                var json = session.toJSON();
+                SendPacket(PacketType.SessionDescription, peerUUID, json);
+            }
+        }
+        else
+        {
+            // Clients only connect to the host
+            var _ = makeWebRTCPeer(matchMakerResponse.hostUUID);
+        }
+    }
+
+    private async Task HandleSessionDescription(Packet packet)
+    {
+        var sessionDescription = packet.ParseSessionDescription();
+
+        // Set the session description we received.
+        // This always will be the 'remote' session description.
+        var sessionConnection = webRTCConnections[packet.from];
+        sessionConnection.SetRemoteDescription(sessionDescription);
+
+        // Clients are expected to create an 'answer' once an 'offer' is received and set.
+        // If we are a client, do that.
+        // This also sets the 'local' session description.
+        if (!IsHost)
+        {
+            var session = sessionConnection.CreateAnswer();
+            await sessionConnection.SetLocalDescription(session);
+
+            var json = session.toJSON();
+            SendPacket(PacketType.SessionDescription, packet.from, json);
+        }
+    }
+
+    private void HandleICECandidate(Packet packet)
+    {
+        var iceCandidate = packet.ParseICECandidate();
+
+        // Filter the ICE Candidate we received based on the CandidateFilter
+        if (
+            // All are allowed
+            AllowedCandidateTypes == CandidateFilter.All
+        || (
+            // Or: Relay is allowed
+            AllowedCandidateTypes == CandidateFilter.Relay
+            && iceCandidate.candidate.Contains("relay")
+            )
+        || (
+            // Or: Host is allowed
+            AllowedCandidateTypes == CandidateFilter.Host
+            && iceCandidate.candidate.Contains("host")
+            )
+        || (
+            // Or: Server Reflexiv is allowed
+            AllowedCandidateTypes == CandidateFilter.ServerReflexiv
+            && iceCandidate.candidate.Contains("srflx")
+            )
+        || (
+            // Or: Peer Reflexiv is allowed
+            AllowedCandidateTypes == CandidateFilter.PeerReflexiv
+            && iceCandidate.candidate.Contains("prflx")
+            )
+        )
+        {
+            // If it passed the filter: Add it!
+            webRTCConnections[packet.from].AddICECandidate(iceCandidate);
         }
     }
 
