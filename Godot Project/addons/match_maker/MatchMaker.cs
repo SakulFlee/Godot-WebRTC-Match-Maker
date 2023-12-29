@@ -52,6 +52,9 @@ public partial class MatchMaker : Node
 
     [Export]
     public Array DataChannels = ["Main"];
+
+    [Export]
+    public uint Timeout = 30 * 1000;
     #endregion
 
     #region Fields
@@ -90,6 +93,8 @@ public partial class MatchMaker : Node
     /// Indicates if a request to the Match Maker server was send or not
     /// </summary>
     public bool RequestSend { get; private set; } = false;
+
+    private Timer timeoutTimer;
     #endregion
 
     #region Signals
@@ -156,6 +161,9 @@ public partial class MatchMaker : Node
 
     [Signal]
     public delegate void OnMatchMakerUpdateEventHandler(uint currentPeerCount, uint requiredPeerCount);
+
+    [Signal]
+    public delegate void OnMatchMakerTimeoutEventHandler(string peerUUID);
     #endregion
 
     #region Godot 
@@ -238,6 +246,19 @@ public partial class MatchMaker : Node
         GD.Print($"[MatchMaker] Host UUID: {OwnUUID}");
         GD.Print($"[MatchMaker] Is Host: {IsHost}");
 
+        timeoutTimer = new Timer()
+        {
+            Autostart = true,
+            OneShot = true,
+            WaitTime = Timeout,
+        };
+        timeoutTimer.Timeout += () =>
+        {
+            GD.PrintErr("[MatchMaker] Timeout reached!");
+            EmitSignal(SignalName.OnMatchMakerTimeout, OwnUUID);
+        };
+        AddChild(timeoutTimer);
+
         if (IsHost)
         {
             // Hosts connect to every client
@@ -260,12 +281,32 @@ public partial class MatchMaker : Node
 
                 var json = session.toJSON();
                 SendPacket(PacketType.SessionDescription, peerUUID, json);
+
+                // Timeout
+                connection.OnChannelOpen += (_) =>
+                {
+                    if (timeoutTimer != null)
+                    {
+                        RemoveChild(timeoutTimer);
+                        timeoutTimer = null;
+                    }
+                };
             }
         }
         else
         {
             // Clients only connect to the host
-            var _ = makeWebRTCPeer(matchMakerResponse.hostUUID);
+            var connection = makeWebRTCPeer(matchMakerResponse.hostUUID);
+
+            // Timeout
+            connection.OnChannelOpen += (_) =>
+                {
+                    if (timeoutTimer != null)
+                    {
+                        RemoveChild(timeoutTimer);
+                        timeoutTimer = null;
+                    }
+                };
         }
     }
 
