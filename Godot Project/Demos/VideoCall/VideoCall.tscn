@@ -11,6 +11,7 @@ script = ExtResource("1_a8kce")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("1_6dik4")
+PrintIncomingMessagesToConsole = false
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 clip_contents = true
