@@ -1,0 +1,51 @@
+# Welcome to the contribution guide! ✨
+
+Thank you for being interested in contributing in this project.
+Below are multiple topics addressed to help you getting started.
+
+All kinds of contributions are very welcome :) ❤️
+
+## Coding conduct and quality
+
+Whenever you are doing a change, for whatever part of the project it is, please make sure to keep quality standards up.
+This means:
+
+- Properly format your code **before** commiting
+- Make sure your code works before filing a PR
+- Don't spam 
+- Optimize your code if possible
+- Write comments if your code isn't self-explaining
+- Keep it simple! Most things can be simplified by a lot
+- Keep it relevant and topic focused
+- When including media (e.g. images), make sure they have a proper quality and are readable, proper resolutions, etc.
+- And lastly: Use common sense!
+
+> ![WARNING]  
+> PRs may be rejected or postponed or subjected to be redone if the quality or function doesn't match our standards.
+
+## Sharing ideas / Feature requests
+
+If you have an idea about a new feature or e.g. some new demo we could do, please open an issue with the proper template or start a discussion.
+If you intend to work on this, please state this too!
+
+## Working on a task (issue)
+
+Once you decided on an issue to work on, possibly your own, assign yourself and indicate that you are working on that issue.
+This way, we won't get duplicated work for the same issues.
+
+Next, you want to create a branch. I would recommend using the GitHub interface to create a branch as it links issues/PRs with branches directly.
+However, if this isn't desired you can instead try to indicate the issue in your branch name. Something like `issue123` or `#123` or `<username>/issue123` etc. ... are good branch names.
+
+Furthermore, try to finish your assigned tasks quickly and try to avoid dropping it mid-way.
+If you need more time or some problem occurred, please talk to us.
+Others may be able to work on this instead and possibly take on your work.
+
+## Finishing your task (issue)
+
+Once you are done with your task, please validate that it follows our quality standards.
+
+If everything checks out, open a PR (if not already done) or convert your **DRAFT** PR into an actual PR.
+If possible, try to ping someone and indicate in the comment that your work is ready for review.
+
+Please allow us some time to review your changes and follow suggested changes by us.
+If, for whatever reason, you fail to make changes or stop replying, we will integrate the requested changes ourself (_or assign it to someone else_).
