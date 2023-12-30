@@ -55,6 +55,9 @@ public partial class MatchMaker : Node
 
     [Export]
     public uint Timeout = 30 * 1000;
+
+    [Export]
+    public bool PrintIncomingMessagesToConsole = true;
     #endregion
 
     #region Fields
@@ -373,6 +376,7 @@ public partial class MatchMaker : Node
         var connection = new WebRTCPeer()
         {
             Name = $"WebRTCConnection#{peerUUID}",
+            PrintIncomingMessagesToConsole = PrintIncomingMessagesToConsole,
             IsHost = IsHost,
             ICEServers = ICEServers,
             DataChannels = DataChannels,
