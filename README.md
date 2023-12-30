@@ -13,6 +13,9 @@
   - [Platform support](#platform-support)
   - [Getting started](#getting-started)
   - [How does the Match Making work?](#how-does-the-match-making-work)
+  - [Security](#security)
+    - [The problem](#the-problem)
+    - [The solution](#the-solution)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -124,6 +127,61 @@ At this point, each peer should connect momentarily.
 Here is a visual overview between two peers (one host, one client) and both a direct and a relay ([TURN]) connection:
 
 ![Overview](Overview.drawio.svg)
+
+## Security
+
+The following security concern is true for any P2P connections.
+This includes protocols like BitTorrent, but also [WebRTC]!
+
+Please read the following carefully and decide if this will be an issue for you or not.
+Furthermore, potential solutions and workarounds are provided.
+
+### The problem
+
+P2P connections of any kind have a big issue when it comes to privacy:
+To establish a **direct P2P** connection, each peer needs to know the others IP address (and port).  
+Thus, effectively leaking the peers IP address to another peer.
+This can enable hackers to target peers directly once they know the IP address with e.g. DDoS attacks and worse.
+
+Inside the Match Maker, we try to anonymise this information as best as possible.
+Each peer gets a UUID assigned (also referred to us by `Peer UUID`).
+When a packet is send to some peer, it always is addressed to this peer UUID, not an IP address.
+However, [WebRTC] still **needs** to know the IP address of the peer it wants to connect to for direct connections.  
+Think about it: How would [WebRTC] connect somewhere without knowing where to connect to?
+That's like trying to send a letter to an unknown address.
+
+Our plugins don't expose this information (mainly IP address) at all, but _Session Descriptions_ and _ICE Candidates_ **cannot** be changed or hidden, as they contain the technical details needed for [WebRTC] to establish a direct connection.
+Any information stripped or mangled would also make a connection impossible.
+
+> ![NOTE]  
+> Even though we don't expose this information, someone could still use either a hacked game client or simply a packet sniffer like [WireShark](https://www.wireshark.org/) to filter out these network packages and extract the IP addresses.
+> That'll be more effort to get the information ofc, but if someone actually wants the information it would be easy to get.
+
+### The solution
+
+Now, first of all we will have to decide on whether this security issue actually is an issue for us.
+If you only intend to have some local network multiplayer (e.g. "in-house co-op"), you likely won't have an issue with this at all.
+Home networks are usually pretty permissive and with minimal effort you can already figure out all IP addresses in the network.
+Unless you have a _hacker_ in your basement, this won't be a problem.
+
+Next, you could very well introduce a kind of pop-up warning in your game that warns players about potential dangers and advises them to only play with trusted people/friends.
+However, the current Match Maker server doesn't really allow for this as _any_ peer will be matched, no matter if you trust them or even know the other peer.  
+**I highly advise to not use this approach as it basically just puts blame and choice on the players of your game.**
+
+Lastly, the probably best solution: Utilize a relay!  
+That's exactly what a [TURN] server is for.
+It acts as a middleman, hiding the real IP addresses of peers from each other.
+The only issue with this is that you will have to host a [TURN] server yourself.  
+Google (as an example, used by the plugins!) has a public available [STUN] server collection, but no [TURN] servers.  
+We already have a guide for setting up a [TURN] server which has some hosting suggestions: [Match Maker - Better Connectivity](./Documentation/Match%20Maker/GettingStartedWithMatchMaker.md#better-connectivity)
+
+Alternatively, although arguably more work, you could ship a given [TURN] server _with_ your game and let users **host it locally**.
+You would have to auto-configure the [TURN] server properly, handle it in the background, etc. and most importantly advise the user to open a port in their router or hope on something like [UPnP](https://en.wikipedia.org/wiki/Universal_Plug_and_Play) to be activated.  
+One player would host the game then, acting as a [TURN] server for the other clients.
+Everyone else would connect to their [TURN] server.  
+This would hide the IP addresses of all peers from each other while still allowing direct connections through the [TURN] server.
+However, the host **could** find the IP addresses of everyone.
+Meaning, this is once again a "trusted/friends only" solution.
 
 ## Contributing
 
