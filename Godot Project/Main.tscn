@@ -43,33 +43,40 @@ theme_override_constants/margin_bottom = 64
 [node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/MarginContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-columns = 2
+columns = 3
 
-[node name="PingPongButton" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+[node name="ButtonPingPong" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Ping Pong"
 
-[node name="ChatButton" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+[node name="ButtonChat" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Chat"
 
-[node name="MultiChannel" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+[node name="ButtonVideoCall" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Video Call"
+
+[node name="ButtonMultiChannel" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Multi Channel"
 
-[node name="GameButton" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+[node name="ButtonGame" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Game"
 
-[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/PingPongButton" to="." method="OnPingPongButton"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ChatButton" to="." method="OnChatButton"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/MultiChannel" to="." method="OnMultiChannelButton"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/GameButton" to="." method="OnGameButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonPingPong" to="." method="OnPingPongButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonChat" to="." method="OnChatButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonVideoCall" to="." method="OnVideoCallButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonMultiChannel" to="." method="OnMultiChannelButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonGame" to="." method="OnGameButton"]

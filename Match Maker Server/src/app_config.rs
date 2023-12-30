@@ -54,6 +54,7 @@ impl Default for AppConfig {
         slots.insert(String::from("Chat"), 2);
         slots.insert(String::from("Game"), 2);
         slots.insert(String::from("MultiChannel"), 2);
+        slots.insert(String::from("VideoCall"), 2);
 
         Self {
             listen_address: String::from("0.0.0.0"),
