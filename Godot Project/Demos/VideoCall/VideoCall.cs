@@ -194,6 +194,11 @@ public partial class VideoCall : Node
 
 	private void sendFrame(Image image, long frameIndex)
 	{
+		image.Resize(
+			240,
+			140,
+			Image.Interpolation.Nearest
+		);
 		var jpgBuffer = image.SaveJpgToBuffer();
 		var compressed = GZIP.Compress(jpgBuffer);
 
@@ -214,10 +219,17 @@ public partial class VideoCall : Node
 		var compressedImageData = data.Skip(8).Take(data.Length - 8).ToArray();
 		var decompressedImageData = GZIP.Decompress(compressedImageData);
 
-		var image = imageFromJPG(decompressedImageData);
-		var imageTexture = ImageTexture.CreateFromImage(image);
-
-		setRemoteFrame(imageTexture, frameIndex);
 		GD.Print($"[VideoCall] #{frameIndex} Received: {decompressedImageData.Length}b");
+
+		var image = imageFromJPG(decompressedImageData);
+		if (image != null)
+		{
+			var imageTexture = ImageTexture.CreateFromImage(image);
+			setRemoteFrame(imageTexture, frameIndex);
+		}
+		else
+		{
+			GD.PrintErr("Invalid frame received!");
+		}
 	}
 }
