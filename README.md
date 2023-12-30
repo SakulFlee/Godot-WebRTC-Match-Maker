@@ -136,6 +136,8 @@ _[PRs](pulls/) may be rejected due to poor code quality \_or_ subjected for furt
 If you end up porting this to another Engine, Framework or Project, please open an [issue](issues/) to merge it into this repository for everyone.
 Alternatively, we could link to your repository, however merging would be highly appreciated!
 
+See our [contribution guide](./.github/CONTRIBUTING) for more.
+
 ## License
 
 This repository is licensed under the MIT License.
