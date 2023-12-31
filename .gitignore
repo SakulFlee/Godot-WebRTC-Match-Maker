@@ -24,3 +24,6 @@ mono_crash.*.json
 # Temporary files
 ~*
 *~
+
+# ZIP Files
+*.zip
