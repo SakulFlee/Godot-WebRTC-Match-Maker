@@ -6,7 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FlashCap" Version="1.9.0" />
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="SIPSorcery" Version="6.0.12" />
     <Content Include="...">
       <PackageCopyToOutput>true</PackageCopyToOutput>
