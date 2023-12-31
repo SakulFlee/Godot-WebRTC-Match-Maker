@@ -1,5 +1,7 @@
 # Demo: Chat
 
+[![Go to demo folder](https://img.shields.io/badge/Go_to_demo_folder-2ea44f?style=for-the-badge)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/tree/main/Godot%20Project/Demos/Chat)
+
 The chat demo is a very simple chatting client.
 
 ![Demo: Chat](../../.github/images/DemoChat.png)

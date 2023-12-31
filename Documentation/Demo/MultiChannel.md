@@ -1,5 +1,7 @@
 # Demo: Multi Channel
 
+[![Go to demo folder](https://img.shields.io/badge/Go_to_demo_folder-2ea44f?style=for-the-badge)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/tree/main/Godot%20Project/Demos/MultiChannel)
+
 The Multi Channel demo utilizes multiple channels to send messages between a host and clients.
 
 ![Demo: Multi Channel](../../.github/images/DemoMultiChannel.png)

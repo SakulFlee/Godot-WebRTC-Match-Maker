@@ -1,5 +1,7 @@
 # Demo: Video Call
 
+[![Go to demo folder](https://img.shields.io/badge/Go_to_demo_folder-2ea44f?style=for-the-badge)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/tree/main/Godot%20Project/Demos/VideoCall)
+
 > [!WARNING]  
 > For this demo to work you will have to install the `FlashCap` package like so:  
 > `dotnet add package FlashCap`

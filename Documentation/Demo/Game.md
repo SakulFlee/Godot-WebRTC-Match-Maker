@@ -1,5 +1,7 @@
 # Demo: Game
 
+[![Go to demo folder](https://img.shields.io/badge/Go_to_demo_folder-2ea44f?style=for-the-badge)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/tree/main/Godot%20Project/Demos/VideoCall)
+
 The game demo is the most complex demo we currently have.  
 Multiple peers can connect to the same game session and will be spawned as a controllable character inside the game world.
 
