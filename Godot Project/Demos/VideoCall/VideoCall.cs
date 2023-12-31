@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using FlashCap;
 using Godot;
 
@@ -18,6 +19,10 @@ public partial class VideoCall : Node
 	private TextureRect remoteVideo;
 	private Label remoteFrameLabel;
 	private string remoteFrameLabelTemplate;
+
+	private AudioStreamPlayer audioStreamPlayer;
+	private AudioEffectRecord recordingEffect;
+	private Timer audioTickTimer;
 
 	private CaptureDevices captureDevices;
 	private CaptureDevice captureDevice;
@@ -42,6 +47,12 @@ public partial class VideoCall : Node
 		remoteFrameLabel = GetNode<Label>("%LabelRemoteFrame");
 		remoteFrameLabelTemplate = remoteFrameLabel.Text;
 		remoteFrameLabel.Text = "Awaiting frames ...";
+
+		audioStreamPlayer = GetNode<AudioStreamPlayer>("%AudioStreamPlayer");
+
+		var audioBusIndex = AudioServer.GetBusIndex("Local Recording");
+		recordingEffect = (AudioEffectRecord)AudioServer.GetBusEffect(audioBusIndex, 0);
+		audioTickTimer = GetNode<Timer>("%AudioTickTimer");
 	}
 
 	public override void _Ready()
@@ -67,6 +78,17 @@ public partial class VideoCall : Node
 				GD.Print($"[VideoCall] Found capture device with no characteristics! ({descriptor})");
 			}
 		}
+
+		matchMaker.OnChannelOpen += (peerUUID, channel) =>
+		{
+			if (matchMaker.IsHost)
+			{
+				GD.Print("[VideoCall] Channel opened! Starting recording ...");
+
+				recordingEffect.SetRecordingActive(true);
+				audioTickTimer.Start();
+			}
+		};
 	}
 
 	public override void _Process(double delta)
@@ -80,6 +102,23 @@ public partial class VideoCall : Node
 
 			return;
 		}
+	}
+
+	public void AudioTick()
+	{
+		// Get the recording data and check if it's null or not.
+		var recording = recordingEffect.GetRecording();
+		if (recording == null)
+		{
+			return;
+		}
+
+		// If our recording isn't null, reset the recording
+		recordingEffect.SetRecordingActive(false);
+		recordingEffect.SetRecordingActive(true);
+
+		GD.Print($"[VideoCall] Recording size: {recording.Data.Length}b");
+		sendAudio(recording.Data);
 	}
 
 	private async void OnCaptureDeviceSelected(int index)
@@ -208,10 +247,30 @@ public partial class VideoCall : Node
 
 		var peer = matchMaker.webRTCConnections.First();
 		GD.Print($"[VideoCall] #{frameIndex} Sending: {combined.Length}b");
-		peer.Value.SendOnChannelRaw(0, combined);
+		peer.Value.SendOnChannelRaw(1, combined);
 	}
 
-	private void OnChannelMessageReceivedRaw(string peerUUID, ushort channel, byte[] data)
+	private void sendAudio(byte[] data)
+	{
+		byte[] dataToSend;
+
+		if (data.Length <= 262144)
+		{
+			dataToSend = data;
+		}
+		else
+		{
+			dataToSend = new byte[262144];
+			Array.Copy(data, data.Length - 262144, dataToSend, 0, 262144);
+		}
+
+		var compressedData = GZIP.Compress(dataToSend);
+
+		var peer = matchMaker.webRTCConnections.First();
+		peer.Value.SendOnChannelRaw(2, compressedData);
+	}
+
+	private void onVideoDataReceived(byte[] data)
 	{
 		var frameIndexBuffer = data.Take(8).ToArray();
 		var frameIndex = BitConverter.ToInt64(frameIndexBuffer);
@@ -230,6 +289,43 @@ public partial class VideoCall : Node
 		else
 		{
 			GD.PrintErr("Invalid frame received!");
+		}
+	}
+
+	private void onAudioDataReceived(byte[] data)
+	{
+		var decompressedData = GZIP.Decompress(data);
+		GD.Print($"[VideoCall] Received {data.Length} (decompressed: {decompressedData.Length}) bytes of audio");
+
+		var stream = new AudioStreamWav()
+		{
+			Data = decompressedData,
+		};
+
+		if (audioStreamPlayer.Playing)
+		{
+			audioStreamPlayer.Stop();
+		}
+		audioStreamPlayer.Stream = stream;
+		audioStreamPlayer.Play();
+	}
+
+	private void OnChannelMessageReceivedRaw(string peerUUID, ushort channel, byte[] data)
+	{
+		if (channel == 0)
+		{
+			var message = Encoding.UTF8.GetString(data);
+			GD.Print($"[VideoCall] Message on main channel: {message}");
+		}
+		else if (channel == 1)
+		{
+			// Video data
+			onVideoDataReceived(data);
+		}
+		else if (channel == 2)
+		{
+			// Audio data
+			onAudioDataReceived(data);
 		}
 	}
 }

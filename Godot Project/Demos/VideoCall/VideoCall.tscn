@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://bqoo7itvvsqhc"]
+[gd_scene load_steps=8 format=3 uid="uid://bqoo7itvvsqhc"]
 
 [ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="1_6dik4"]
 [ext_resource type="Script" path="res://Demos/VideoCall/VideoCall.cs" id="1_a8kce"]
@@ -6,11 +6,17 @@
 [ext_resource type="PackedScene" uid="uid://cenjhm83f2riu" path="res://ConnectionPanel/ConnectionPanel.tscn" id="3_5qwth"]
 [ext_resource type="Texture2D" uid="uid://cvq0bcejabqom" path="res://Demos/VideoCall/NoFrame.tres" id="3_gaycp"]
 
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_jh4hm"]
+
+[sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_dml4y"]
+mix_rate = 42235.0
+
 [node name="VideoCall" type="Node"]
 script = ExtResource("1_a8kce")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("1_6dik4")
+DataChannels = ["Main", "Video", "Audio"]
 PrintIncomingMessagesToConsole = false
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
@@ -82,6 +88,13 @@ size_flags_vertical = 10
 item_count = 1
 item_0/text = "Some webcam here ..."
 
+[node name="AudioTickTimer" type="Timer" parent="MarginContainer/HBoxContainer/Local"]
+unique_name_in_owner = true
+
+[node name="AudioStreamRecorder" type="AudioStreamPlayer" parent="MarginContainer/HBoxContainer/Local"]
+stream = SubResource("AudioStreamMicrophone_jh4hm")
+autoplay = true
+
 [node name="Remote" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
 
@@ -128,6 +141,7 @@ vertical_alignment = 2
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="MarginContainer/HBoxContainer/Remote"]
 unique_name_in_owner = true
+stream = SubResource("AudioStreamGenerator_dml4y")
 
 [node name="DebugPanel" parent="." instance=ExtResource("2_0o60d")]
 unique_name_in_owner = true
@@ -138,3 +152,4 @@ unique_name_in_owner = true
 visible = false
 
 [connection signal="item_selected" from="MarginContainer/HBoxContainer/Local/CaptureDeviceList" to="." method="OnCaptureDeviceSelected"]
+[connection signal="timeout" from="MarginContainer/HBoxContainer/Local/AudioTickTimer" to="." method="AudioTick"]
