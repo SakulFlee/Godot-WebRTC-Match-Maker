@@ -1,5 +1,9 @@
 # Demo: Video Call
 
+> ![WARNING]  
+> For this demo to work you will have to install the `FlashCap` package like so:  
+> `dotnet add package FlashCap`
+
 The video calling demo is a more complex demo that shows off real-time communication capabilities with the provided plugins.  
 It is by no means perfect, but a MWP (= minimal working product).
 
