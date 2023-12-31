@@ -1,36 +1,36 @@
 # Demo: Video Call
 
-> ![WARNING]  
+> [!WARNING]  
 > For this demo to work you will have to install the `FlashCap` package like so:  
 > `dotnet add package FlashCap`
 
 The video calling demo is a more complex demo that shows off real-time communication capabilities with the provided plugins.  
 It is by no means perfect, but a MWP (= minimal working product).
 
-The following explains what is going on behind the scenes.
+## Flow
 
-## Audio sending
+### Audio sending
 
 1. The AudioStreamRecorder is automatically started upon opening the demo
 2. (MatchMaker & WebRTC are initialized)
 3. Once the audio channel is open: A Audio tick timer is started
 4. Each tick, the audio stream will be split, compressed and send on the audio channel
 
-## Audio receiving
+### Audio receiving
 
 0. Once the audio channel is open, audio packets can be received
 1. On an audio packet being received: The data is GZIP decompressed back into a raw audio buffer
 2. Then, that audio buffer is made into an `AudioStream` object
 3. Lastly, The `AudioStream` is assigned to the `AudioStreamPlayer` and playback is started
 
-## Video sending
+### Video sending
 
 1. `FlashCap` lists all video capture devices which are added to the ItemList inside our demo
 2. Once a device is selected: That capture device is initialized and readied for captured
 3. An event listener is assigned to the capture device to listen for new frames
 4. Each new frame is reduced in size, then converted into a JPG, compressed with GZIP and finally send over the network
 
-## Video receiving
+### Video receiving
 
 0. Once the video channel is open, video packets can be received
 1. On a video packet being received: The data is GZIP decompressed, then made into an `Image` (JPG) and finally a `ImageTexture`
