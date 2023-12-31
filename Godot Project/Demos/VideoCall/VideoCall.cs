@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using FlashCap;
@@ -83,10 +81,14 @@ public partial class VideoCall : Node
 		{
 			if (matchMaker.IsHost)
 			{
-				GD.Print("[VideoCall] Channel opened! Starting recording ...");
+				// Audio channel
+				if (channel == 2)
+				{
+					GD.Print("[VideoCall] Channel opened! Starting recording ...");
 
-				recordingEffect.SetRecordingActive(true);
-				audioTickTimer.Start();
+					recordingEffect.SetRecordingActive(true);
+					audioTickTimer.Start();
+				}
 			}
 		};
 	}
@@ -117,7 +119,6 @@ public partial class VideoCall : Node
 		recordingEffect.SetRecordingActive(false);
 		recordingEffect.SetRecordingActive(true);
 
-		GD.Print($"[VideoCall] Recording size: {recording.Data.Length}b");
 		sendAudio(recording.Data);
 	}
 
@@ -246,7 +247,7 @@ public partial class VideoCall : Node
 		var combined = indexToByte.Concat(compressed).ToArray();
 
 		var peer = matchMaker.webRTCConnections.First();
-		GD.Print($"[VideoCall] #{frameIndex} Sending: {combined.Length}b");
+		GD.Print($"[VideoCall@Video] #{frameIndex} Sending: {combined.Length}b");
 		peer.Value.SendOnChannelRaw(1, combined);
 	}
 
@@ -267,6 +268,7 @@ public partial class VideoCall : Node
 		var compressedData = GZIP.Compress(dataToSend);
 
 		var peer = matchMaker.webRTCConnections.First();
+		GD.Print($"[VideoCall@Audio] Sending: {compressedData.Length}b");
 		peer.Value.SendOnChannelRaw(2, compressedData);
 	}
 
@@ -278,7 +280,7 @@ public partial class VideoCall : Node
 		var compressedImageData = data.Skip(8).Take(data.Length - 8).ToArray();
 		var decompressedImageData = GZIP.Decompress(compressedImageData);
 
-		GD.Print($"[VideoCall] #{frameIndex} Received: {decompressedImageData.Length}b");
+		GD.Print($"[VideoCall@Video] #{frameIndex} Received {data.Length}b (decompressed: {decompressedImageData.Length}b)");
 
 		var image = imageFromJPG(decompressedImageData);
 		if (image != null)
@@ -295,7 +297,7 @@ public partial class VideoCall : Node
 	private void onAudioDataReceived(byte[] data)
 	{
 		var decompressedData = GZIP.Decompress(data);
-		GD.Print($"[VideoCall] Received {data.Length} (decompressed: {decompressedData.Length}) bytes of audio");
+		GD.Print($"[VideoCall@Audio] Received {data.Length}b (decompressed: {decompressedData.Length}b)");
 
 		var stream = new AudioStreamWav()
 		{
