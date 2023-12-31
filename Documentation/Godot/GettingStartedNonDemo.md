@@ -32,5 +32,11 @@ If you are using dotnet core, it can be easily done like so:
 dotnet add package SIPSorcery
 ```
 
+Furthermore, if you are using the video call demo, you will also need the package `FlashCap`:
+
+```bash
+dotnet add package FlashCap
+```
+
 Now, everything should be prepared.  
 To continue this guide, go to [further Godot setup](./FurtherGodotSetup.md).

@@ -86,6 +86,9 @@ public partial class WebRTCPeer : Node
 
     [Export]
     public Array DataChannels = ["Main"];
+
+    [Export]
+    public bool PrintIncomingMessagesToConsole = true;
     #endregion
 
     #region Fields
@@ -381,10 +384,12 @@ public partial class WebRTCPeer : Node
     {
         var message = data.GetStringFromUtf8();
 
-#if DEBUG
-        var channelLabel = GetChannelLabel(channelId);
-        GD.Print($"[WebRTC] Message on #{channelId}@{channelLabel} ({protocol}): {message}");
-#endif
+        if (PrintIncomingMessagesToConsole)
+        {
+
+            var channelLabel = GetChannelLabel(channelId);
+            GD.Print($"[WebRTC] Message on #{channelId}@{channelLabel} ({protocol}): {message}");
+        }
 
         EmitSignal(SignalName.OnMessageRaw, channelId, data);
         EmitSignal(SignalName.OnMessageString, channelId, message);
