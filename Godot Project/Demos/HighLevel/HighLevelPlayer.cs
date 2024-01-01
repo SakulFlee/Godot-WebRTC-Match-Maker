@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class Player : CharacterBody2D
+public partial class HighLevelPlayer : CharacterBody2D
 {
 	public override void _Process(double delta)
 	{

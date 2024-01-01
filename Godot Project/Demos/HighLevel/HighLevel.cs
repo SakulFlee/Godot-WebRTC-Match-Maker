@@ -2,107 +2,44 @@ using Godot;
 
 public partial class HighLevel : Node
 {
-	private WebRTCMultiplayerPeer peer;
-
-	private RichTextLabel DebugLabel;
-	private Label ConnectionLabel;
-
 	private MatchMaker matchMaker;
-	private bool requestSend = false;
-
-	private string debugTemplate;
-
-	private string signalingState = "None";
-	private string connectionState = "None";
-	private string iceConnectionState = "None";
-	private string iceGatheringState = "None";
-
-	private bool connected = false;
 
 	public override void _EnterTree()
 	{
-		DebugLabel = GetNode<RichTextLabel>("%DebugLabel");
-		ConnectionLabel = GetNode<Label>("%ConnectionLabel");
+		matchMaker = GetNode<MatchMaker>("MatchMaker");
 
-		debugTemplate = DebugLabel.Text;
-		DebugLabel.Text = "";
+		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
 	}
 
 	public override void _Ready()
 	{
-		matchMaker = GetNode<MatchMaker>("MatchMaker");
-		matchMaker.OnNewConnection += (peerUUID) =>
+		matchMaker.OnMessageString += OnChannelMessageReceived;
+
+		// If we are a host, wait for a channel to open and send an initial message
+		matchMaker.OnChannelOpen += (peerUUID, channel) =>
 		{
-			matchMaker.webRTCConnections[peerUUID].OnSignalingStateChange += (state) =>
+			if (matchMaker.IsHost)
 			{
-				signalingState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnConnectionStateChange += (state) =>
-			{
-				connectionState = state;
-
-				if (state == "connected")
-				{
-					connected = true;
-				}
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEConnectionStateChange += (state) =>
-			{
-				iceConnectionState = state;
-			};
-			matchMaker.webRTCConnections[peerUUID].OnICEGatheringStateChange += (state) =>
-			{
-				iceGatheringState = state;
-			};
-
-			if (peer == null)
-			{
-				peer = new(matchMaker.webRTCConnections[peerUUID]);
-				var mp = GetTree().GetMultiplayer();
-				mp.MultiplayerPeer = peer;
-				// TODO: More peers?
+				GD.Print("[HighLevel] Channel opened! Sending initial message ...");
+				matchMaker.SendOnChannelString(peerUUID, channel, "Ping!");
 			}
 		};
-
-		UpdateLabel();
 	}
 
 	public override void _Process(double delta)
 	{
-		if (!requestSend && matchMaker.IsReady())
+		if (matchMaker.IsReady() && !matchMaker.RequestSend)
 		{
-			var error = matchMaker.SendMatchMakingRequest(new MatchMakingRequest()
+			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
 			{
-				name = "Test",
+				name = "HighLevel",
 			});
-			requestSend = error == Error.Ok;
 		}
-
-		UpdateLabel();
 	}
 
-	private void UpdateLabel()
+	private void OnChannelMessageReceived(string peerUUID, ushort channel, string message)
 	{
-		var peersString = "";
-		foreach (var (peerUUID, _) in matchMaker.webRTCConnections)
-		{
-			peersString += $"- {peerUUID}";
-		}
 
-		DebugLabel.Text = string.Format(debugTemplate, new[] {
-			signalingState,
-			connectionState,
-			iceConnectionState,
-			iceGatheringState,
-			matchMaker.OwnUUID,
-			matchMaker.HostUUID,
-			matchMaker.IsHost ? "yes" : "no",
-			peersString
-		});
-
-		if (connected && ConnectionLabel.Visible)
-		{
-			ConnectionLabel.Visible = false;
-		}
 	}
 }

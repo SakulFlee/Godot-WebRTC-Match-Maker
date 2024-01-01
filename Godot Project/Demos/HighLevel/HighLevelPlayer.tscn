@@ -1,13 +1,13 @@
 [gd_scene load_steps=4 format=3 uid="uid://dnr5ctnr27wsb"]
 
-[ext_resource type="Texture2D" uid="uid://clwinlwu14ihy" path="res://icon.svg" id="1_vknw5"]
-[ext_resource type="Script" path="res://Demos/HighLevel/Player.cs" id="2_dfp4e"]
+[ext_resource type="Script" path="res://Demos/HighLevel/HighLevelPlayer.cs" id="1_27ayu"]
+[ext_resource type="Texture2D" uid="uid://clwinlwu14ihy" path="res://icon.svg" id="2_vomcn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_i1oa0"]
 size = Vector2(128, 128)
 
-[node name="Player" type="CharacterBody2D"]
-script = ExtResource("2_dfp4e")
+[node name="HighLevelPlayer" type="CharacterBody2D"]
+script = ExtResource("1_27ayu")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(64, 64)
@@ -16,4 +16,4 @@ shape = SubResource("RectangleShape2D_i1oa0")
 [node name="Player" type="TextureRect" parent="."]
 size_flags_horizontal = 3
 size_flags_vertical = 3
-texture = ExtResource("1_vknw5")
+texture = ExtResource("2_vomcn")
