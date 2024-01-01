@@ -5,6 +5,7 @@
         "onicecandidate",
         "oniceconnectionstatechange",
         "onicegatheringstatechange",
-        "onsignalingstatechange"
+        "onsignalingstatechange",
+        "Unconfigured"
     ]
 }
