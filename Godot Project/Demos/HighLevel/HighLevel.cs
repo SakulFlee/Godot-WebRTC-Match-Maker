@@ -15,16 +15,6 @@ public partial class HighLevel : Node
 	public override void _Ready()
 	{
 		matchMaker.OnMessageString += OnChannelMessageReceived;
-
-		// If we are a host, wait for a channel to open and send an initial message
-		matchMaker.OnChannelOpen += (peerUUID, channel) =>
-		{
-			if (matchMaker.IsHost)
-			{
-				GD.Print("[HighLevel] Channel opened! Sending initial message ...");
-				matchMaker.SendOnChannelString(peerUUID, channel, "Ping!");
-			}
-		};
 	}
 
 	public override void _Process(double delta)
