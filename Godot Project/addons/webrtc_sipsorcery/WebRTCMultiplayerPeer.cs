@@ -93,7 +93,6 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
         if (!(hosts > 0 && clients == 0 || hosts == 0 && clients > 0))
         {
             GD.PrintErr("[WebRTCPeerExt] All peers must be in Host or Client mode. Mixed isn't allowed!");
-            throw new System.Exception("All peers must be in Host or Client mode. Mixed isn't allowed!");
         }
         isHost = hosts > 0;
     }
