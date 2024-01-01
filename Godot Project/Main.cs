@@ -39,11 +39,6 @@ public partial class Main : Panel
 
 	public void OnHighLevelButton()
 	{
-		var err = GetTree().ChangeSceneToFile("res://Demos/HighLevel/HighLevel.tscn");
-		if (err != Error.Ok)
-		{
-			GD.PrintErr($"Failed to switch scene ({err})");
-			return;
-		}
+		switchScene("res://Demos/HighLevel/HighLevel.tscn");
 	}
 }
