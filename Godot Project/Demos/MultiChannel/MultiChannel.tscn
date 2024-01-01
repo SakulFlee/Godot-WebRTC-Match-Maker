@@ -1,0 +1,160 @@
+[gd_scene load_steps=5 format=3 uid="uid://byuff3ui0my3h"]
+
+[ext_resource type="Script" path="res://Demos/MultiChannel/MultiChannel.cs" id="1_v3goe"]
+[ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_lqkpe"]
+[ext_resource type="PackedScene" uid="uid://dfrhaa6ime1jf" path="res://DebugPanel/DebugPanel.tscn" id="3_ybyq4"]
+[ext_resource type="PackedScene" uid="uid://cenjhm83f2riu" path="res://ConnectionPanel/ConnectionPanel.tscn" id="4_qbkcj"]
+
+[node name="MultiChannel" type="Node"]
+script = ExtResource("1_v3goe")
+
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("2_lqkpe")
+DataChannels = ["Main", "Test Channel", "Another Channel"]
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GuidePanel" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -239.0
+offset_right = 288.0
+grow_vertical = 0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="PanelContainer" type="PanelContainer" parent="Panel/GuidePanel"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/GuidePanel/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="InfoLabel" type="RichTextLabel" parent="Panel/GuidePanel/PanelContainer/MarginContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[b]Guide:[/b]
+[b]1.[/b] Select any of the channel inside the list.
+A message will be automatically send on the selected channel.
+
+[b]2.[/b] The peer will reply back, you can find the message in the log panel to the right!"
+fit_content = true
+scroll_active = false
+
+[node name="ChannelAndLog" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -292.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 2
+
+[node name="LeftVBox" type="VBoxContainer" parent="Panel/ChannelAndLog"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeerBox" type="VBoxContainer" parent="Panel/ChannelAndLog/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="Panel/ChannelAndLog/LeftVBox/PeerBox"]
+layout_mode = 2
+text = "Peer:"
+
+[node name="PeerList" type="ItemList" parent="Panel/ChannelAndLog/LeftVBox/PeerBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NonHostWarningLabel" type="Label" parent="Panel/ChannelAndLog/LeftVBox/PeerBox/PeerList"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Only hosts can choose a peer"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ChannelBox" type="VBoxContainer" parent="Panel/ChannelAndLog/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="Panel/ChannelAndLog/LeftVBox/ChannelBox"]
+layout_mode = 2
+text = "Channel:"
+
+[node name="ChannelList" type="ItemList" parent="Panel/ChannelAndLog/LeftVBox/ChannelBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RightVBox" type="VBoxContainer" parent="Panel/ChannelAndLog"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="Label" type="Label" parent="Panel/ChannelAndLog/RightVBox"]
+layout_mode = 2
+size_flags_vertical = 1
+text = "Log:"
+
+[node name="Panel" type="Panel" parent="Panel/ChannelAndLog/RightVBox"]
+custom_minimum_size = Vector2(384, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogBox" type="RichTextLabel" parent="Panel/ChannelAndLog/RightVBox/Panel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(384, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
+[node name="DebugPanel" parent="." instance=ExtResource("3_ybyq4")]
+unique_name_in_owner = true
+visible = false
+
+[node name="ConnectionPanel" parent="." instance=ExtResource("4_qbkcj")]
+unique_name_in_owner = true
+visible = false
+
+[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/PeerBox/PeerList" to="." method="OnPeerSelected"]
+[connection signal="item_selected" from="Panel/ChannelAndLog/LeftVBox/ChannelBox/ChannelList" to="." method="OnChannelSelected"]

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub enum PacketType {
     MatchMakerRequest,
     MatchMakerResponse,
+    MatchMakerUpdate,
     ICECandidate,
     SessionDescription,
 }

@@ -1,0 +1,155 @@
+[gd_scene load_steps=8 format=3 uid="uid://bqoo7itvvsqhc"]
+
+[ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="1_6dik4"]
+[ext_resource type="Script" path="res://Demos/VideoCall/VideoCall.cs" id="1_a8kce"]
+[ext_resource type="PackedScene" uid="uid://dfrhaa6ime1jf" path="res://DebugPanel/DebugPanel.tscn" id="2_0o60d"]
+[ext_resource type="PackedScene" uid="uid://cenjhm83f2riu" path="res://ConnectionPanel/ConnectionPanel.tscn" id="3_5qwth"]
+[ext_resource type="Texture2D" uid="uid://cvq0bcejabqom" path="res://Demos/VideoCall/NoFrame.tres" id="3_gaycp"]
+
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_jh4hm"]
+
+[sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_dml4y"]
+mix_rate = 42235.0
+
+[node name="VideoCall" type="Node"]
+script = ExtResource("1_a8kce")
+
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("1_6dik4")
+DataChannels = ["Main", "Video", "Audio"]
+PrintIncomingMessagesToConsole = false
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+clip_contents = true
+custom_minimum_size = Vector2(768, 0)
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="Local" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Local"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 23
+text = "Local"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/HBoxContainer/Local"]
+layout_mode = 2
+theme_override_constants/separation = 128
+
+[node name="LocalVideo" type="TextureRect" parent="MarginContainer/HBoxContainer/Local"]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(420, 240)
+layout_mode = 2
+size_flags_vertical = 2
+texture = ExtResource("3_gaycp")
+expand_mode = 2
+
+[node name="LabelLocalFrame" type="Label" parent="MarginContainer/HBoxContainer/Local/LocalVideo"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -28.0
+offset_top = -64.0
+offset_right = 28.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 23
+text = "Frame #{0}"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="CaptureDeviceList" type="ItemList" parent="MarginContainer/HBoxContainer/Local"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+size_flags_vertical = 10
+item_count = 1
+item_0/text = "Some webcam here ..."
+
+[node name="AudioTickTimer" type="Timer" parent="MarginContainer/HBoxContainer/Local"]
+unique_name_in_owner = true
+
+[node name="AudioStreamRecorder" type="AudioStreamPlayer" parent="MarginContainer/HBoxContainer/Local"]
+stream = SubResource("AudioStreamMicrophone_jh4hm")
+autoplay = true
+
+[node name="Remote" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Remote"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 23
+text = "Remote"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/HBoxContainer/Remote"]
+layout_mode = 2
+theme_override_constants/separation = 128
+
+[node name="RemoteVideo" type="TextureRect" parent="MarginContainer/HBoxContainer/Remote"]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(420, 240)
+layout_mode = 2
+size_flags_vertical = 2
+texture = ExtResource("3_gaycp")
+expand_mode = 2
+
+[node name="LabelRemoteFrame" type="Label" parent="MarginContainer/HBoxContainer/Remote/RemoteVideo"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -28.0
+offset_top = -64.0
+offset_right = 28.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 23
+text = "Frame #{0}"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="MarginContainer/HBoxContainer/Remote"]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamGenerator_dml4y")
+
+[node name="DebugPanel" parent="." instance=ExtResource("2_0o60d")]
+unique_name_in_owner = true
+visible = false
+
+[node name="ConnectionPanel" parent="." instance=ExtResource("3_5qwth")]
+unique_name_in_owner = true
+visible = false
+
+[connection signal="item_selected" from="MarginContainer/HBoxContainer/Local/CaptureDeviceList" to="." method="OnCaptureDeviceSelected"]
+[connection signal="timeout" from="MarginContainer/HBoxContainer/Local/AudioTickTimer" to="." method="AudioTick"]

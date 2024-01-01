@@ -4,340 +4,208 @@
 [![Rust - 1.63.0+](https://img.shields.io/badge/Rust-1.63.0+-e43716?style=for-the-badge&logo=Rust&logoColor=FFFFFF)](https://www.rust-lang.org/)
 [![.NET - 8.0](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=csharp)](https://www.rust-lang.org/)
 [![WebRTC](https://img.shields.io/badge/WebRTC-0943a2?style=for-the-badge&logo=webrtc)](https://webrtc.org)
+[![License - MIT](https://img.shields.io/badge/License-MIT-2ea44f?style=for-the-badge)](https://choosealicense.com/licenses/mit/)  
+[![Rust Build](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-rust.yml/badge.svg?branch=main)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-rust.yml)
+[![Godot Build](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-godot.yml/badge.svg?branch=main)](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/actions/workflows/build-godot.yml)
 
 - [Godot WebRTC Match Maker | WebRTC P2P Match Maker for Godot](#godot-webrtc-match-maker--webrtc-p2p-match-maker-for-godot)
   - [What is this?](#what-is-this)
-  - [Current Limitations](#current-limitations)
-  - [How to use this?](#how-to-use-this)
-    - [Setting up Godot](#setting-up-godot)
-      - [Adding to an existing project / Creating a new project](#adding-to-an-existing-project--creating-a-new-project)
-      - [Using the example project](#using-the-example-project)
-      - [Back to Godot](#back-to-godot)
-    - [Setting up the Match Maker Server](#setting-up-the-match-maker-server)
-    - [Setting up a TURN Server (Optional)](#setting-up-a-turn-server-optional)
-  - [How does this work?](#how-does-this-work)
-  - [Usage in non-Godot projects](#usage-in-non-godot-projects)
+  - [Platform support](#platform-support)
+  - [Getting started](#getting-started)
+  - [How does the Match Making work?](#how-does-the-match-making-work)
+  - [Security](#security)
+    - [The problem](#the-problem)
+    - [The solution](#the-solution)
   - [Contributing](#contributing)
   - [License](#license)
 
 ## What is this?
 
-This repository holds two projects that work together to achieve **true** P2P ("peer-to-peer", i.e. direct connections between peers without a server in-between _if possible_) between two or more peers.
+This repository holds two projects which work together to enable P2P (peer-to-peer) connectivity between two or more peers utilizing [WebRTC].
+This plugin always tries to establish a direct connection between peers (i.e. no server required to actually run the game / one peer is the host).
+However, this is not always possible.
+In such cases, a [TURN] server can be utilized to act as a relay between peers.
 
-The first project is the _Match Maker Server_.  
-It's written in [Rust] and utilizes WebSockets for Client (Game / Godot) to Server communication.
+The first project is _[WebRTC] plugin for [Godot]_.  
+This plugin alone enables the usage of P2P connections between peers.  
+In theory, you can make your own backend (so called "Signaling Server") to share the required information between peers such as _ICE Candidates_ and _Session Descriptions_.
+
+The second project is the _Match Maker Server_.  
+It is a minimal signaling server utilizing _WebSockets_ for communication.
+This server does exactly two things:
+
+1. Match peers together that requested to join the same room.  
+   Upon a room being filled up, each peer is informed about the other peers to connect to and if they are a host or not.
+
+2. Once a room filled and the initial information got shared across all peers, this server will act as a relay to share _ICE Candidates_ and _Session Descriptions_ with every peer.
+
+This _Match Maker_ can be used separately from Godot (i.e. any application wanting to utilize WebRTC and is in need for some simple match making can utilize this!).  
+However, it's main use is intended to be in Godot with the second plugin: _Match Maker for Godot_.
+
+A Godot application may connect to this server utilizing WebSockets.
+It utilizes WebSockets for Client (Game / Godot) to Server communication.
 This server will be utilized for _Match Making_ and as a peer relay.
 
-> [!NOTE]  
-> While the WebRTC P2P is true, we still need a so called "Signaling Server" to share required information between both peers to establish a WebRTC connection.
-> Once the WebRTC connection is made the WebSocket connection to the _Match Maker Server_ can be dropped!
+Additionally, an example project exists with multiple demos that can be trialed and build upon.  
+Currently, the available demos are:
 
-The second project is a _[Godot] example project_, containing two Plugins: _[WebRTC](Godot%20Project/addons/webrtc_sipsorcery/)_ and _[Match Maker for Godot](Godot%20Project/addons/match_maker/)_.
-This _example project_ can be used as a starting template.
-It features multiple demos to showcase how this whole project is working together.
-Alternatively, you can also grab the plugins and use them in your already existing project!
+| Demo Name     | Short Description                                                                           | Detailed Description                         |
+| ------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Ping-Pong     | The most simple demo. Sends "Pings!" and "Pongs!" back and forth and counts them.           | [link](./Documentation/Demo/PingPong.md)     |
+| Chat          | A (very basic) chat demo.                                                                   | [link](./Documentation/Demo/Chat.md)         |
+| Multi-Channel | Shows example usage of multiple channels.                                                   | [link](./Documentation/Demo/MultiChannel.md) |
+| Game          | An actual game where sprites can move around the screen freely.                             | [link](./Documentation/Demo/Game.md)         |
+| Video Call    | A very simple video (and audio) calling demo to show how to enable real-time communication. | [link](./Documentation/Demo/VideoCall.md)    |
 
-Check _[how to use this](#how-to-use-this)_ for more information on both approaches.
+## Platform support
 
-> [!NOTE]  
-> While these plugins are written for [Godot], nothing is stopping you from using this in another project or Engine.
-> If you happen to port this over to some other Engine or Framework: Please share your work!  
-> I would love to have multiple engines integrated with this.
->
-> Check _[usage in non-Godot projects](#usage-in-non-godot-projects)_ for more.
-
-## Current Limitations
-
-Currently, only a connection between **two** peers is possible.  
-Once we reach Milestone 2.0.0, we will support more than wo peers.
+| Platform |     | Status              | Comment                                                                                                                                                                                                                                                                                                                                                                         |
+| -------- | --- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | ✅  | Fully supported     | Should work without further setup                                                                                                                                                                                                                                                                                                                                               |
+| Linux    | ✅  | Fully supported     | Should work without further setup                                                                                                                                                                                                                                                                                                                                               |
+| macOS    | ✅  | Fully supported     | Should work without further setup, but may not be tested                                                                                                                                                                                                                                                                                                                        |
+| Android  | ⚠️  | Partially supported | Works sometimes, on some platforms, but not all demos fully work. More testing is required as of now. [Tracker: [#106](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/106)]                                                                                                                                                                                       |
+| iOS      | ❓  | Unknown             | iOS testing requires a macOS device, Apple developer license and XCode with an iOS Simulator _or_ actual iPhone/iPad. I have neither in my possession and don't really want to waste money. If anyone is able to test this please do and inform me about it (even if it's fully working!) [Tracker: [[#107](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/107)]] |
+| Web      | ❌  | Unsupported         | Godot currently doesn't export C# projects to the Web. Once this is possible, we can do further testing and possibly add support for it. [Tracker: [[#108](https://github.com/SakulFlee/Godot-WebRTC-Match-Maker/issues/108)]]                                                                                                                                                  |
 
-Android, possibly iOS, builds seem to be broken as for now.  
-However, this seems to be a .NET issue rather than a Godot issue.
-With future updates to .NET and Godot this should start working.
-
-Web builds are currently not possible with Godot either.  
-Until they re-add Web-Builds this can't be tested.
-
-## How to use this?
+## Getting started
 
-One of the goals of this project is ease-of-use.  
-Thus, usage of this project should be as simple as possible.
+The following section will guide you through how to get started with this project.
+Click on any link to start the guide.
 
-However, another goal of this project is customizability.  
-Thus, multiple options are available.  
-Pick what fits your use-case the best.
+There are two components you will need to use this project:
 
-### Setting up [Godot]
+Firstly, a _Godot Project_ with, ideally, both plugins installed.
+You can either start with our included demo project, or, start with a fresh or existing project:
 
-Firstly, decide if you want to add this to an existing project, make a new project, or, use the included example project for a quick-start.
+- [Getting started with fresh or existing project](./Documentation/Godot/GettingStartedWithAFreshProject.md)
+- [Getting started with demo project](./Documentation/Godot/GettingStartedWithDemoProject.md)
 
-#### Adding to an existing project / Creating a new project
+Secondly, you will need a signaling server, ideally, the _Match Maker Server_.
 
-> [!WARNING]  
-> Make sure your [Godot] project **is a C# enabled** project and that your [Godot] version comes with **C# support enabled** (commonly referred to as `Godot.Mono`).  
-> Also, check your .NET SDK version.
-> This project uses **.NET/C# 8.0+**.
-> Both, your local `.csproj` and installed SDK must honor this.
+- [Getting started Match Maker Server](./Documentation/Match%20Maker/GettingStartedWithMatchMaker.md)
 
-You have multiple options on how to add this to your project:
+## How does the Match Making work?
 
-- via Asset Library
-- via downloading a [Release](releases/)
-- via cloning this Repository
-- via downloading a ZIP from GitHub
-- ... and possibly more ...
+Each peer connects to the _Match Maker Server_ which acts first as a _lobby server_.  
+Upon connecting, each peer tells the server what room they want to join on (`MatchMakerRequest`).  
+The server will look up the specified room and will inform the peer about how many peers are currently in queue for this room (`MatchMakerUpdate`).
 
-Chose whatever fits your use-case the best.  
-The important part is that [Godot] expects the files under `/addons/**/*`.
+Multiple peers can connect and specify different rooms or the same room.  
+Each time, any peer in the specified room will be updates about players joining the queue for a room (`MatchMakerUpdate`).
 
-Secondly, you will have to install a .NET library like so:
+Once a room is full, each peer will receive a `MatchMakerResponse` package.  
+This packet includes:
 
-```bash
-dotnet add package SIPSorcery
-```
+- The peer's own UUID
+- The host's UUID
+- Any other peer's UUID
 
-This will install all required libraries for you.
+With this information, each peer can check if they are a host or client.  
+The host will _host the game_, while each client will _join the game_.
 
-Now, make a new scene, or use an existing one, and add the `MatchMaker` node to it.
+Each peer now will initialize one or multiple [WebRTC] nodes inside Godot.  
+These nodes handle everything related to [WebRTC] and the P2P communication.
 
-Once the `MatchMaker` node is added to your scene check the Inspector panel and set the `Match Maker Connection String`.
-We will set this up in the next section, **remember to come back here**!
+If a peer is a host, multiple such nodes will be spawned (one for each client).  
+If a peer is a client, a single node will be spawned (one for one host).
 
-> The connection string is expected to be in the following format:  
-> ws://[ip address or domain]:[port]  
->
-> If you host the server locally (see below), it would be:  
-> ws://127.0.0.1:33333
+Once the [WebRTC] nodes are fully initialized, they will create a _Session Description_.  
+A _Session Description_ is a two parted packet, including a lot of information about each peer.  
+This must be set locally (as "local session description") **and** remotely on the other peer (asa "remote session description").  
+To set this remotely, the _Match Maker server_ will be utilized as a relay between peers until a connection is established.
 
-Lastly, you will need to interface with the `MatchMaker`.  
-To do so: Add a script to your scene and get the `MatchMaker` node.
-Then, use `MatchMaker::SendRequest` with a `MatchMakerRequest` to send a request to the server.  
-An example implementation in C# may look like this:
+Once both a local and remote _Session Description_ is set, each node begins contacting a [STUN] or [TURN] server and gather _ICE Candidates_.  
+An _ICE Candidate_ defines a possible connection to the local peer.
+Thus, it includes information such as an IP address, port to use and in some cases a relay ([TURN] server) address.  
+This information has to be shared with the corresponding remote peer.  
+To achieve this, the _Match Maker server_ is once again used as a relay to share this information.
 
-![Scene Example](.github/images/scene_example.png)
+As soon as at least one ICE candidate is set, the nodes will begin trying to connect to each other.  
+There is a priority system in-place which will, if possible, always prefer a local direct connection over a relay ([TURN]) connection.  
+At this point, each peer should connect momentarily.
 
-```csharp
-// Main.cs
-using Godot;
-
-public partial class Multiplayer : Node
-{
-    private MatchMaker matchMaker;
-    private bool requestSend = false;
-
-    public override void _Ready()
-    {
-        // (1)
-        matchMaker = GetNode<MatchMaker>("MatchMaker");
-    }
-
-    public override void _Process(double delta)
-    {
-        // (2+3)
-        if (!requestSend && matchMaker.IsReady())
-        {
-            // (4)
-            var error = matchMaker.SendRequest(new MatchMakingRequest()
-            {
-                name = "Test",
-            });
-            // (5)
-            requestSend = error == Error.Ok;
-        }
-    }
-}
-```
-
-The above will do:
-
-1. Get the node `MatchMaker` we added to the scene tree
-2. If we haven't send a request yet:
-3. Check if the `MatchMaker` is ready, if so:
-4. Attempt sending our request (`MatchMakingRequest`)
-5. Check for the `Error`. If it failed to send the procedure is repeated. Otherwise, mark the request as send.
-
-Continue at _[back to Godot](#back-to-godot)_.
-
-#### Using the example project
-
-You have multiple options on how to get the _example project_ going:
-
-- via Asset Library
-- via downloading a [Release](releases/)
-- via cloning the Repository
-- via downloading a ZIP from GitHub
-- ... and possibly more ...
-
-Chose whatever fits your use-case the best.  
-Continue at _[back to Godot](#back-to-godot)_.
-
-#### Back to [Godot]
-
-Now, that we have a project setup, you **must** hit the _Build_ button inside [Godot] **at least once**.
-[Godot] needs to compile the plugins before we are able to activate them!  
-Once the _build_ succeeded head to: Project (top left inside [Godot]) -> Project Settings -> Plugins (tab atop) and **Enable** both the _"Match Maker"_ and _"WebRTC (SIPSorcery)"_ plugins.
-
-> [!CAUTION]  
-> If enabling the plugins fails for any reason try to re-building the project and restarting [Godot]!
-
-That's it! 🎉  
-[Godot] should now be setup and able to use the _Match Maker_.
-
-> Make sure to have the correct settings in the `MatchMaker` node!
-
-Continue with _[setting up the Match Maker Server](#setting-up-the-match-maker-server)_ to learn more about hosting the _Match Maker Server_.
-
-### Setting up the Match Maker Server
-
-Make sure [Rust] is installed.  
-If it isn't installed, ideally use [RustUp].
-
-Checkout the repository and go into the _Match Maker Server_ directory.
-
-Now, build the project with:
-
-```bash
-cargo build --release
-```
-
-> Make sure to include the release flag!
-
-You'll find the server binary under `Match Maker Server/target/release/match_maker_server(.exe)`.
-
-Alternatively, you can use the following to directly build and run the project:
-
-```bash
-cargo run --release
-```
-
-> Make sure to include the release flag!
-
-The server should be running now!  
-**Head back to your Godot project and add the connection string.**  
-If the server is running locally on the same device add `ws://127.0.0.1:33333` as the connection string.
-
-However, _at least for released games_, it is highly recommended to actually host this server somewhere.  
-As a quick and free server you can check out [Oracle Cloud Free-Tier].  
-Simply follow the same steps of installing [Rust], compiling as release and run it.
-
-When running the server for the first time, a configuration file will be created.
-The location will be shown in your console/terminal.
-Change this config to your needs.
-
-Lastly, checkout _[setting up a TURN Server](#setting-up-a-turn-server-optional)_ if you want or need reliable connections in scenarios where P2P-Direct connections aren't possible.
-
-### Setting up a TURN Server (Optional)
-
-**This step is optional**.
-However, if you don't have this many P2P connections will likely fail.
-In my opinion, it's best to have this at least as a backup.
-Since you are already hosting the _Match Maker Server_, you can easily host a TURN server aside there too!
-
-A TURN server is effectively a **relay**.
-After a connection is properly made to it, a peer can send any data and the TURN server will simply relay it to the other clients.
-This can be incredibly useful in cases where a P2P connection simply isn't possible due to network restraints and basically makes the difference between being unable to connect and having a connection.
-
-Local connection pairs are always preferred over _relays_.
-In fact, _relays_ always are the last to be checked.
-[WebRTC] will try it's best to actually get a true P2P connection going without any _relays_.
-
-> [!NOTE]  
-> You can filter which candidate types are allowed to be added to each peers via the `CandidateFilter`.
-
-Now, once again, there is a decision here:
-Do you need a TURN server?  
-If your game is only played locally inside the same network, say some Nintendo-isk party game, **you won't need this**. Local connections should almost always succeed. (Though you may also not need all of this in the first place. Broadcasting WebRTC candidates via e.g. UDP inside your network would have about the same effect as the whole _Match Maker Server_, minus the _Match Making_).
-
-However, if your game is played basically "online" or "around the world" you absolutely need this, OR, account for a high chance of connections failing.
-
-You can use **any** TURN server, configure it properly and set the correct details in [Godot] under the ICE Servers setting.  
-However, I had great success with [CoTURN], thus my recommendation for it.
-This can be done on the same server as the Match Maker!
-
-If you decide to go with [CoTURN]: Check their documentation. It's incredibly easy to setup and you basically only need to add a username and password (+ set that in [Godot]!).
-
-## How does this work?
-
-This project aims to be simple.  
-There are more details hidden, but let's focus on the important bits:
-
-> We differentiate between `clients` ("joins a game") and `hosts` ("hosts a game").  
-> Both are named `peer` here.
-
-First, a peer connects to the Match Maker via a WebSocket.  
-Once a connection is opened, the peer will send a `MatchMakingRequest` to the server.
-
-This `MatchMakingRequest` contains some basic information about the game.
-Such as, what map/level/scene is being attempted to play.
-
-The peer now waits until the room is full.  
-In the meantime, another peer connects, following the same procedure, and fills the room.
-
-Both clients now receive a `MatchMakingResponse`.  
-This response includes whether the given peer is assigned as a Host (typically the first to create/join the room) or a Client, as well as a list of peers to connect to.
-
-Each peer now initializes the [WebRTC] backend.  
-This includes creating and setting a local session.
-
-The client now sends their session description to the host via the Match Making server.  
-Once received, the host sets this session description as the remote session and creates an offer.
-
-In the process of creating offers, ICE Candidates will be generated.  
-These candidates will be send to the client, once again via the Match Making server.
-
-Once this succeeded, both peers should be able to connect to each other.
-
-Here is a _simplified_ overview:
+Here is a visual overview between two peers (one host, one client) and both a direct and a relay ([TURN]) connection:
 
 ![Overview](Overview.drawio.svg)
 
-## Usage in non-Godot projects
+## Security
 
-> Read through [How does this work?](#how-does-this-work) first!
+The following security concern is true for any P2P connections.
+This includes protocols like BitTorrent, but also [WebRTC]!
 
-Effectively, as a starting point you should checkout all the C# classes from both plugins:
+Please read the following carefully and decide if this will be an issue for you or not.
+Furthermore, potential solutions and workarounds are provided.
 
-- _[WebRTC SIPSorcery](Godot%20Project/addons/webrtc_sipsorcery/)
-- _[Match Maker](Godot%20Project/addons/match_maker/)
+### The problem
 
-There are _some_ [Godot] specific things, like Signals, but most of this you should be able to easily reuse with some tweaks.  
-Signals, for example, can probably be exchanged for Async-Tasks.
+P2P connections of any kind have a big issue when it comes to privacy:
+To establish a **direct P2P** connection, each peer needs to know the others IP address (and port).  
+Thus, effectively leaking the peers IP address to another peer.
+This can enable hackers to target peers directly once they know the IP address with e.g. DDoS attacks and worse.
 
-Follow the existing implementation in Godot:
+Inside the Match Maker, we try to anonymise this information as best as possible.
+Each peer gets a UUID assigned (also referred to us by `Peer UUID`).
+When a packet is send to some peer, it always is addressed to this peer UUID, not an IP address.
+However, [WebRTC] still **needs** to know the IP address of the peer it wants to connect to for direct connections.  
+Think about it: How would [WebRTC] connect somewhere without knowing where to connect to?
+That's like trying to send a letter to an unknown address.
 
-1. Open a WebSocket connection to the Match Making server
-2. Send a `MatchMakingRequest`
-3. Wait for `MatchMakingResponse` and parse it
-4. Create a WebRTC peer for each peer listed
-5. _Session part_
-   1. If host: Create Offer, set it as local session & send it to the other peer
-   2. If client: Wait for a Offer, set it as remote session, create Answer & send it to host back
-   3. If host: Wait for Answer, set it as remote session
-6. For both (client & host): Share ICE Candidates with each other via relay
-7. Wait for peers to be connected and connection to be stable
+Our plugins don't expose this information (mainly IP address) at all, but _Session Descriptions_ and _ICE Candidates_ **cannot** be changed or hidden, as they contain the technical details needed for [WebRTC] to establish a direct connection.
+Any information stripped or mangled would also make a connection impossible.
+
+> ![NOTE]  
+> Even though we don't expose this information, someone could still use either a hacked game client or simply a packet sniffer like [WireShark](https://www.wireshark.org/) to filter out these network packages and extract the IP addresses.
+> That'll be more effort to get the information ofc, but if someone actually wants the information it would be easy to get.
+
+### The solution
+
+Now, first of all we will have to decide on whether this security issue actually is an issue for us.
+If you only intend to have some local network multiplayer (e.g. "in-house co-op"), you likely won't have an issue with this at all.
+Home networks are usually pretty permissive and with minimal effort you can already figure out all IP addresses in the network.
+Unless you have a _hacker_ in your basement, this won't be a problem.
+
+Next, you could very well introduce a kind of pop-up warning in your game that warns players about potential dangers and advises them to only play with trusted people/friends.
+However, the current Match Maker server doesn't really allow for this as _any_ peer will be matched, no matter if you trust them or even know the other peer.  
+**I highly advise to not use this approach as it basically just puts blame and choice on the players of your game.**
+
+Lastly, the probably best solution: Utilize a relay!  
+That's exactly what a [TURN] server is for.
+It acts as a middleman, hiding the real IP addresses of peers from each other.
+The only issue with this is that you will have to host a [TURN] server yourself.  
+Google (as an example, used by the plugins!) has a public available [STUN] server collection, but no [TURN] servers.  
+We already have a guide for setting up a [TURN] server which has some hosting suggestions: [Match Maker - Better Connectivity](./Documentation/Match%20Maker/GettingStartedWithMatchMaker.md#better-connectivity)
+
+Alternatively, although arguably more work, you could ship a given [TURN] server _with_ your game and let users **host it locally**.
+You would have to auto-configure the [TURN] server properly, handle it in the background, etc. and most importantly advise the user to open a port in their router or hope on something like [UPnP](https://en.wikipedia.org/wiki/Universal_Plug_and_Play) to be activated.  
+One player would host the game then, acting as a [TURN] server for the other clients.
+Everyone else would connect to their [TURN] server.  
+This would hide the IP addresses of all peers from each other while still allowing direct connections through the [TURN] server.
+However, the host **could** find the IP addresses of everyone.
+Meaning, this is once again a "trusted/friends only" solution.
 
 ## Contributing
 
-Contributions of any kind are more than welcome!  
-Please open [issues](issues/) for bugs, problems and feature requests.
+Any kind of contributions are more than welcome!  
+Please open [issues](issues/), for bugs and feature requests, and, [PRs](pulls/) for changed being made.
 
-Furthermore, we are especially looking for security experts to _"patch some holes"_.
-The current _Match Maker Server_ **does** work, but could be a security liability.
+Please try to keep the quality standard up.  
+_[PRs](pulls/) may be rejected due to poor code quality \_or_ subjected for further work needed.\_
 
 If you end up porting this to another Engine, Framework or Project, please open an [issue](issues/) to merge it into this repository for everyone.
 Alternatively, we could link to your repository, however merging would be highly appreciated!
 
+See our [contribution guide](./.github/CONTRIBUTING) for more.
+
 ## License
 
-This repository (includes BOTH projects) is licensed under the MIT License.  
-Essentially, do whatever you want with this :)
+This repository is licensed under the MIT License.
+This includes all plugins, the demo project and any demos included into it.
 
-However, [contributions](#contributing) are highly appreciated!  
-Please don't hesitate to reach out to me.
+However, if you end up making any changes to this which may be useful for others, I highly would encourage opening a [PR](pulls/) and merging it into this repository.  
+[Contributions](#contributing) are more than welcome!
 
 [WebRTC]: https://webrtc.org/
-[Rust]: https://www.rust-lang.org/
-[RustUp]: https://rustup.rs/
-[Oracle Cloud Free-Tier]: https://www.oracle.com/cloud/free/
-[Coturn]: https://github.com/coturn/coturn
 [Godot]: https://godotengine.org/
+[STUN]: https://en.wikipedia.org/wiki/STUN
+[TURN]: https://en.wikipedia.org/wiki/Traversal_Using_Relays_around_NAT

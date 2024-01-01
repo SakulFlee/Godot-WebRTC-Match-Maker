@@ -1,0 +1,30 @@
+[gd_scene load_steps=7 format=3 uid="uid://fvwqk2aoe0r8"]
+
+[ext_resource type="Script" path="res://Demos/Game/Game.cs" id="1_exnv6"]
+[ext_resource type="PackedScene" uid="uid://dhd4y2rk7sekp" path="res://Demos/Game/Player.tscn" id="2_27xsw"]
+[ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_docdk"]
+[ext_resource type="Texture2D" uid="uid://bp3ugrr6kf44v" path="res://Demos/Game/Background.png" id="4_sx0sq"]
+[ext_resource type="PackedScene" uid="uid://dfrhaa6ime1jf" path="res://DebugPanel/DebugPanel.tscn" id="5_3f4p5"]
+[ext_resource type="PackedScene" uid="uid://cenjhm83f2riu" path="res://ConnectionPanel/ConnectionPanel.tscn" id="6_qcpl4"]
+
+[node name="Game" type="Node"]
+script = ExtResource("1_exnv6")
+PlayerScene = ExtResource("2_27xsw")
+
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("2_docdk")
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(576, 320)
+scale = Vector2(4, 4)
+texture = ExtResource("4_sx0sq")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="DebugPanel" parent="CanvasLayer" instance=ExtResource("5_3f4p5")]
+unique_name_in_owner = true
+visible = false
+
+[node name="ConnectionPanel" parent="CanvasLayer" instance=ExtResource("6_qcpl4")]
+unique_name_in_owner = true
+visible = false

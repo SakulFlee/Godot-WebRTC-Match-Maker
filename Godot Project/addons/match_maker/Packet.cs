@@ -25,45 +25,22 @@ public class Packet
     /// </summary>
     public string json { get; set; }
 
-/// <summary>
-/// Deserializes (/Parse) from JSON
-/// </summary>
-/// <param name="json">The JSON string to parse</param>
-/// <returns>An instance of this Packet class</returns>
-    public static Packet FromJSON(string json)
+    public static T FromJSON<T>(string json)
     {
-        return JsonSerializer.Deserialize<Packet>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = {
-                new JsonStringEnumConverter(),
-            },
-        });
+        return PacketSerializer.FromJSON<T>(json);
     }
 
-/// <summary>
-/// Serializes this instance to JSON
-/// </summary>
-/// <returns>This Packet as JSON</returns>
     public string ToJSON()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = {
-                new JsonStringEnumConverter(),
-            },
-        });
+        return PacketSerializer.ToJSON(this);
     }
 
-/// <summary>
-/// Special function to parse the nested value as an ICE Candidate
-/// 
-/// ⚠️ Make sure the 'type' is correct!
-/// </summary>
-/// <returns>The parsed ICE Candidate</returns>
+    /// <summary>
+    /// Special function to parse the nested value as an ICE Candidate
+    /// 
+    /// ⚠️ Make sure the 'type' is correct!
+    /// </summary>
+    /// <returns>The parsed ICE Candidate</returns>
     public RTCIceCandidateInit ParseICECandidate()
     {
         if (type != PacketType.ICECandidate)
@@ -110,7 +87,7 @@ public class Packet
     /// ⚠️ Make sure the 'type' is correct!
     /// </summary>
     /// <returns>The parsed Match Making Request</returns>
-    public MatchMakingRequest ParseMatchMakingRequest()
+    public MatchMakerRequest ParseMatchMakerRequest()
     {
         if (type != PacketType.MatchMakerRequest)
         {
@@ -118,7 +95,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakingRequest>(json, new JsonSerializerOptions()
+        var result = JsonSerializer.Deserialize<MatchMakerRequest>(json, new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -132,7 +109,7 @@ public class Packet
     /// ⚠️ Make sure the 'type' is correct!
     /// </summary>
     /// <returns>The parsed Match Making Response</returns>
-    public MatchMakingResponse ParseMatchMakingResponse()
+    public MatchMakerResponse ParseMatchMakerResponse()
     {
         if (type != PacketType.MatchMakerResponse)
         {
@@ -140,7 +117,29 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakingResponse>(json, new JsonSerializerOptions()
+        var result = JsonSerializer.Deserialize<MatchMakerResponse>(json, new JsonSerializerOptions()
+        {
+            IncludeFields = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        });
+        return result;
+    }
+
+    /// <summary>
+    /// Special function to parse the nested value as a Match Making Update
+    /// 
+    /// ⚠️ Make sure the 'type' is correct!
+    /// </summary>
+    /// <returns>The parsed Match Making Update</returns>
+    public MatchMakerUpdate ParseMatchMakerUpdate()
+    {
+        if (type != PacketType.MatchMakerUpdate)
+        {
+            GD.PrintErr($"Attempting to parse Match Maker Update from wrong type ({type})");
+            return null;
+        }
+
+        var result = JsonSerializer.Deserialize<MatchMakerUpdate>(json, new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

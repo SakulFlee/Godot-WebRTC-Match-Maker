@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
+using SIPSorcery.Net;
 using TinyJson;
 
 [GlobalClass]
@@ -22,7 +24,7 @@ public partial class MatchMaker : Node
     /// Check <see cref="WebRTCPeer.ICEServers"/> for more.
     /// </summary>
     [Export]
-    public Array ICEServers = new() {
+    public Array ICEServers = [
         new Dictionary() {
             {"url", "stun.l.google.com:19302"},
         },
@@ -38,7 +40,7 @@ public partial class MatchMaker : Node
         new Dictionary() {
             {"url", "stun4.l.google.com:19302"},
         }
-    };
+    ];
 
     /// <summary>
     /// ICE Candidates that are allowed and will be parsed through to the <see cref="WebRTCPeer"/>.
@@ -48,6 +50,14 @@ public partial class MatchMaker : Node
     [Export]
     public CandidateFilter AllowedCandidateTypes = CandidateFilter.All;
 
+    [Export]
+    public Array DataChannels = ["Main"];
+
+    [Export]
+    public uint Timeout = 30 * 1000;
+
+    [Export]
+    public bool PrintIncomingMessagesToConsole = true;
     #endregion
 
     #region Fields
@@ -61,7 +71,7 @@ public partial class MatchMaker : Node
     /// 
     /// The key is the PeerUUID.
     /// </summary>
-    public Dictionary<string, WebRTCPeer> webRTCConnections { get; private set; } = new();
+    public Dictionary<string, WebRTCPeer> webRTCConnections { get; private set; } = [];
 
     /// <summary>
     /// This Peers own UUID
@@ -82,6 +92,12 @@ public partial class MatchMaker : Node
         get { return OwnUUID != null && HostUUID != null && HostUUID == OwnUUID; }
     }
 
+    /// <summary>
+    /// Indicates if a request to the Match Maker server was send or not
+    /// </summary>
+    public bool RequestSend { get; private set; } = false;
+
+    private Timer timeoutTimer;
     #endregion
 
     #region Signals
@@ -145,6 +161,12 @@ public partial class MatchMaker : Node
     /// <param name="isOpen">Whether the channel opened or closed</param>
     [Signal]
     public delegate void OnChannelStateChangeEventHandler(string peerUUID, ushort channel, bool isOpen);
+
+    [Signal]
+    public delegate void OnMatchMakerUpdateEventHandler(uint currentPeerCount, uint requiredPeerCount);
+
+    [Signal]
+    public delegate void OnMatchMakerTimeoutEventHandler(string peerUUID);
     #endregion
 
     #region Godot 
@@ -161,8 +183,13 @@ public partial class MatchMaker : Node
 
     public override async void _Process(double delta)
     {
-        // Poll WebSocket (Match Maker Server connection), 
-        // process if socket is connected
+        // No need to poll if the peer is nulled!
+        if (peer == null)
+        {
+            return;
+        }
+
+        // Poll the websocket connection and process packets if available
         peer.Poll();
         if (peer.GetReadyState() == WebSocketPeer.State.Open)
         {
@@ -171,151 +198,26 @@ public partial class MatchMaker : Node
             {
                 var message = peer.GetPacket().GetStringFromUtf8();
 
-#if DEBUG
-                GD.Print("Message: " + message);
-#endif
-
-                var packet = Packet.FromJSON(message);
+                var packet = Packet.FromJSON<Packet>(message);
                 if (packet == null)
                 {
                     GD.PrintErr("[MatchMaker] Invalid JSON received! (parsing failed)");
-                    GetTree().Quit();
                     return;
                 }
 
                 switch (packet.type)
                 {
+                    case PacketType.MatchMakerUpdate:
+                        HandleMatchMakerUpdate(packet);
+                        break;
                     case PacketType.MatchMakerResponse:
-                        var matchMakerResponse = packet.ParseMatchMakingResponse();
-                        OwnUUID = packet.to;
-                        GD.Print($"[MatchMaker] Own UUID: {OwnUUID}");
-
-                        HostUUID = matchMakerResponse.hostUUID;
-                        GD.Print($"[MatchMaker] Host UUID: {OwnUUID}");
-
-                        GD.Print($"[MatchMaker] Is Host: {IsHost}");
-
-                        foreach (var peerUUID in matchMakerResponse.peers)
-                        {
-                            if (peerUUID == OwnUUID)
-                            {
-                                // Skip if it's our own peer UUID
-                                continue;
-                            }
-
-                            // Create connection
-                            var connection = new WebRTCPeer()
-                            {
-                                Name = $"WebRTCConnection#{peerUUID}",
-                                IsHost = IsHost,
-                                ICEServers = ICEServers,
-                            };
-
-                            // Add Signal listeners
-                            // Small hack: Calling another function deferred which then emits the Signal fixes an async issue with how WebRTCPeer handles events
-                            connection.OnICECandidateJSON += (json) =>
-                            {
-                                CallDeferred("signalOnICECandidate", peerUUID, json);
-                            };
-                            connection.OnMessageRaw += (channelId, data) =>
-                            {
-                                CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
-                            };
-                            connection.OnMessageRaw += (channelId, data) =>
-                            {
-                                CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
-                            };
-                            connection.OnMessageString += (channelId, message) =>
-                            {
-                                CallDeferred("signalOnMessageString", peerUUID, channelId, message);
-                            };
-                            connection.OnChannelOpen += (channel) =>
-                            {
-                                CallDeferred("signalOnChannelOpen", peerUUID, channel);
-                            };
-                            connection.OnChannelClose += (channel) =>
-                            {
-                                CallDeferred("signalOnChannelClose", peerUUID, channel);
-                            };
-                            connection.OnChannelStateChange += (channel, isOpen) =>
-                            {
-                                CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
-                            };
-
-                            webRTCConnections.Add(peerUUID, connection);
-                            AddChild(connection);
-
-                            // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
-                            // If we are a host, do that.
-                            // This also sets the 'local' session description.
-                            if (IsHost)
-                            {
-                                var session = connection.CreateOffer();
-                                await connection.SetLocalDescription(session);
-
-                                var json = session.toJSON();
-                                SendPacket(PacketType.SessionDescription, peerUUID, json);
-                            }
-
-                            // Signal new connection opened
-                            EmitSignal(SignalName.OnNewConnection, peerUUID);
-                        }
-
+                        await HandleMatchMakerResponse(packet);
                         break;
                     case PacketType.SessionDescription:
-                        var sessionDescription = packet.ParseSessionDescription();
-
-                        // Set the session description we received.
-                        // This always will be the 'remote' session description.
-                        var sessionConnection = webRTCConnections[packet.from];
-                        sessionConnection.SetRemoteDescription(sessionDescription);
-
-                        // Clients are expected to create an 'answer' once an 'offer' is received and set.
-                        // If we are a client, do that.
-                        // This also sets the 'local' session description.
-                        if (!IsHost)
-                        {
-                            var session = sessionConnection.CreateAnswer();
-                            await sessionConnection.SetLocalDescription(session);
-
-                            var json = session.toJSON();
-                            SendPacket(PacketType.SessionDescription, packet.from, json);
-                        }
-
+                        await HandleSessionDescription(packet);
                         break;
                     case PacketType.ICECandidate:
-                        var iceCandidate = packet.ParseICECandidate();
-
-                        // Filter the ICE Candidate we received based on the CandidateFilter
-                        if (
-                            // All are allowed
-                            AllowedCandidateTypes == CandidateFilter.All
-                        || (
-                            // Or: Relay is allowed
-                            AllowedCandidateTypes == CandidateFilter.Relay
-                            && iceCandidate.candidate.Contains("relay")
-                            )
-                        || (
-                            // Or: Host is allowed
-                            AllowedCandidateTypes == CandidateFilter.Host
-                            && iceCandidate.candidate.Contains("host")
-                            )
-                        || (
-                            // Or: Server Reflexiv is allowed
-                            AllowedCandidateTypes == CandidateFilter.ServerReflexiv
-                            && iceCandidate.candidate.Contains("srflx")
-                            )
-                        || (
-                            // Or: Peer Reflexiv is allowed
-                            AllowedCandidateTypes == CandidateFilter.PeerReflexiv
-                            && iceCandidate.candidate.Contains("prflx")
-                            )
-                        )
-                        {
-                            // If it passed the filter: Add it!
-                            webRTCConnections[packet.from].AddICECandidate(iceCandidate);
-                        }
-
+                        HandleICECandidate(packet);
                         break;
                     default:
                         GD.PrintErr("[MatchMaker] Invalid or unrecognized package received from Server!");
@@ -323,6 +225,200 @@ public partial class MatchMaker : Node
                 }
             }
         }
+        else if (peer.GetReadyState() == WebSocketPeer.State.Closed)
+        {
+            // Poll until we are closed, then null the peer
+            peer = null;
+        }
+    }
+
+    private void HandleMatchMakerUpdate(Packet packet)
+    {
+        var matchMakerUpdate = packet.ParseMatchMakerUpdate();
+
+        EmitSignal(SignalName.OnMatchMakerUpdate, matchMakerUpdate.currentPeerCount, matchMakerUpdate.requiredPeerCount);
+    }
+
+    private async Task HandleMatchMakerResponse(Packet packet)
+    {
+        var matchMakerResponse = packet.ParseMatchMakerResponse();
+        OwnUUID = packet.to;
+        GD.Print($"[MatchMaker] Own UUID: {OwnUUID}");
+
+        HostUUID = matchMakerResponse.hostUUID;
+        GD.Print($"[MatchMaker] Host UUID: {OwnUUID}");
+        GD.Print($"[MatchMaker] Is Host: {IsHost}");
+
+        timeoutTimer = new Timer()
+        {
+            Autostart = true,
+            OneShot = true,
+            WaitTime = Timeout,
+        };
+        timeoutTimer.Timeout += () =>
+        {
+            GD.PrintErr("[MatchMaker] Timeout reached!");
+            EmitSignal(SignalName.OnMatchMakerTimeout, OwnUUID);
+        };
+        AddChild(timeoutTimer);
+
+        if (IsHost)
+        {
+            // Hosts connect to every client
+
+            foreach (var peerUUID in matchMakerResponse.peers)
+            {
+                if (peerUUID == OwnUUID)
+                {
+                    // Skip if it's our own peer UUID
+                    continue;
+                }
+
+                var connection = makeWebRTCPeer(peerUUID);
+
+                // Hosts are expected to start the connection process by creating an 'offer' and sending that to the client peer.
+                // If we are a host, do that.
+                // This also sets the 'local' session description.
+                var session = connection.CreateOffer();
+                await connection.SetLocalDescription(session);
+
+                var json = session.toJSON();
+                SendPacket(PacketType.SessionDescription, peerUUID, json);
+
+                // Timeout
+                connection.OnChannelOpen += (_) =>
+                {
+                    if (timeoutTimer != null)
+                    {
+                        RemoveChild(timeoutTimer);
+                        timeoutTimer = null;
+                    }
+                };
+            }
+        }
+        else
+        {
+            // Clients only connect to the host
+            var connection = makeWebRTCPeer(matchMakerResponse.hostUUID);
+
+            // Timeout
+            connection.OnChannelOpen += (_) =>
+                {
+                    if (timeoutTimer != null)
+                    {
+                        RemoveChild(timeoutTimer);
+                        timeoutTimer = null;
+                    }
+                };
+        }
+    }
+
+    private async Task HandleSessionDescription(Packet packet)
+    {
+        var sessionDescription = packet.ParseSessionDescription();
+
+        // Set the session description we received.
+        // This always will be the 'remote' session description.
+        var sessionConnection = webRTCConnections[packet.from];
+        sessionConnection.SetRemoteDescription(sessionDescription);
+
+        // Clients are expected to create an 'answer' once an 'offer' is received and set.
+        // If we are a client, do that.
+        // This also sets the 'local' session description.
+        if (!IsHost)
+        {
+            var session = sessionConnection.CreateAnswer();
+            await sessionConnection.SetLocalDescription(session);
+
+            var json = session.toJSON();
+            SendPacket(PacketType.SessionDescription, packet.from, json);
+        }
+    }
+
+    private void HandleICECandidate(Packet packet)
+    {
+        var iceCandidate = packet.ParseICECandidate();
+
+        // Filter the ICE Candidate we received based on the CandidateFilter
+        if (
+            // All are allowed
+            AllowedCandidateTypes == CandidateFilter.All
+        || (
+            // Or: Relay is allowed
+            AllowedCandidateTypes == CandidateFilter.Relay
+            && iceCandidate.candidate.Contains("relay")
+            )
+        || (
+            // Or: Host is allowed
+            AllowedCandidateTypes == CandidateFilter.Host
+            && iceCandidate.candidate.Contains("host")
+            )
+        || (
+            // Or: Server Reflexiv is allowed
+            AllowedCandidateTypes == CandidateFilter.ServerReflexiv
+            && iceCandidate.candidate.Contains("srflx")
+            )
+        || (
+            // Or: Peer Reflexiv is allowed
+            AllowedCandidateTypes == CandidateFilter.PeerReflexiv
+            && iceCandidate.candidate.Contains("prflx")
+            )
+        )
+        {
+            // If it passed the filter: Add it!
+            webRTCConnections[packet.from].AddICECandidate(iceCandidate);
+        }
+    }
+
+    private WebRTCPeer makeWebRTCPeer(string peerUUID)
+    {
+        // Create connection and add it to our local collection and scene
+        var connection = new WebRTCPeer()
+        {
+            Name = $"WebRTCConnection#{peerUUID}",
+            PrintIncomingMessagesToConsole = PrintIncomingMessagesToConsole,
+            IsHost = IsHost,
+            ICEServers = ICEServers,
+            DataChannels = DataChannels,
+        };
+        webRTCConnections.Add(peerUUID, connection);
+        AddChild(connection);
+
+        // Add Signal listeners
+        // Small hack: Calling another function deferred which then emits the Signal fixes an async issue with how WebRTCPeer handles events
+        connection.OnICECandidateJSON += (json) =>
+        {
+            CallDeferred("signalOnICECandidate", peerUUID, json);
+        };
+        connection.OnMessageRaw += (channelId, data) =>
+        {
+            CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
+        };
+        connection.OnMessageRaw += (channelId, data) =>
+        {
+            CallDeferred("signalOnMessageRaw", peerUUID, channelId, data);
+        };
+        connection.OnMessageString += (channelId, message) =>
+        {
+            CallDeferred("signalOnMessageString", peerUUID, channelId, message);
+        };
+        connection.OnChannelOpen += (channel) =>
+        {
+            CallDeferred("signalOnChannelOpen", peerUUID, channel);
+        };
+        connection.OnChannelClose += (channel) =>
+        {
+            CallDeferred("signalOnChannelClose", peerUUID, channel);
+        };
+        connection.OnChannelStateChange += (channel, isOpen) =>
+        {
+            CallDeferred("signalOnChannelStateChange", peerUUID, channel, isOpen);
+        };
+
+        // Emit signal about a new peer connection being made
+        EmitSignal(SignalName.OnNewConnection, peerUUID);
+
+        return connection;
     }
     #endregion
 
@@ -335,6 +431,12 @@ public partial class MatchMaker : Node
     /// <param name="json">ICE Candidate in JSON form</param>
     private void signalOnICECandidate(string peerUUID, string json)
     {
+        if (peer == null)
+        {
+            GD.Print($"[Match Maker] Got more ICE candidates, but peer connection seems to be already closed!\nSkipping: {json}");
+            return;
+        }
+
         var packet = new Packet()
         {
             type = PacketType.ICECandidate,
@@ -379,6 +481,27 @@ public partial class MatchMaker : Node
     private void signalOnChannelOpen(string peerUUID, short channel)
     {
         EmitSignal(SignalName.OnChannelOpen, peerUUID, channel);
+
+        // Once a P2P/WebRTC connection is established AND a channel is opened
+        // (open channel implies a connection is made), we can close the
+        // connection to the match making server.
+        // NOTE: This possibly has to be changed for 2+ peers!
+        if (peer != null)
+        {
+            var closeConnection = true;
+            foreach (var (_, peer) in webRTCConnections)
+            {
+                if (!peer.IsReady)
+                {
+                    closeConnection = false;
+                }
+            }
+
+            if (closeConnection)
+            {
+                peer.Close();
+            }
+        }
     }
 
     private void signalOnChannelClose(string peerUUID, short channel)
@@ -399,25 +522,37 @@ public partial class MatchMaker : Node
     /// <returns>true, if a connection exists, false otherwise</returns>
     public bool IsReady()
     {
-        return peer.GetReadyState() == WebSocketPeer.State.Open;
+        return peer != null && peer.GetReadyState() == WebSocketPeer.State.Open;
     }
 
     /// <summary>
-    /// Used to send a <see cref="MatchMakingRequest"/> to the Match Maker Server.
+    /// Used to send a <see cref="MatchMakerRequest"/> to the Match Maker Server.
     /// 
     /// Make sure to check if the connection is ready first via <see cref="IsReady"/>.
     /// </summary>
-    /// <param name="matchMaking">The request to be made</param>
+    /// <param name="MatchMaker">The request to be made</param>
     /// <returns>An <see cref="Error"/> if the connection is not open or an error ocurred.</returns>
-    public Error SendMatchMakingRequest(MatchMakingRequest matchMaking)
+    public Error SendMatchMakerRequest(MatchMakerRequest MatchMaker)
     {
         if (peer.GetReadyState() != WebSocketPeer.State.Open)
         {
             return Error.Failed;
         }
 
-        var json = matchMaking.ToJson();
-        return SendPacket(PacketType.MatchMakerRequest, "MatchMaker", "UNKNOWN", json);
+        if (RequestSend)
+        {
+            return Error.AlreadyExists;
+        }
+
+        var json = MatchMaker.ToJson();
+        var error = SendPacket(PacketType.MatchMakerRequest, "MatchMaker", "UNKNOWN", json);
+
+        if (error == Error.Ok)
+        {
+            RequestSend = true;
+        }
+
+        return error;
     }
 
     /// <summary>

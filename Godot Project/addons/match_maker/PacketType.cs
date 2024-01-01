@@ -5,6 +5,7 @@ public enum PacketType
 {
     MatchMakerRequest,
     MatchMakerResponse,
+    MatchMakerUpdate,
     ICECandidate,
     SessionDescription,
 }

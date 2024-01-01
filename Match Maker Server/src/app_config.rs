@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppConfig {
     /// The address the server should listen on.
-    /// Use 0.0.0.0 (IPv4) or ::1 (IPv6) to listen to 
+    /// Use 0.0.0.0 (IPv4) or ::1 (IPv6) to listen to
     /// all addresses.
     pub listen_address: String,
     /// The port the server should listen on.
@@ -24,7 +24,7 @@ impl AppConfig {
     /// is missing, creates a default config on disk and returns
     /// it.
     pub fn load() -> Result<Self, Box<dyn Error>> {
-        println!(
+        log::info!(
             "Config path: {}",
             confy::get_configuration_file_path("MatchMaker", None)?
                 .to_str()
@@ -33,7 +33,7 @@ impl AppConfig {
 
         let app_config: AppConfig = confy::load("MatchMaker", None)?;
 
-        println!("{}", app_config);
+        log::info!("{}", app_config);
 
         Ok(app_config)
     }
@@ -48,7 +48,13 @@ impl AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         let mut slots = HashMap::new();
-        slots.insert(String::from("Test"), 2);
+
+        // Demos:
+        slots.insert(String::from("PingPong"), 2);
+        slots.insert(String::from("Chat"), 2);
+        slots.insert(String::from("Game"), 2);
+        slots.insert(String::from("MultiChannel"), 2);
+        slots.insert(String::from("VideoCall"), 2);
 
         Self {
             listen_address: String::from("0.0.0.0"),
@@ -63,15 +69,15 @@ impl Display for AppConfig {
         write!(
             f,
             "AppConfig:
-\tListen Address:\t{}
-\tListen Port:\t{}
-\tQueue Slot Config:
+Listen Address:\t{}
+Listen Port:\t{}
+Queue Slot Config:
 {}",
             self.listen_address,
             self.listen_port,
             self.slots
                 .iter()
-                .map(|(k, v)| format!("\t\t\"{}\": {} slots", k, v))
+                .map(|(k, v)| format!("  \"{}\" -> {}x slots", k, v))
                 .collect::<Vec<String>>()
                 .join("\n")
         )

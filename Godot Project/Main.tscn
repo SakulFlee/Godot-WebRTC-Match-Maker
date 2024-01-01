@@ -2,8 +2,7 @@
 
 [ext_resource type="Script" path="res://Main.cs" id="2_i14hs"]
 
-[node name="Main" type="Control"]
-layout_mode = 3
+[node name="Main" type="Panel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -11,67 +10,73 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_i14hs")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 32.0
-offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
 
-[node name="MarginContainerPingPong" type="MarginContainer" parent="HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+alignment = 1
 
-[node name="PingPongButton" type="Button" parent="HBoxContainer/MarginContainerPingPong"]
-unique_name_in_owner = true
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Ping-Pong"
-
-[node name="MarginContainerChat" type="MarginContainer" parent="HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="ChatButton" type="Button" parent="HBoxContainer/MarginContainerChat"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Chat"
-
-[node name="MarginContainerHighLevel" type="MarginContainer" parent="HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="HighLevelButton" type="Button" parent="HBoxContainer/MarginContainerHighLevel"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "High Level"
-
-[node name="Label" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 23.0
-grow_horizontal = 2
 theme_override_font_sizes/font_size = 32
-text = "Choose a demo:"
+text = "Godot WebRTC Demo Project"
 horizontal_alignment = 1
 
-[connection signal="pressed" from="HBoxContainer/MarginContainerPingPong/PingPongButton" to="." method="OnPingPongButton"]
-[connection signal="pressed" from="HBoxContainer/MarginContainerChat/ChatButton" to="." method="OnChatButton"]
-[connection signal="pressed" from="HBoxContainer/MarginContainerHighLevel/HighLevelButton" to="." method="OnHighLevelButton"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 64
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 64
+theme_override_constants/margin_bottom = 64
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 3
+
+[node name="ButtonPingPong" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Ping Pong"
+
+[node name="ButtonChat" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Chat"
+
+[node name="ButtonVideoCall" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Video Call"
+
+[node name="ButtonMultiChannel" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Multi Channel"
+
+[node name="ButtonGame" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Game"
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonPingPong" to="." method="OnPingPongButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonChat" to="." method="OnChatButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonVideoCall" to="." method="OnVideoCallButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonMultiChannel" to="." method="OnMultiChannelButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonGame" to="." method="OnGameButton"]

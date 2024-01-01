@@ -1,10 +1,10 @@
 using Godot;
 
-public partial class Main : Control
+public partial class Main : Panel
 {
-	public void OnPingPongButton()
+	private void switchScene(string path)
 	{
-		var err = GetTree().ChangeSceneToFile("res://Demos/PingPong/PingPong.tscn");
+		var err = GetTree().ChangeSceneToFile(path);
 		if (err != Error.Ok)
 		{
 			GD.PrintErr($"Failed to switch scene ({err})");
@@ -12,14 +12,29 @@ public partial class Main : Control
 		}
 	}
 
+	public void OnPingPongButton()
+	{
+		switchScene("res://Demos/PingPong/PingPong.tscn");
+	}
+
 	public void OnChatButton()
 	{
-		var err = GetTree().ChangeSceneToFile("res://Demos/Chat/Chat.tscn");
-		if (err != Error.Ok)
-		{
-			GD.PrintErr($"Failed to switch scene ({err})");
-			return;
-		}
+		switchScene("res://Demos/Chat/Chat.tscn");
+	}
+
+	public void OnMultiChannelButton()
+	{
+		switchScene("res://Demos/MultiChannel/MultiChannel.tscn");
+	}
+
+	public void OnGameButton()
+	{
+		switchScene("res://Demos/Game/Game.tscn");
+	}
+
+	public void OnVideoCallButton()
+	{
+		switchScene("res://Demos/VideoCall/VideoCall.tscn");
 	}
 
 	public void OnHighLevelButton()
