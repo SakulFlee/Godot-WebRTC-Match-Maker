@@ -27,7 +27,7 @@ public partial class HighLevelPlayer : CharacterBody2D
 	{
 		if (IsMultiplayerAuthority())
 		{
-			Vector2 inputVector = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+			Vector2 inputVector = Input.GetVector("Move Left", "Move Right", "Move Forward", "Move Backward");
 			Velocity = inputVector * Speed * (float)delta;
 			MoveAndSlide();
 		}

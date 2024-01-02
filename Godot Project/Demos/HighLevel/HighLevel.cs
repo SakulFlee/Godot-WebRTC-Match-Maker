@@ -2,16 +2,52 @@ using Godot;
 
 public partial class HighLevel : Node
 {
-	public const int port = 33333;
-
 	[Export]
 	public PackedScene playerScene;
 
-	private ENetMultiplayerPeer peer = new();
+	private MatchMaker matchMaker;
 
-	private void hideUI()
+	private bool hostGotAdded = false;
+
+	public override void _EnterTree()
 	{
-		GetNode<Control>("%UI").Hide();
+		matchMaker = GetNode<MatchMaker>("MatchMaker");
+
+		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
+		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
+
+		Multiplayer.MultiplayerPeer = new MatchMakerMultiplayerPeer(matchMaker);
+	}
+
+	public override void _Ready()
+	{
+		Multiplayer.PeerConnected += (id) =>
+		{
+			GD.Print($"[HighLevel@{matchMaker.OwnUUID}; Is Host? {matchMaker.IsHost}] Peer connected: {id}");
+
+			if (IsMultiplayerAuthority())
+			{
+				if (matchMaker.IsHost && !hostGotAdded)
+				{
+					AddPlayer(1);
+
+					hostGotAdded = true;
+				}
+
+				AddPlayer(id);
+			}
+		};
+	}
+
+	public override void _Process(double delta)
+	{
+		if (matchMaker.IsReady() && !matchMaker.RequestSend)
+		{
+			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
+			{
+				name = "HighLevel",
+			});
+		}
 	}
 
 	public void AddPlayer(long id)
@@ -19,25 +55,5 @@ public partial class HighLevel : Node
 		var player = playerScene.Instantiate<HighLevelPlayer>();
 		player.Name = $"{id}";
 		AddChild(player);
-	}
-
-	public void OnHostButtonPressed()
-	{
-		Multiplayer.PeerConnected += AddPlayer;
-
-		peer.CreateServer(port);
-		Multiplayer.MultiplayerPeer = peer;
-
-		AddPlayer(1);
-
-		hideUI();
-	}
-
-	public void OnClientButtonPressed()
-	{
-		peer.CreateClient("127.0.0.1", port);
-		Multiplayer.MultiplayerPeer = peer;
-
-		hideUI();
 	}
 }

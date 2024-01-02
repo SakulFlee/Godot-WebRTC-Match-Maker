@@ -10,8 +10,6 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     private ConnectionStatus connectionStatus;
 
-    private bool isHost;
-
     private Queue<Packet> incomingPacketQueue = new();
     private Packet currentIncomingPacket = new();
 
@@ -58,7 +56,7 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
         setupPeerCountSanityCheck();
         setupHostClientSanityCheck();
 
-        if (isHost)
+        if (webRTCPeers.Length > 0)
         {
             peerID = 1;
         }
@@ -105,7 +103,6 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
         {
             GD.PrintErr("[WebRTCPeerExt] All peers must be in Host or Client mode. Mixed isn't allowed!");
         }
-        isHost = hosts > 0;
     }
 
     private void setupOnMessageSignal()
@@ -148,18 +145,6 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override void _Poll()
     {
-        // GD.Print($"CALL: _Poll");
-
-        // GD.Print($"TOutgoing: {outgoingPacketQueue.Count}");
-        // GD.Print($"COutgoing: {currentOutgoingPacket}");
-        // GD.Print($"TIncoming: {incomingPacketQueue.Count}");
-        // GD.Print($"CIncoming: {currentIncomingPacket}");
-
-        // TODO: Questions/Procedure
-        // 1. Test with an existing implementation (e.g. ENet) if the demo actually works or if the issue is with something else
-        // 2. Once the demo actually works, check if this works
-        // 3. Check if we maybe are too fast? Signals aren't fired at all + constant polling of connection status. Godot may be expecting a change from "Connecting" to "Connected" or something. (Keep in mind that our connection _already exists_ once we initialize this!)
-
         foreach (var packet in outgoingPacketQueue)
         {
             webRTCPeers[packet.peerID - 1].SendOnChannelRaw((ushort)(packet.channelID - 1), packet.data);
@@ -204,11 +189,13 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
         if (currentOutgoingPacket.peerID == 0)
         {
+            GD.PrintErr("HIT");
             return Error.Unconfigured;
         }
 
         if (currentOutgoingPacket.channelID == 0)
         {
+            GD.PrintErr("HIT");
             return Error.Unconfigured;
         }
 
@@ -236,7 +223,7 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override void _SetTransferMode(TransferModeEnum pMode)
     {
-        GD.Print($"CALL: pMod");
+        GD.Print($"CALL: _SetTransferMode");
 
         GD.Print("[WebRTCMultiplayerPeer] SetTransferMode is useless as WebRTC will always work in 'Reliable' mode!");
     }
@@ -263,8 +250,6 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
 
     public override ConnectionStatus _GetConnectionStatus()
     {
-        // GD.Print($"CALL: _GetConnectionStatus");
-
         return connectionStatus;
     }
 
@@ -315,8 +300,7 @@ public partial class WebRTCMultiplayerPeer : MultiplayerPeerExtension
     {
         GD.Print($"CALL: _IsServer");
 
-        GD.Print($">  Is Host: {isHost}");
-        return isHost;
+        return webRTCPeers.Length > 0;
     }
 
     public override bool _IsServerRelaySupported()

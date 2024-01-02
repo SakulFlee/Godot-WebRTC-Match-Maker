@@ -1,47 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://r1q2puatsy2c"]
+[gd_scene load_steps=6 format=3 uid="uid://r1q2puatsy2c"]
 
 [ext_resource type="Script" path="res://Demos/HighLevel/HighLevel.cs" id="1_7lxk5"]
+[ext_resource type="Script" path="res://addons/match_maker/MatchMaker.cs" id="2_86nxv"]
 [ext_resource type="PackedScene" uid="uid://fmfujbwoir0x" path="res://Demos/HighLevel/HighLevelPlayer.tscn" id="3_k8xtg"]
+[ext_resource type="PackedScene" uid="uid://dfrhaa6ime1jf" path="res://DebugPanel/DebugPanel.tscn" id="4_4sssx"]
+[ext_resource type="PackedScene" uid="uid://cenjhm83f2riu" path="res://ConnectionPanel/ConnectionPanel.tscn" id="5_goh70"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_7lxk5")
 playerScene = ExtResource("3_k8xtg")
 
+[node name="MatchMaker" type="Node" parent="."]
+script = ExtResource("2_86nxv")
+
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("res://Demos/HighLevel/HighLevelPlayer.tscn")
 spawn_path = NodePath("..")
 
-[node name="UI" type="Control" parent="."]
+[node name="DebugPanel" parent="." instance=ExtResource("4_4sssx")]
 unique_name_in_owner = true
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
 
-[node name="CenterContainer" type="HBoxContainer" parent="UI"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 505.5
-offset_top = 288.5
-offset_right = 606.5
-offset_bottom = 319.5
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-alignment = 1
-
-[node name="HostButton" type="Button" parent="UI/CenterContainer"]
-layout_mode = 2
-text = "Host"
-
-[node name="ClientButton" type="Button" parent="UI/CenterContainer"]
-layout_mode = 2
-text = "Client"
-
-[connection signal="pressed" from="UI/CenterContainer/HostButton" to="." method="OnHostButtonPressed"]
-[connection signal="pressed" from="UI/CenterContainer/ClientButton" to="." method="OnClientButtonPressed"]
+[node name="ConnectionPanel" parent="." instance=ExtResource("5_goh70")]
+unique_name_in_owner = true
