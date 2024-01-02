@@ -1,5 +1,7 @@
 using Godot;
 
+// TODO: Implement for WebRTC peers or reuse somehow
+
 public partial class HighLevel : Node
 {
 	[Export]
