@@ -1,19 +1,42 @@
-[gd_scene load_steps=4 format=3 uid="uid://dnr5ctnr27wsb"]
+[gd_scene load_steps=5 format=3 uid="uid://fmfujbwoir0x"]
 
 [ext_resource type="Script" path="res://Demos/HighLevel/HighLevelPlayer.cs" id="1_27ayu"]
 [ext_resource type="Texture2D" uid="uid://clwinlwu14ihy" path="res://icon.svg" id="2_vomcn"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_i1oa0"]
-size = Vector2(128, 128)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ae4y6"]
+size = Vector2(64, 64)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_k2p8m"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
 
 [node name="HighLevelPlayer" type="CharacterBody2D"]
 script = ExtResource("1_27ayu")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(64, 64)
-shape = SubResource("RectangleShape2D_i1oa0")
+shape = SubResource("RectangleShape2D_ae4y6")
 
-[node name="Player" type="TextureRect" parent="."]
-size_flags_horizontal = 3
-size_flags_vertical = 3
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_vomcn")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_k2p8m")
+
+[node name="IDLabel" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -19.0
+offset_top = 32.0
+offset_right = 19.0
+offset_bottom = 55.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "#123"
+horizontal_alignment = 1
+vertical_alignment = 1

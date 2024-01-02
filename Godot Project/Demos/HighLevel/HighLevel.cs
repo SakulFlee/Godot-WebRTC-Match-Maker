@@ -2,34 +2,42 @@ using Godot;
 
 public partial class HighLevel : Node
 {
-	private MatchMaker matchMaker;
+	public const int port = 33333;
 
-	public override void _EnterTree()
+	[Export]
+	public PackedScene playerScene;
+
+	private ENetMultiplayerPeer peer = new();
+
+	private void hideUI()
 	{
-		matchMaker = GetNode<MatchMaker>("MatchMaker");
-
-		GetNode<DebugPanel>("%DebugPanel").matchMaker = matchMaker;
-		GetNode<ConnectionPanel>("%ConnectionPanel").matchMaker = matchMaker;
+		GetNode<Control>("%UI").Hide();
 	}
 
-	public override void _Ready()
+	public void AddPlayer(long id)
 	{
-		matchMaker.OnMessageString += OnChannelMessageReceived;
+		var player = playerScene.Instantiate<HighLevelPlayer>();
+		player.Name = $"{id}";
+		AddChild(player);
 	}
 
-	public override void _Process(double delta)
+	public void OnHostButtonPressed()
 	{
-		if (matchMaker.IsReady() && !matchMaker.RequestSend)
-		{
-			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
-			{
-				name = "HighLevel",
-			});
-		}
+		Multiplayer.PeerConnected += AddPlayer;
+
+		peer.CreateServer(port);
+		Multiplayer.MultiplayerPeer = peer;
+
+		AddPlayer(1);
+
+		hideUI();
 	}
 
-	private void OnChannelMessageReceived(string peerUUID, ushort channel, string message)
+	public void OnClientButtonPressed()
 	{
+		peer.CreateClient("127.0.0.1", port);
+		Multiplayer.MultiplayerPeer = peer;
 
+		hideUI();
 	}
 }
