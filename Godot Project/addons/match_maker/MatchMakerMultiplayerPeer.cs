@@ -47,6 +47,9 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
     {
         this.matchMaker = matchMaker;
 
+        // Called once a new connection is being made.
+        // A new connection doesn't mean it's stable yet or ready to 
+        // receive / send data.
         this.matchMaker.OnNewConnection += (peerUUID) =>
         {
             GD.Print($"[MatchMakerMultiplayerPeer] New connection: {peerUUID}");
@@ -64,6 +67,10 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
             addPeerUUIDtoIDTranslation(peerUUID, otherID);
         };
 
+        // Called when the state of a channel changes.
+        // A open channel implies the connection being stable.
+        // The connection will only be marked as "connected" once the main
+        // channel (id: 0) opened.
         this.matchMaker.OnChannelStateChange += (peerUUID, channelId, isOpen) =>
         {
             if (channelId != 0)
@@ -83,8 +90,8 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
             // Signal a new connection opening (open channel implies connection is stable)
             CallDeferred("signalPeerConnected", peerUUID);
-        };
-
+        // Called when a new message is received.
+        // Will add the message to the queue.
         this.matchMaker.OnMessageRaw += (peerUUID, channelID, data) =>
         {
             var peerID = peerUUIDtoUniqueID[peerUUID];
@@ -98,6 +105,8 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         };
     }
 
+    // ⚠️ Workaround: Must be called with `CallDeferred` since signaling 
+    // an event is only possible on a Godot thread. ⚠️
     private void signalPeerConnected(string peerUUID)
     {
         var id = peerUUIDtoUniqueID[peerUUID];
