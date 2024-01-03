@@ -46,14 +46,12 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
                 // First connection!
                 // Add ourself first. This cannot be done earlier as we don't need if we are a host or not.
                 OwnID = matchMaker.IsHost ? 1 : Random.Shared.Next();
-                peerUUIDtoUniqueID.Add(matchMaker.OwnUUID, OwnID);
+                addPeerUUIDtoIDTranslation(matchMaker.OwnUUID, OwnID);
             }
 
             // Add the other peer
             var otherID = peerUUID == matchMaker.HostUUID ? 1 : Random.Shared.Next();
-            peerUUIDtoUniqueID.Add(peerUUID, otherID);
-
-            // New connection != Open channel!
+            addPeerUUIDtoIDTranslation(peerUUID, otherID);
         };
 
         this.matchMaker.OnChannelStateChange += (peerUUID, channelId, isOpen) =>
@@ -96,6 +94,23 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
         GD.Print($"[MatchMakerMultiplayerPeer] Signaling peer connected: {peerUUID} - {id}");
         EmitSignal(SignalName.PeerConnected, id);
+    }
+
+    private void addPeerUUIDtoIDTranslation(string peerUUID, int peerID)
+    {
+        peerUUIDtoUniqueID.Add(peerUUID, peerID);
+
+        GD.Print($"[MatchMakerMultiplayerPeer] Added peer UUID to peer ID translation: {peerUUID} <-> {peerID}");
+    }
+
+    private string getPeerUUIDfromPeerID(int peerID)
+    {
+        return peerUUIDtoUniqueID.First(x => x.Value == peerID).Key;
+    }
+
+    private int getPeerIDfromPeerUUID(string peerUUID)
+    {
+        return peerUUIDtoUniqueID[peerUUID];
     }
 
     public override void _Close()
