@@ -29,11 +29,6 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         public int peerID;
         public int channelID;
         public byte[] data;
-
-        public bool IsReady()
-        {
-            return peerID > 0 && channelID >= 0 && data.Length > 0;
-        }
     }
     #endregion
 
