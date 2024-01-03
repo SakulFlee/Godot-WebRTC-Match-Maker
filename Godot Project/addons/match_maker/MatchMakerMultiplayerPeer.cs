@@ -216,9 +216,8 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
             return -1;
         }
 
+        // Only peek!
         var incomingPacket = incomingPackets.Peek();
-
-        GD.Print($"[MatchMakerMultiplayerPeer] CALL: _GetPacketPeer - {incomingPacket.channelID}");
         return incomingPacket.channelID;
     }
 
