@@ -85,11 +85,24 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
                 return;
             }
 
-            // Add to our list
-            connectedPeers.AddLast(peerUUID);
+            if (isOpen)
+            {
+                // Add to our list
+                connectedPeers.AddLast(peerUUID);
 
-            // Signal a new connection opening (open channel implies connection is stable)
-            CallDeferred("signalPeerConnected", peerUUID);
+                // Signal a new connection opening (open channel implies connection is stable)
+                CallDeferred("signalPeerConnected", peerUUID);
+            }
+            else
+            {
+                // Remove from our list
+                connectedPeers.Remove(peerUUID);
+
+                // Signal a connection closing
+                CallDeferred("signalPeerDisconnected", peerUUID);
+            }
+        };
+
         // Called when a new message is received.
         // Will add the message to the queue.
         this.matchMaker.OnMessageRaw += (peerUUID, channelID, data) =>
@@ -113,6 +126,16 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
         GD.Print($"[MatchMakerMultiplayerPeer] Signaling peer connected: {peerUUID} - {id}");
         EmitSignal(SignalName.PeerConnected, id);
+    }
+
+    // ⚠️ Workaround: Must be called with `CallDeferred` since signaling 
+    // an event is only possible on a Godot thread. ⚠️
+    private void signalPeerDisconnected(string peerUUID)
+    {
+        var id = peerUUIDtoUniqueID[peerUUID];
+
+        GD.Print($"[MatchMakerMultiplayerPeer] Signaling peer disconnected: {peerUUID} - {id}");
+        EmitSignal(SignalName.PeerDisconnected, id);
     }
 
     private void addPeerUUIDtoIDTranslation(string peerUUID, int peerID)
