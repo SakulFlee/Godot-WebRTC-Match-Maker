@@ -365,8 +365,10 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         outgoingChannelID = (ushort)channelID;
     }
 
+    /// <summary>
+    /// Won't do anything. <see cref="_GetTransferMode" />
+    /// </summary>
+    /// <param name="mode"></param>
     public override void _SetTransferMode(TransferModeEnum mode)
-    {
-        GD.Print($"[MatchMakerMultiplayerPeer] Transfer mode is always Reliable! Setting it to '{mode}' won't have an effect!");
-    }
+    { }
 }
