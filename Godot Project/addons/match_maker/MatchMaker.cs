@@ -628,5 +628,13 @@ public partial class MatchMaker : Node
     {
         return webRTCConnections[peerUUID].IsChannelOpen(channelId);
     }
+
+    public void RemovePeer(string peerUUID, string reason)
+    {
+        var peer = webRTCConnections[peerUUID];
+        peer.peer.Close(reason);
+
+        webRTCConnections.Remove(peerUUID);
+    }
     #endregion
 }

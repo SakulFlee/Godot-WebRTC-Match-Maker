@@ -151,23 +151,18 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
     public override void _Close()
     {
-        closeRequested = true;
-
-        // TODO
+        matchMaker = null;
     }
 
-    public override void _DisconnectPeer(int peerID, bool force)
+    /// <summary>
+    /// Disconnects a peer by it's ID
+    /// There is no difference between a forced disconnect and a regular one.
+    /// </summary>
+    /// <param name="peerID">The peer ID to be disconnected</param>
+    public override void _DisconnectPeer(int peerID, bool _)
     {
-        GD.Print($"CALL: _DisconnectPeer");
-
-        if (force)
-        {
-            GD.Print("[MatchMakerMultiplayerPeer] Forcing a connection to close will have no difference to normally closing a connection!");
-        }
-
-        var peerUUID = peerUUIDtoUniqueID.First(x => x.Value == peerID).Key;
-        // TODO: Match Maker Disconnect!
-        throw new SystemException("Disconnecting peers is not yet implemented!");
+        var peerUUID = getPeerUUIDfromPeerID(peerID);
+        matchMaker.RemovePeer(peerUUID, "_DisconnectPeer");
     }
 
     public override int _GetAvailablePacketCount()
