@@ -49,8 +49,6 @@ public partial class RPC : Node
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
 	private void CounterUpdate(int counter)
 	{
-		GD.Print("CounterUpdate");
-
 		ActualCounterLabel.Text = counter.ToString();
 	}
 }
