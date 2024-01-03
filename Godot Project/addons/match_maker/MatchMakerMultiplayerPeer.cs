@@ -178,20 +178,15 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
     public override int _GetAvailablePacketCount()
     {
-        var availablePackets = incomingPackets.Count();
-        if (availablePackets > 0)
-        {
-            GD.Print($"Available packets called with {availablePackets} available!");
-        }
-        return availablePackets;
+        return incomingPackets.Count();
     }
 
     public override ConnectionStatus _GetConnectionStatus()
     {
-        return connectedPeers.Count > 0
-            ? ConnectionStatus.Connected
-            : closeRequested
-                ? ConnectionStatus.Disconnected
+        return matchMaker == null
+            ? ConnectionStatus.Disconnected
+            : connectedPeers.Count > 0
+                ? ConnectionStatus.Connected
                 : ConnectionStatus.Connecting;
     }
 
