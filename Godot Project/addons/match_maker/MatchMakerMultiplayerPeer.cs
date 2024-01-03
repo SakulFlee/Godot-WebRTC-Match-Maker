@@ -285,14 +285,14 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         return OwnID;
     }
 
-    //
-    // Summary:
-    //     Called when the "refuse new connections" status is requested on this Godot.MultiplayerPeer
-    //     (see Godot.MultiplayerPeer.RefuseNewConnections).
+    /// <summary>
+    /// We always refuse new connections as this is 
+    /// fully controlled by match maker!
+    /// </summary>
+    /// <returns></returns>
     public override bool _IsRefusingNewConnections()
     {
-        GD.Print($"CALL: _IsRefusingNewConnections");
-        return false; // TODO maybe?
+        return true;
     }
 
     public override bool _IsServer()
