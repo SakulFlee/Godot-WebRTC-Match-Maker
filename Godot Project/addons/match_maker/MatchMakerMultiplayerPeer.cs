@@ -270,9 +270,13 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         return 0;
     }
 
+    /// <summary>
+    /// Gets the current transfer mode.
+    /// Will always be Reliable due to WebRTC!
+    /// </summary>
+    /// <returns></returns>
     public override TransferModeEnum _GetTransferMode()
     {
-        GD.Print($"[MatchMakerMultiplayerPeer] CALL: _GetTransferMode (Reliable ...)");
         return TransferModeEnum.Reliable;
     }
 
