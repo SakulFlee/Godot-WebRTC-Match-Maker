@@ -297,8 +297,7 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
     public override bool _IsServer()
     {
-        GD.Print($"CALL: _IsServer");
-        return matchMaker.IsHost;   // TODO: Might be getting called too early?
+        return matchMaker.IsHost;
     }
 
     //
