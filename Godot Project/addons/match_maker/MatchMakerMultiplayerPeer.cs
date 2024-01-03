@@ -221,9 +221,13 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         return incomingPacket.channelID;
     }
 
+    /// <summary>
+    /// Gets the current packet mode.
+    /// Will always be "Reliable" due to WebRTC!
+    /// </summary>
+    /// <returns></returns>
     public override TransferModeEnum _GetPacketMode()
     {
-        GD.Print($"[MatchMakerMultiplayerPeer] CALL: _GetPacketMode (Reliable ...)");
         return TransferModeEnum.Reliable;
     }
 
