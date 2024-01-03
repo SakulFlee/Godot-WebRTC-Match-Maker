@@ -49,7 +49,7 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
             if (peerUUIDtoUniqueID.Count == 0)
             {
                 // First connection!
-                // Add ourself first. This cannot be done earlier as we don't need if we are a host or not.
+                // Add ourself first. This cannot be done earlier as we don't know if we are a host or not.
                 OwnID = matchMaker.IsHost ? 1 : Random.Shared.Next();
                 addPeerUUIDtoIDTranslation(matchMaker.OwnUUID, OwnID);
             }
