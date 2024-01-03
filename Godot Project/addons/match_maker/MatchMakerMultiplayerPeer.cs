@@ -252,10 +252,8 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
             return Array.Empty<byte>();
         }
 
-        // Only place where we actually dequeue from the packet queue!
+        // ONLY dequeue here! Peek everywhere else.
         var incomingPacket = incomingPackets.Dequeue();
-
-        GD.Print($"[MatchMakerMultiplayerPeer] CALL: _GetPacketScript - {incomingPacket.data.Length}b: 0x{Convert.ToHexString(incomingPacket.data)} -> {Encoding.ASCII.GetString(incomingPacket.data)}");
         return incomingPacket.data;
     }
 
