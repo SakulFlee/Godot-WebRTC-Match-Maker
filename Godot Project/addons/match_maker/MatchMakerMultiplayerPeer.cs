@@ -337,14 +337,13 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
     public override void _SetTargetPeer(int peerID)
     {
-        var peerUUID = peerUUIDtoUniqueID.First(x => x.Value == peerID).Key;
+        var peerUUID = getPeerUUIDfromPeerID(peerID);
         if (peerUUID == null)
         {
             GD.PrintErr("[MatchMakerMultiplayerPeer] Invalid peer ID requested to be set as target!");
             return;
         }
 
-        GD.Print($"[MatchMakerMultiplayerPeer] CALL: _SetTargetPeer - PeerID: {peerID} PeerUUID: {peerUUID}");
         outgoingPeerUUID = peerUUID;
     }
 
