@@ -300,14 +300,15 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         return matchMaker.IsHost;
     }
 
-    //
-    // Summary:
-    //     Called to check if the server can act as a relay in the current configuration.
-    //     See Godot.MultiplayerPeer.IsServerRelaySupported.
+    /// <summary>
+    /// Returns if the server does support relaying.
+    /// This is currently not implemented and not really needed as of now.
+    /// Thus, this returns always false.
+    /// </summary>
+    /// <returns></returns>
     public override bool _IsServerRelaySupported()
     {
-        GD.Print($"CALL: _IsServerRelaySupported");
-        return false; // TODO
+        return false;
     }
 
     //
