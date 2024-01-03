@@ -257,10 +257,17 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         return incomingPacket.data;
     }
 
+    /// <summary>
+    /// Gets the current (free?) transfer channel.
+    /// 0/Main is always free.
+    /// </summary>
+    /// <returns></returns> <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public override int _GetTransferChannel()
     {
-        GD.Print($"CALL: _GetTransferChannel");
-        return 0;  // TODO: Transfer channel == next open one?. If so; Main (0) is always open.
+        return 0;
     }
 
     public override TransferModeEnum _GetTransferMode()
