@@ -3,18 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public class GodotPacket
-{
-    public int peerID;
-    public int channelID;
-    public byte[] data;
-
-    public bool IsReady()
-    {
-        return peerID > 0 && channelID >= 0 && data.Length > 0;
-    }
-}
-
 public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 {
     #region Fields: Match Maker
@@ -34,7 +22,19 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
     #endregion
 
     #region Fields: Incoming
-    private Queue<GodotPacket> incomingPackets = new();
+    private Queue<IncomingPacketWrapper> incomingPackets = new();
+
+    internal class IncomingPacketWrapper
+    {
+        public int peerID;
+        public int channelID;
+        public byte[] data;
+
+        public bool IsReady()
+        {
+            return peerID > 0 && channelID >= 0 && data.Length > 0;
+        }
+    }
     #endregion
 
     #region Fields: Outgoing
@@ -108,7 +108,7 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         {
             var peerID = peerUUIDtoUniqueID[peerUUID];
 
-            incomingPackets.Enqueue(new GodotPacket
+            incomingPackets.Enqueue(new IncomingPacketWrapper
             {
                 peerID = peerID,
                 channelID = channelID,
