@@ -192,8 +192,20 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
     public override int _GetMaxPacketSize()
     {
-        GD.Print($"CALL: _GetMaxPacketSize");
-        return 1200; // TODO: Check...
+        uint minMessageSize = 0;
+        foreach (var (_, peer) in matchMaker.webRTCConnections)
+        {
+            var nestedPeer = peer.peer;
+            var maxMessageSize = nestedPeer.sctp.maxMessageSize;
+
+            if (minMessageSize == 0 || maxMessageSize < minMessageSize)
+            {
+                minMessageSize = maxMessageSize;
+            }
+        }
+
+        GD.PrintErr($"[MatchMakerMultiplayerPeer] Max packet size is set to the lowest message size based on SCTP: {minMessageSize}b");
+        return (int)minMessageSize;
     }
 
     public override int _GetPacketChannel()
