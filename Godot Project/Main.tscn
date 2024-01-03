@@ -75,15 +75,15 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "Game"
 
-[node name="ButtonHighLevel" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
+[node name="ButtonRPC" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-text = "High Level"
+text = "RPC"
 
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonPingPong" to="." method="OnPingPongButton"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonChat" to="." method="OnChatButton"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonVideoCall" to="." method="OnVideoCallButton"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonMultiChannel" to="." method="OnMultiChannelButton"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonGame" to="." method="OnGameButton"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonHighLevel" to="." method="OnHighLevelButton"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/GridContainer/ButtonRPC" to="." method="OnRPCButton"]
