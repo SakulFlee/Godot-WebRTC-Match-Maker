@@ -37,8 +37,8 @@ public partial class Main : Panel
 		switchScene("res://Demos/VideoCall/VideoCall.tscn");
 	}
 
-	public void OnHighLevelButton()
+	public void OnRPCButton()
 	{
-		switchScene("res://Demos/HighLevel/HighLevel.tscn");
+		switchScene("res://Demos/RPC/RPC.tscn");
 	}
 }
