@@ -324,8 +324,6 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
     public override Error _PutPacketScript(byte[] pBuffer)
     {
-        GD.Print($"[MatchMakerMultiplayerPeer] CALL: _PutPacketScript - {pBuffer.Length}b: 0x{Convert.ToHexString(pBuffer)} -> {Encoding.ASCII.GetString(pBuffer)}");
-
         matchMaker.SendOnChannelRaw(outgoingPeerUUID, outgoingChannelID, pBuffer);
         return Error.Ok;
     }
