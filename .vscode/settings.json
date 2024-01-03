@@ -6,6 +6,7 @@
         "oniceconnectionstatechange",
         "onicegatheringstatechange",
         "onsignalingstatechange",
+        "sctp",
         "Unconfigured"
     ]
 }
