@@ -328,15 +328,12 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         return Error.Ok;
     }
 
-    //
-    // Summary:
-    //     Called when the "refuse new connections" status is set on this Godot.MultiplayerPeer
-    //     (see Godot.MultiplayerPeer.RefuseNewConnections).
+    /// <summary>
+    /// Will do nothing. See <see cref="_IsRefusingNewConnections"/>.
+    /// </summary>
+    /// <param name="pEnable"></param>
     public override void _SetRefuseNewConnections(bool pEnable)
-    {
-        GD.Print($"CALL: _SetRefuseNewConnections");
-        // TODO
-    }
+    { }
 
     public override void _SetTargetPeer(int peerID)
     {
