@@ -361,7 +361,6 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
             return;
         }
 
-        GD.Print($"[MatchMakerMultiplayerPeer] CALL: _SetTransferChannel - ChannelID: {channelID}");
         outgoingChannelID = (ushort)channelID;
     }
 
