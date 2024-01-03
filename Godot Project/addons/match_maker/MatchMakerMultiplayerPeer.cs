@@ -17,8 +17,6 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 
     #region Fields: Logic
     private LinkedList<string> connectedPeers = new();
-
-    private bool closeRequested = false;
     #endregion
 
     #region Fields: Incoming
