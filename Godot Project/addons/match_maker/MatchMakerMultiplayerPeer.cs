@@ -18,20 +18,30 @@ public class GodotPacket
 
 public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
 {
+    #region Fields: Match Maker
     private MatchMaker matchMaker;
+    #endregion
 
+    #region Fields: Peer ID and Peer UUID
     private int OwnID;
 
     private Dictionary<string, int> peerUUIDtoUniqueID = new();
+    #endregion
+
+    #region Fields: Logic
     private LinkedList<string> connectedPeers = new();
 
     private bool closeRequested = false;
+    #endregion
 
+    #region Fields: Incoming
     private Queue<GodotPacket> incomingPackets = new();
-    private GodotPacket nextIncomingPacket;
+    #endregion
 
+    #region Fields: Outgoing
     private string outgoingPeerUUID;
     private ushort outgoingChannelID;
+    #endregion
 
     public MatchMakerMultiplayerPeer(MatchMaker matchMaker)
     {
