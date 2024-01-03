@@ -101,7 +101,7 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         // Will add the message to the queue.
         this.matchMaker.OnMessageRaw += (peerUUID, channelID, data) =>
         {
-            var peerID = peerUUIDtoUniqueID[peerUUID];
+            var peerID = getPeerIDfromPeerUUID(peerUUID);
 
             incomingPackets.Enqueue(new IncomingPacketWrapper
             {
