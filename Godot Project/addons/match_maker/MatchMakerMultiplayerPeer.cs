@@ -311,13 +311,16 @@ public partial class MatchMakerMultiplayerPeer : MultiplayerPeerExtension
         return false;
     }
 
-    //
-    // Summary:
-    //     Called when the Godot.MultiplayerApi is polled. See Godot.MultiplayerApi.Poll.
+    /// <summary>
+    /// Polls the server.
+    /// Normally, this would be the place to check our sockets and handle some
+    /// incoming and outgoing packet logic and such.
+    /// However, our WebRTC implementation runs in a separate thread and is
+    /// event based.
+    /// This function does nothing, but needs to be implemented ... 
+    /// </summary>
     public override void _Poll()
-    {
-        // TODO: Do nothing? xD
-    }
+    { }
 
     public override Error _PutPacketScript(byte[] pBuffer)
     {
