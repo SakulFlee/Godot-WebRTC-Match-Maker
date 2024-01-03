@@ -95,11 +95,11 @@ public partial class WebRTCPeer : Node
     /// <summary>
     /// The actual peer connection
     /// </summary>
-    private RTCPeerConnection peer;
+    public RTCPeerConnection peer { get; private set; }
 
-    private System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels = [];
+    public System.Collections.Generic.Dictionary<ushort, RTCDataChannel> channels { get; private set; } = [];
 
-    private Array openChannels = new();
+    public Array openChannels { get; private set; } = new();
 
     public bool IsReady
     {
