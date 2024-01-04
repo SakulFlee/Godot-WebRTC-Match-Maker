@@ -36,4 +36,9 @@ public partial class Main : Panel
 	{
 		switchScene("res://Demos/VideoCall/VideoCall.tscn");
 	}
+
+	public void OnRPCButton()
+	{
+		switchScene("res://Demos/RPC/RPC.tscn");
+	}
 }

@@ -5,6 +5,8 @@
         "onicecandidate",
         "oniceconnectionstatechange",
         "onicegatheringstatechange",
-        "onsignalingstatechange"
+        "onsignalingstatechange",
+        "sctp",
+        "Unconfigured"
     ]
 }
