@@ -60,17 +60,6 @@ public partial class Game : Node
 		};
 	}
 
-	public override void _Process(double delta)
-	{
-		if (matchMaker.IsReady() && !matchMaker.RequestSend)
-		{
-			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
-			{
-				name = "Game",
-			});
-		}
-	}
-
 	private void SendGamePacketToHost(ushort channel, GamePacket gamePacket)
 	{
 		SendGamePacketToPeer(matchMaker.HostUUID, channel, gamePacket);

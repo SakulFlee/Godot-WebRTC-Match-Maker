@@ -10,6 +10,7 @@ script = ExtResource("1_v3goe")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_lqkpe")
+AutoSendSlotRequest = "MultiChannel"
 DataChannels = ["Main", "Test Channel", "Another Channel"]
 
 [node name="Panel" type="Panel" parent="."]

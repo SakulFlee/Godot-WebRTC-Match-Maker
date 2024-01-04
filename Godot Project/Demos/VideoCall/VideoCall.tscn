@@ -16,6 +16,7 @@ script = ExtResource("1_a8kce")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("1_6dik4")
+AutoSendSlotRequest = "VideoCall"
 DataChannels = ["Main", "Video", "Audio"]
 PrintIncomingMessagesToConsole = false
 
