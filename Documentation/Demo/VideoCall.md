@@ -9,6 +9,8 @@
 The video calling demo is a more complex demo that shows off real-time communication capabilities with the provided plugins.  
 It is by no means perfect, but a MWP (= minimal working product).
 
+![Demo: VideoCall](../../.github/images/GodotVideoCall.png)
+
 ## Flow
 
 ### Audio sending
