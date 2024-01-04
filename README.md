@@ -56,6 +56,7 @@ Currently, the available demos are:
 | Multi-Channel | Shows example usage of multiple channels.                                                   | [link](./Documentation/Demo/MultiChannel.md) |
 | Game          | An actual game where sprites can move around the screen freely.                             | [link](./Documentation/Demo/Game.md)         |
 | Video Call    | A very simple video (and audio) calling demo to show how to enable real-time communication. | [link](./Documentation/Demo/VideoCall.md)    |
+| RPC/HighLevel | Showing how to initialize Godot's networking tools and RPC                                  | [link](./Documentation/Demo/RPC.md)          |
 
 ## Platform support
 
