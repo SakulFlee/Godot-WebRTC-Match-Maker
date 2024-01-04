@@ -93,19 +93,6 @@ public partial class VideoCall : Node
 		};
 	}
 
-	public override void _Process(double delta)
-	{
-		if (matchMaker.IsReady() && !matchMaker.RequestSend)
-		{
-			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
-			{
-				name = "VideoCall",
-			});
-
-			return;
-		}
-	}
-
 	public void AudioTick()
 	{
 		// Get the recording data and check if it's null or not.

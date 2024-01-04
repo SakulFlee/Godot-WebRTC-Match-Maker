@@ -10,6 +10,7 @@ script = ExtResource("1_m8l45")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_86nxv")
+AutoSendSlotRequest = "Chat"
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 anchors_preset = 11

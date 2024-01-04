@@ -23,17 +23,6 @@ public partial class Chat : Node
 		matchMaker.OnMessageString += ChannelMessageReceived;
 	}
 
-	public override void _Process(double delta)
-	{
-		if (matchMaker.IsReady() && !matchMaker.RequestSend)
-		{
-			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
-			{
-				name = "Chat",
-			});
-		}
-	}
-
 	private void SendMessage(string message)
 	{
 		var packet = new ChatMessagePacket

@@ -10,6 +10,7 @@ script = ExtResource("1_qxg5j")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_s8vu0")
+AutoSendSlotRequest = "RPC"
 PrintIncomingMessagesToConsole = false
 
 [node name="Panel" type="Panel" parent="."]

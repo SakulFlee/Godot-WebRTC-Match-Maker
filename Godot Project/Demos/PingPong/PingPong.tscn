@@ -10,6 +10,7 @@ script = ExtResource("1_r6cp2")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("3_hps7x")
+AutoSendSlotRequest = "PingPong"
 
 [node name="GridContainer" type="GridContainer" parent="."]
 anchors_preset = 8

@@ -47,14 +47,6 @@ public partial class PingPong : Node
 
 	public override void _Process(double delta)
 	{
-		if (matchMaker.IsReady() && !matchMaker.RequestSend)
-		{
-			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
-			{
-				name = "PingPong",
-			});
-		}
-
 		sendPingLabel.Text = sendPingCounter.ToString();
 		sendPongLabel.Text = sendPongCounter.ToString();
 		receivedPingLabel.Text = receivedPingCounter.ToString();

@@ -43,6 +43,28 @@ public partial class MatchMaker : Node
     ];
 
     /// <summary>
+    /// IF SET: 
+    /// Will automatically wait for a connection to the match maker server to 
+    /// be stable, then send a slot request for the set slot name.
+    /// 
+    /// IF NOT SET:
+    /// Won't automatically send a slot request.
+    /// This will have to be done manually instead, like so:
+    /// if (matchMaker.IsReady() && !matchMaker.RequestSend)
+    /// {
+    /// 	matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
+    ///     {
+    ///         name = "SLOT NAME HERE",
+    /// 	});
+    /// }
+    /// 
+    /// Note: Not setting this value might be useful if you extend the match
+    /// maker server to take in more arguments then just the slot name!
+    /// </summary>
+    [Export]
+    public string AutoSendSlotRequest;
+
+    /// <summary>
     /// ICE Candidates that are allowed and will be parsed through to the <see cref="WebRTCPeer"/>.
     /// 
     /// Check <see cref="CandidateFilter"/> for more.
@@ -229,6 +251,15 @@ public partial class MatchMaker : Node
         {
             // Poll until we are closed, then null the peer
             peer = null;
+        }
+
+        // Handle automatic slot request
+        if (AutoSendSlotRequest != null && !RequestSend && IsReady())
+        {
+            SendMatchMakerRequest(new MatchMakerRequest()
+            {
+                name = AutoSendSlotRequest,
+            });
         }
     }
 

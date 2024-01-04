@@ -13,6 +13,7 @@ PlayerScene = ExtResource("2_27xsw")
 
 [node name="MatchMaker" type="Node" parent="."]
 script = ExtResource("2_docdk")
+AutoSendSlotRequest = "Game"
 
 [node name="Background" type="Sprite2D" parent="."]
 position = Vector2(576, 320)

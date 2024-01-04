@@ -21,17 +21,6 @@ public partial class RPC : Node
 		ActualCounterLabel = GetNode<Label>("%ActualCounterLabel");
 	}
 
-	public override void _Process(double delta)
-	{
-		if (matchMaker.IsReady() && !matchMaker.RequestSend)
-		{
-			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
-			{
-				name = "RPC",
-			});
-		}
-	}
-
 	public void OnPlusButtonPressed()
 	{
 		var currentCounter = int.Parse(ActualCounterLabel.Text);

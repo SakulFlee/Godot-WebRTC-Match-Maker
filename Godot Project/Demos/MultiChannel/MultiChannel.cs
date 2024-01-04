@@ -47,17 +47,6 @@ public partial class MultiChannel : Node
 		};
 	}
 
-	public override void _Process(double delta)
-	{
-		if (matchMaker.IsReady() && !matchMaker.RequestSend)
-		{
-			matchMaker.SendMatchMakerRequest(new MatchMakerRequest()
-			{
-				name = "MultiChannel",
-			});
-		}
-	}
-
 	private void ChannelMessageReceived(string peerUUID, ushort channel, string message)
 	{
 		GD.Print($"Received a message from peer {peerUUID}@{channel}: {message}");
