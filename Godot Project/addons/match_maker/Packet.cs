@@ -6,6 +6,7 @@ using SIPSorcery.Net;
 /// <summary>
 /// The general packet/package send and received to and from the Match Maker Server.
 /// </summary>
+[JsonSerializable(typeof(Packet))]
 public class Packet
 {
     /// <summary>
