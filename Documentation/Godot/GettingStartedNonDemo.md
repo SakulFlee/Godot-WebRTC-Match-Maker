@@ -38,5 +38,34 @@ Furthermore, if you are using the video call demo, you will also need the packag
 dotnet add package FlashCap
 ```
 
+## .NET 9.0
+
+Since .NET 9.0, there is some additional setup required:  
+`AoT` flags have to be set in the C# Project [like mentioned here](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/ios-like-platforms/#support-for-applications-and-libraries-without-os-specific-api-dependencies).
+
+Essentially, open the `cs.proj` file and add the following lines:
+
+```xml
+<PublishAot>true</PublishAot>
+<PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
+```
+
+Your final project file should look something like this:
+
+```xml
+<Project Sdk="Godot.NET.Sdk/4.x.y">
+  <PropertyGroup>
+    (...)
+    <PublishAot>true</PublishAot>
+    <PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
+  </PropertyGroup>
+  <ItemGroup>
+    (...)
+  </ItemGroup>
+</Project>
+```
+
+---
+
 Now, everything should be prepared.  
 To continue this guide, go to [further Godot setup](./FurtherGodotSetup.md).

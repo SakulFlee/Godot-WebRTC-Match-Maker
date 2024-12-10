@@ -4,10 +4,10 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
-ws = "0.9.2"
+ws = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 uuid = { version = "1.8", features = ["v4", "fast-rng", "macro-diagnostics"] }
-confy = "0.6.1"
-log = "0.4.21"
-simple_logger = "4.3.3"
+confy = "0.6"
+log = "0.4"
+simple_logger = "5.0"

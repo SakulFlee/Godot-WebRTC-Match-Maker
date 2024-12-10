@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust-channel: ["stable", "beta", "nightly", "1.70.0", "1.60.0"]
+        rust-channel: ["stable", "beta", "nightly", "1.60.0", "1.70.0", "1.80.0"]
       
     runs-on: ubuntu-latest
 
