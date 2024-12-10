@@ -16,7 +16,7 @@ public class GamePacket
     : this(type, PacketSerializer.ToJSON(inner))
     { }
 
-    public T InnerAs<T>()
+    public T InnerAs<T>() where T : class
     {
         return PacketSerializer.FromJSON<T>(InnerJSON);
     }
@@ -30,7 +30,7 @@ public class GamePacket
     {
         return PacketSerializer.ToJSON(this);
     }
-    
+
     public override string ToString()
     {
         return $"GamePacket@{Type}";

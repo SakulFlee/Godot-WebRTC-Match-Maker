@@ -1,5 +1,7 @@
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Godot;
 
 public interface PacketSerializer
 {
@@ -8,16 +10,9 @@ public interface PacketSerializer
     /// </summary>
     /// <param name="json">The JSON string to parse</param>
     /// <returns>An instance of this T class</returns>
-    public static T FromJSON<T>(string json)
+    public static T FromJSON<T>(string json) where T : class
     {
-        var options = new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter(), },
-            TypeInfoResolver = JsonSourceGenContext.Default,
-        };
-        return JsonSerializer.Deserialize<T>(json, options);
+        return JsonSerializer.Deserialize(json, typeof(T), JsonSourceGenContext.Default) as T;
     }
 
     /// <summary>
@@ -26,13 +21,6 @@ public interface PacketSerializer
     /// <returns>This T as JSON</returns>
     public static string ToJSON(object o)
     {
-        var options = new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter(), },
-            TypeInfoResolver = JsonSourceGenContext.Default,
-        };
-        return JsonSerializer.Serialize(o, options);
+        return JsonSerializer.Serialize(o, o.GetType(), JsonSourceGenContext.Default);
     }
 }

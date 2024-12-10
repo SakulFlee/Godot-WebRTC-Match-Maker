@@ -26,7 +26,7 @@ public class Packet
     /// </summary>
     public string json { get; set; }
 
-    public static T FromJSON<T>(string json)
+    public static T FromJSON<T>(string json) where T : class
     {
         return PacketSerializer.FromJSON<T>(json);
     }
