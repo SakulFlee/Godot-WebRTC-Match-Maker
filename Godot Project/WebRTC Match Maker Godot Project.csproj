@@ -1,8 +1,10 @@
-<Project Sdk="Godot.NET.Sdk/4.2.0">
+<Project Sdk="Godot.NET.Sdk/4.3.0">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>WebRTCMatchMakerGodotProject</RootNamespace>
+    <PublishAot>true</PublishAot>
+    <PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FlashCap" Version="1.9.0" />
