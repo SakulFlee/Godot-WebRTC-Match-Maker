@@ -6,7 +6,6 @@ using SIPSorcery.Net;
 /// <summary>
 /// The general packet/package send and received to and from the Match Maker Server.
 /// </summary>
-[JsonSerializable(typeof(Packet))]
 public class Packet
 {
     /// <summary>
@@ -96,12 +95,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakerRequest>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
-        return result;
+        return JsonSerializer.Deserialize(json, typeof(MatchMakerRequest), JsonSourceGenContext.Default) as MatchMakerRequest;
     }
 
     /// <summary>
@@ -118,12 +112,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakerResponse>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
-        return result;
+        return JsonSerializer.Deserialize(json, typeof(MatchMakerResponse), JsonSourceGenContext.Default) as MatchMakerResponse;
     }
 
     /// <summary>
@@ -140,11 +129,6 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakerUpdate>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
-        return result;
+        return JsonSerializer.Deserialize(json, typeof(MatchMakerUpdate), JsonSourceGenContext.Default) as MatchMakerUpdate;
     }
 }
