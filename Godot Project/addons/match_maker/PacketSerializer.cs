@@ -10,14 +10,14 @@ public interface PacketSerializer
     /// <returns>An instance of this T class</returns>
     public static T FromJSON<T>(string json)
     {
-        return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions()
+        var options = new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = {
-                new JsonStringEnumConverter(),
-            },
-        });
+            Converters = { new JsonStringEnumConverter(), },
+            TypeInfoResolver = JsonSourceGenContext.Default,
+        };
+        return JsonSerializer.Deserialize<T>(json, options);
     }
 
     /// <summary>
@@ -26,13 +26,13 @@ public interface PacketSerializer
     /// <returns>This T as JSON</returns>
     public static string ToJSON(object o)
     {
-        return JsonSerializer.Serialize(o, new JsonSerializerOptions()
+        var options = new JsonSerializerOptions()
         {
             IncludeFields = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = {
-                new JsonStringEnumConverter(),
-            },
-        });
+            Converters = { new JsonStringEnumConverter(), },
+            TypeInfoResolver = JsonSourceGenContext.Default,
+        };
+        return JsonSerializer.Serialize(o, options);
     }
 }
