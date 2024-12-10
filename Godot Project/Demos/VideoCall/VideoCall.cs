@@ -9,6 +9,7 @@ public partial class VideoCall : Node
 	private MatchMaker matchMaker;
 
 	private ItemList captureDeviceList;
+	private ItemList captureModeList;
 
 	private TextureRect localVideo;
 	private Label localFrameLabel;
@@ -24,7 +25,9 @@ public partial class VideoCall : Node
 
 	private CaptureDevices captureDevices;
 	private CaptureDevice captureDevice;
-	private VideoCharacteristics characteristics;
+	private CaptureDeviceDescriptor selectedCaptureDevice;
+	private VideoCharacteristics selectedCharacteristics;
+
 
 	public override void _EnterTree()
 	{
@@ -40,6 +43,8 @@ public partial class VideoCall : Node
 
 		captureDeviceList = GetNode<ItemList>("%CaptureDeviceList");
 		captureDeviceList.Clear();
+		captureModeList = GetNode<ItemList>("%CaptureModeList");
+		captureModeList.Clear();
 
 		remoteVideo = GetNode<TextureRect>("%RemoteVideo");
 		remoteFrameLabel = GetNode<Label>("%LabelRemoteFrame");
@@ -116,14 +121,24 @@ public partial class VideoCall : Node
 			await captureDevice.StopAsync();
 		}
 
-		var selectedCaptureDevice = captureDevices.EnumerateDescriptors().ElementAt(index);
+		selectedCaptureDevice = captureDevices.EnumerateDescriptors().ElementAt(index);
 		GD.Print($"[VideoCall] Device selected: {selectedCaptureDevice}");
 
-		characteristics = selectedCaptureDevice.Characteristics[0];
-		GD.Print($"[VideoCall] Characteristics chosen: {characteristics}");
+		selectedCharacteristics = null;
+		foreach (var characteristics in selectedCaptureDevice.Characteristics)
+		{
+			captureModeList.Clear();
+			captureModeList.AddItem(characteristics.ToString());
+		}
+	}
+
+	private async void OnCaptureModeSelected(int index)
+	{
+		selectedCharacteristics = selectedCaptureDevice.Characteristics[index];
+		GD.Print($"[VideoCall] Characteristics chosen: {selectedCharacteristics}");
 
 		captureDevice = await selectedCaptureDevice.OpenAsync(
-			characteristics,
+			selectedCharacteristics,
 			OnNewFrame
 		);
 		await captureDevice.StartAsync();

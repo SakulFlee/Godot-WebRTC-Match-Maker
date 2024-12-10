@@ -87,7 +87,7 @@ custom_minimum_size = Vector2(0, 128)
 layout_mode = 2
 size_flags_vertical = 10
 item_count = 1
-item_0/text = "Some webcam here ..."
+item_0/text = "Webcam devices go here ..."
 
 [node name="AudioTickTimer" type="Timer" parent="MarginContainer/HBoxContainer/Local"]
 unique_name_in_owner = true
@@ -144,6 +144,14 @@ vertical_alignment = 2
 unique_name_in_owner = true
 stream = SubResource("AudioStreamGenerator_dml4y")
 
+[node name="CaptureModeList" type="ItemList" parent="MarginContainer/HBoxContainer/Remote"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+size_flags_vertical = 10
+item_count = 1
+item_0/text = "Webcam capture modes go here ..."
+
 [node name="DebugPanel" parent="." instance=ExtResource("2_0o60d")]
 unique_name_in_owner = true
 visible = false
@@ -154,3 +162,4 @@ visible = false
 
 [connection signal="item_selected" from="MarginContainer/HBoxContainer/Local/CaptureDeviceList" to="." method="OnCaptureDeviceSelected"]
 [connection signal="timeout" from="MarginContainer/HBoxContainer/Local/AudioTickTimer" to="." method="AudioTick"]
+[connection signal="item_selected" from="MarginContainer/HBoxContainer/Remote/CaptureModeList" to="." method="OnCaptureModeSelected"]
