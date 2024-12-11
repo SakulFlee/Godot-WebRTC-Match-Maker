@@ -64,4 +64,4 @@ unique_name_in_owner = true
 visible = false
 
 [connection signal="text_changed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/ChatMessageField" to="." method="OnChatTextEditChanged"]
-[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/SendButton" to="." method="OnChatTextEditChanged"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/SendButton" to="." method="OnSendButtonPressed"]
