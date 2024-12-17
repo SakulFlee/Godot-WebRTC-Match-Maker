@@ -4,40 +4,23 @@ using System.IO.Compression;
 
 public class GZIP
 {
-    public static byte[] Decompress(byte[] input)
+    public static byte[] Decompress(byte[] data)
     {
-        using (var source = new MemoryStream(input))
-        {
-            byte[] lengthBytes = new byte[4];
-            source.Read(lengthBytes, 0, 4);
+        using var compressedStream = new MemoryStream(data);
+        using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+        using var resultStream = new MemoryStream();
 
-            var length = BitConverter.ToInt32(lengthBytes, 0);
-            using (var decompressionStream = new GZipStream(source,
-                CompressionMode.Decompress))
-            {
-                var result = new byte[length];
-                decompressionStream.Read(result, 0, length);
-                return result;
-            }
-        }
+        zipStream.CopyTo(resultStream);
+        return resultStream.ToArray();
     }
 
-    public static byte[] Compress(byte[] input)
+    public static byte[] Compress(byte[] data)
     {
-        using (var result = new MemoryStream())
+        using var result = new MemoryStream();
+        using (var compressionStream = new GZipStream(result, CompressionMode.Compress))
         {
-            var lengthBytes = BitConverter.GetBytes(input.Length);
-            result.Write(lengthBytes, 0, 4);
-
-            using (var compressionStream = new GZipStream(result,
-                CompressionMode.Compress))
-            {
-                compressionStream.Write(input, 0, input.Length);
-                compressionStream.Flush();
-
-            }
-            return result.ToArray();
+            compressionStream.Write(data, 0, data.Length);
         }
+        return result.ToArray();
     }
-
 }

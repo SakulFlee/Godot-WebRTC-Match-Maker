@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-public interface PacketSerializer
+public interface GamePacketSerializer
 {
     /// <summary>
     /// Deserializes (/Parse) from JSON
@@ -9,7 +9,7 @@ public interface PacketSerializer
     /// <returns>An instance of this T class</returns>
     public static T FromJSON<T>(string json) where T : class
     {
-        return JsonSerializer.Deserialize(json, typeof(T), JsonSourceGenContext.Default) as T;
+        return JsonSerializer.Deserialize(json, typeof(T), GameJsonSourceGenContext.Default) as T;
     }
 
     /// <summary>
@@ -18,6 +18,6 @@ public interface PacketSerializer
     /// <returns>This T as JSON</returns>
     public static string ToJSON(object o)
     {
-        return JsonSerializer.Serialize(o, o.GetType(), JsonSourceGenContext.Default);
+        return JsonSerializer.Serialize(o, o.GetType(), GameJsonSourceGenContext.Default);
     }
 }

@@ -13,24 +13,24 @@ public class GamePacket
     }
 
     public GamePacket(GamePacketType type, object inner)
-    : this(type, PacketSerializer.ToJSON(inner))
+    : this(type, GamePacketSerializer.ToJSON(inner))
     { }
 
-    public T InnerAs<T>()
+    public T InnerAs<T>() where T : class
     {
-        return PacketSerializer.FromJSON<T>(InnerJSON);
+        return GamePacketSerializer.FromJSON<T>(InnerJSON);
     }
 
     public static GamePacket FromJSON(string json)
     {
-        return PacketSerializer.FromJSON<GamePacket>(json);
+        return GamePacketSerializer.FromJSON<GamePacket>(json);
     }
 
     public string ToJSON()
     {
-        return PacketSerializer.ToJSON(this);
+        return GamePacketSerializer.ToJSON(this);
     }
-    
+
     public override string ToString()
     {
         return $"GamePacket@{Type}";

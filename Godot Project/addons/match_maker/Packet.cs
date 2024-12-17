@@ -25,7 +25,7 @@ public class Packet
     /// </summary>
     public string json { get; set; }
 
-    public static T FromJSON<T>(string json)
+    public static T FromJSON<T>(string json) where T : class
     {
         return PacketSerializer.FromJSON<T>(json);
     }
@@ -95,12 +95,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakerRequest>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
-        return result;
+        return JsonSerializer.Deserialize(json, typeof(MatchMakerRequest), JsonSourceGenContext.Default) as MatchMakerRequest;
     }
 
     /// <summary>
@@ -117,12 +112,7 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakerResponse>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
-        return result;
+        return JsonSerializer.Deserialize(json, typeof(MatchMakerResponse), JsonSourceGenContext.Default) as MatchMakerResponse;
     }
 
     /// <summary>
@@ -139,11 +129,6 @@ public class Packet
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<MatchMakerUpdate>(json, new JsonSerializerOptions()
-        {
-            IncludeFields = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        });
-        return result;
+        return JsonSerializer.Deserialize(json, typeof(MatchMakerUpdate), JsonSourceGenContext.Default) as MatchMakerUpdate;
     }
 }

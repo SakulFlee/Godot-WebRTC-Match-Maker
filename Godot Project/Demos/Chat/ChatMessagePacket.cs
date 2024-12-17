@@ -6,11 +6,11 @@ public class ChatMessagePacket
 
     public static ChatMessagePacket FromJSON(string json)
     {
-        return PacketSerializer.FromJSON<ChatMessagePacket>(json);
+        return ChatPacketSerializer.FromJSON<ChatMessagePacket>(json);
     }
 
     public string ToJSON()
     {
-        return PacketSerializer.ToJSON(this);
+        return ChatPacketSerializer.ToJSON(this);
     }
 }
