@@ -64,7 +64,7 @@ jobs:
         working-directory: Godot Project/
 
       - name: Artifact upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "godot-${{ matrix.export-template }}-release"
           path: Godot Project/export/
@@ -94,14 +94,14 @@ jobs:
         working-directory: Match Maker Server/
   
       - name: Upload build artifacts (Linux)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: match-maker-server-linux
           path: Match Maker Server/target/release/match_maker_server
         if: matrix.os == 'ubuntu-latest'
   
       - name: Upload build artifacts (Windows)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: match-maker-server-windows
           path: Match Maker Server/target/release/match_maker_server.exe
@@ -115,7 +115,7 @@ jobs:
         name: Checkout
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: plugin-webrtc
           path: Godot Project/addons/webrtc_sipsorcery/
@@ -128,7 +128,7 @@ jobs:
         name: Checkout
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: plugin-match_maker
           path: Godot Project/addons/match_maker/
@@ -141,7 +141,7 @@ jobs:
         name: Checkout
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: demo_project
           path: Godot Project/
@@ -161,37 +161,37 @@ jobs:
 
     steps:
       - name: Download Artifact godot-windows-release
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: godot-windows-release
           path: Godot.Demo.Windows
       - name: Download Artifact godot-linux-release
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: godot-linux-release
           path: Godot.Demo.Linux
       - name: Download Artifact match-maker-server-linux
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: match-maker-server-linux
           path: MatchMaker.Linux
       - name: Download Artifact match-maker-server-windows
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: match-maker-server-windows
           path: MatchMaker.Windows
       - name: Download Artifact plugin-webrtc
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: plugin-webrtc
           path: Godot.Plugin.WebRTC
       - name: Download Artifact plugin-match_maker
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: plugin-match_maker
           path: Godot.Plugin.MatchMaker
       - name: Download Artifact demo_project
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: demo_project
           path: Godot.Demo.Project
