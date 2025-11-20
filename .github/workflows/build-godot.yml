@@ -22,7 +22,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         name: Checkout
 
       - uses: actions/setup-dotnet@v5
